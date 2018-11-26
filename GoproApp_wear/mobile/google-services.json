@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "939020662877",
+    "firebase_url": "https://goproapp-9492b.firebaseio.com",
+    "project_id": "goproapp-9492b",
+    "storage_bucket": "goproapp-9492b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:939020662877:android:b5a3fb5ad13d8846",
+        "android_client_info": {
+          "package_name": "com.goproapp.goproapp_wear"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "939020662877-6op1io0ni1002d2e8ctmbkenbhuurhs8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.goproapp.goproapp_wear",
+            "certificate_hash": "01b1e8b811babb31d1848862d42490a47e9a1095"
+          }
+        },
+        {
+          "client_id": "939020662877-5ci8a2fkofjveor3lidvtnum8e309v5o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDA4iWf_R7mhiLKxBG-mV2rsu9f4L9CbUc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "939020662877-5ci8a2fkofjveor3lidvtnum8e309v5o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
