@@ -91,10 +91,13 @@ public class MainActivity extends AppCompatActivity
             Intent intent= new Intent(MainActivity.this, LoginActivity.class);
             MainActivity.this.startActivity(intent);
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_settings) {
+            Intent intent= new Intent(MainActivity.this, SettingsActivity.class);
+            MainActivity.this.startActivity(intent);
 
-        } else if (id == R.id.nav_share) {
-
+        } else if (id == R.id.nav_livestream) {
+            Intent intent= new Intent(MainActivity.this, LiveStreamActivity.class);
+            MainActivity.this.startActivity(intent);
         } else if (id == R.id.nav_send) {
 
         }
