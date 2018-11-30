@@ -75,33 +75,19 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    //handle the drawer menu selection
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        if(id != R.id.nav_home ) {//exclude himself
+            DrawerHandler dh = new DrawerHandler();
 
-        if (id == R.id.nav_home) {
-
-        } else if (id == R.id.nav_gallery) {
-            Intent intent= new Intent(MainActivity.this, GalleryActivity.class);
+            Intent intent;
+            intent = dh.SwitchActivity(id, MainActivity.this);
             MainActivity.this.startActivity(intent);
-
-        } else if (id == R.id.nav_login) {
-            Intent intent= new Intent(MainActivity.this, LoginActivity.class);
-            MainActivity.this.startActivity(intent);
-
-        } else if (id == R.id.nav_settings) {
-            Intent intent= new Intent(MainActivity.this, SettingsActivity.class);
-            MainActivity.this.startActivity(intent);
-
-        } else if (id == R.id.nav_livestream) {
-            Intent intent= new Intent(MainActivity.this, LiveStreamActivity.class);
-            MainActivity.this.startActivity(intent);
-        } else if (id == R.id.nav_send) {
-
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
