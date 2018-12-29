@@ -164,7 +164,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 Toast.makeText(LoginActivity.this, "Log in failed like all you try in life.",
                                         Toast.LENGTH_SHORT).show();
                             }
-
                         }
                     });
         }
@@ -175,9 +174,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             Intent intent;
             intent = new Intent(LoginActivity.this, MainActivity.class);
-            intent.putExtra("UserId",user.getUid());
-
-            LoginActivity.this.startActivity(intent);
+            intent.putExtra(MainActivity.USERID,user.getUid());
+            setResult(AppCompatActivity.RESULT_OK, intent);
+            finish();
 
         }
         else{
@@ -192,7 +191,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
