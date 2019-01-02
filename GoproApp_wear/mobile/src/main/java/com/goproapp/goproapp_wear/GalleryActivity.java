@@ -60,7 +60,7 @@ public class GalleryActivity extends AppCompatActivity
      */
     private static CustomViewPager mViewPager;
     private DrawerLayout mDrawerLayout;
-    public static List<ImgData> imgData=new ArrayList<ImgData>();
+    public static List<ImgData> imgData = new ArrayList<ImgData>();
     private MyFirebaseRecordingListener mFirebaseRecordingListener;
     private DatabaseReference databaseRef;
 
@@ -138,61 +138,23 @@ public class GalleryActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
+
     //read Database
     @Override
     public void onResume() {
         super.onResume();
         databaseRef = FirebaseDatabase.getInstance().getReference();
         mFirebaseRecordingListener = new MyFirebaseRecordingListener();
-        databaseRef.child("users").child(MainActivity.userID).child("Data").addValueEventListener
+        databaseRef.child("users").child(LoginActivity.userID).child("Data").addValueEventListener
                 (mFirebaseRecordingListener);
     }
+
     @Override
     public void onPause() {
         super.onPause();
-        databaseRef.child("users").child(MainActivity.userID).child("Data").removeEventListener
+        databaseRef.child("users").child(LoginActivity.userID).child("Data").removeEventListener
                 (mFirebaseRecordingListener);
     }
-//    /**
-//     * A placeholder fragment containing a simple view.
-//     */
-//    public static class PlaceholderFragment extends Fragment {
-//        /**
-//         * The fragment argument representing the section number for this
-//         * fragment.
-//         */
-//        private static final String ARG_SECTION_NUMBER = "section_number";
-//
-//        public PlaceholderFragment() {
-//        }
-//
-//        /**
-//         * Returns a new instance of this fragment for the given section
-//         * number.
-//         */
-//        public static PlaceholderFragment newInstance(int sectionNumber) {
-//            PlaceholderFragment fragment = new PlaceholderFragment();
-//            Bundle args = new Bundle();
-//            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-//            fragment.setArguments(args);
-//            return fragment;
-//        }
-//
-//        @Override
-//        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-//                                 Bundle savedInstanceState) {
-//            View rootView =null;
-//            switch (getArguments().getInt(ARG_SECTION_NUMBER)){
-//                case 1:
-//                    rootView=inflater.inflate(R.layout.fragment_gallery, container, false);
-//                    break;
-//                case 2:
-//                    rootView=inflater.inflate(R.layout.fragment_gallery_map, container, false);
-//                    break;
-//            }
-//             return rootView;
-//        }
-//    }
 
     /**
      * A {@LINK FRAGMENTPAGERADAPTER} THAT RETURNS A FRAGMENT CORRESPONDING TO
@@ -226,6 +188,7 @@ public class GalleryActivity extends AppCompatActivity
     public void onFragmentInteraction(Uri uri) {
 
     }
+
     private class MyFirebaseRecordingListener implements ValueEventListener {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -235,13 +198,13 @@ public class GalleryActivity extends AppCompatActivity
                 String db_HR = rec.child("heart_rate").getValue().toString();
                 String db_position = rec.child("position").getValue().toString();
 
-                ImgData newData=new ImgData();
-                newData.date=db_date;
-                newData.bpm=db_HR;
-                String[] latLng=db_position.split(",");
+                ImgData newData = new ImgData();
+                newData.date = db_date;
+                newData.bpm = db_HR;
+                String[] latLng = db_position.split(",");
                 double latitude = Double.parseDouble(latLng[0]);
                 double longitude = Double.parseDouble(latLng[1]);
-                newData.latLng=new LatLng(latitude, longitude);
+                newData.latLng = new LatLng(latitude, longitude);
                 imgData.add(newData);
             }
         }

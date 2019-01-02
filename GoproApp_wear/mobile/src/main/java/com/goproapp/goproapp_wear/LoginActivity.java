@@ -39,8 +39,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -67,6 +70,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mLoginFormView;
     public FirebaseAuth mAuth;
     public static String userID;
+    public static User active_user;
     private DatabaseReference mDatabase;
 
     @Override
@@ -112,6 +116,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             public void onClick(View view) {
                 Intent intent;
                 intent = new Intent(LoginActivity.this, RegisterActivity.class);
+
+                intent.putExtra("email",mEmailView.getText().toString());
+                intent.putExtra("password",mPasswordView.getText().toString());
+
                 LoginActivity.this.startActivity(intent);
             }
         });
@@ -154,6 +162,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 // Sign in success, update UI with the signed-in user's information
 
                                 FirebaseUser user = mAuth.getCurrentUser();
+                                active_user=new User();
                                 updateUI(user);
                             } else {
                                 Toast.makeText(LoginActivity.this, "Log in failed like all you try in life.",
@@ -166,20 +175,37 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private void updateUI(FirebaseUser user) {
         if( user != null ) {
-
-            Intent intent;
-            intent = new Intent(LoginActivity.this, MainActivity.class);
-            intent.putExtra(MainActivity.USERID,user.getUid());
-            setResult(AppCompatActivity.RESULT_OK, intent);
-            finish();
-
+            userID=user.getUid();
+            readUserProfile(userID);
         }
         else{
             Intent intent;
             intent = new Intent(LoginActivity.this, LoginActivity.class);
-
             LoginActivity.this.startActivity(intent);
         }
+    }
+    private void readUserProfile(String userId) {
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference profileRef = database.getReference("users");
+        profileRef.child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String first_name_db = dataSnapshot.child("first_name").getValue(String.class);
+                String last_name_db = dataSnapshot.child("last_name").getValue(String.class);
+                String email_db = dataSnapshot.child("email").getValue(String.class);
+                active_user.first_name=first_name_db;
+                active_user.last_name=last_name_db;
+                active_user.email=email_db;
+                Intent intent;
+                intent = new Intent(LoginActivity.this, MainActivity.class);
+                LoginActivity.this.startActivity(intent);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+// Empty
+            }
+        });
+
     }
     /**
      * Attempts to sign in or register the account specified by the login form.

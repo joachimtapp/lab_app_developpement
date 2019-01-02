@@ -26,10 +26,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    public static User active_user;
-    private static final int LOGGED = 1;
-    public static final String USERID = "USERID";
-    public static String userID;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,61 +52,20 @@ public class MainActivity extends AppCompatActivity
 
         DrawerHandler dh = new DrawerHandler();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        dh.setUserDrawer(navigationView);
-        navigationView.setNavigationItemSelectedListener(this);
-//
-//        View hView =  navigationView.getHeaderView(0);
-//        TextView nav_email = (TextView)hView.findViewById(R.id.logged_email);
-//        nav_email.setText("please log in");
 
+
+        navigationView.setNavigationItemSelectedListener(this);
 
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == LOGGED && resultCode == RESULT_OK && data != null) {
-            userID = data.getStringExtra(USERID);
-            readUserProfile(userID);
+    protected void onResume() {
+        super.onResume();
+        DrawerHandler dh = new DrawerHandler();
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
-        }
+        dh.setUserDrawer(navigationView);
     }
-    private void readUserProfile(String userId) {
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference profileRef = database.getReference("users");
-        profileRef.child(userId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String first_name_db = dataSnapshot.child("first_name").getValue(String.class);
-                String last_name_db = dataSnapshot.child("last_name").getValue(String.class);
-                String email_db = dataSnapshot.child("email").getValue(String.class);
-
-                active_user=new User();
-                active_user.first_name=first_name_db;
-                active_user.last_name=last_name_db;
-                active_user.email=email_db;
-                DrawerHandler dh = new DrawerHandler();
-                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-                dh.setUserDrawer(navigationView);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-// Empty
-            }
-        });
-
-    }
-
-    private void setUserProfile(){
-            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-            navigationView.setNavigationItemSelectedListener(this);
-            View hView =  navigationView.getHeaderView(0);
-            TextView nav_email = (TextView)hView.findViewById(R.id.logged_email);
-            TextView nav_name = (TextView)hView.findViewById(R.id.logged_name);
-            nav_email.setText(active_user.email);
-            nav_name.setText(active_user.first_name+" "+active_user.last_name);
-            }
 
     @Override
     public void onBackPressed() {
@@ -154,7 +110,7 @@ public class MainActivity extends AppCompatActivity
 
             Intent intent;
             intent = dh.SwitchActivity(id, MainActivity.this);
-            MainActivity.this.startActivityForResult(intent,LOGGED);
+            MainActivity.this.startActivity(intent);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

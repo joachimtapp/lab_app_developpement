@@ -3,6 +3,7 @@ package com.goproapp.goproapp_wear;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -11,7 +12,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.annotations.Nullable;
 
 public class DrawerHandler {
@@ -42,17 +49,17 @@ public class DrawerHandler {
         TextView nav_name = (TextView)hView.findViewById(R.id.logged_name);
         Menu menuNav=navigationView.getMenu();
         MenuItem nav_gallery = menuNav.findItem(R.id.nav_gallery);
-        if (MainActivity.userID!=null) {
-            nav_email.setText(MainActivity.active_user.email);
-            nav_name.setText(MainActivity.active_user.first_name + " " + MainActivity.active_user.last_name);
+        if (LoginActivity.userID!=null) {
+            if(LoginActivity.active_user!=null) {
+                nav_email.setText(LoginActivity.active_user.email);
+                nav_name.setText(LoginActivity.active_user.first_name + " " + LoginActivity.active_user.last_name);
+            }
             nav_gallery.setEnabled(true);
         }
         else {
             nav_name.setText("Please log in");
             nav_gallery.setEnabled(false);
         }
-
-
 
     }
 }

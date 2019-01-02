@@ -48,7 +48,7 @@ public class GalleryFragment extends Fragment {
     private MapView mapView;
     private Marker marker;
     public static MapboxMap mMapboxMap;
-    private int nPrevSelGridItem = -1;
+    private int nPrevSelGridItem = -1; //used highlight selected picture
     private View viewPrev;
 
     public GalleryFragment() {
@@ -80,7 +80,7 @@ public class GalleryFragment extends Fragment {
         fragmentView = inflater.inflate(R.layout.fragment_gallery, container, false);
         gridView = fragmentView.findViewById(R.id.galleryThumbnails);
         dateView = fragmentView.findViewById(R.id.galleryDateValue);
-        bpmView =fragmentView.findViewById(R.id.bpmValue);
+        bpmView = fragmentView.findViewById(R.id.bpmValue);
         mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
         adapter = new ImageAdapter(getContext());
         gridView.setAdapter(adapter);
@@ -88,17 +88,15 @@ public class GalleryFragment extends Fragment {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 mMapboxMap = mapboxMap;
-                marker = mapboxMap.addMarker(new MarkerOptions().position(GalleryActivity.imgData.get(0).latLng));
 
                 CameraPosition camPos = new CameraPosition.Builder()
                         .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
-                        .zoom(mMapboxMap.getCameraPosition().zoom) // Sets the zoom
+                        .zoom(0) // Sets the zoom
                         .bearing(0) // Rotate the camera
                         .tilt(0) // Set the camera tilt
                         .build(); // Creates a CameraPosition from the builder
                 mMapboxMap.animateCamera(CameraUpdateFactory
                         .newCameraPosition(camPos), 2000);
-
             }
         });
 
@@ -123,16 +121,31 @@ public class GalleryFragment extends Fragment {
                 bpmView.setText(GalleryActivity.imgData.get(position).bpm);
 
                 //move marker
-                marker.setPosition(GalleryActivity.imgData.get(position).latLng);
-                // move camera
-                CameraPosition camPos = new CameraPosition.Builder()
-                        .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
-                        .zoom(mMapboxMap.getCameraPosition().zoom) // Sets the zoom
-                        .bearing(0) // Rotate the camera
-                        .tilt(0) // Set the camera tilt
-                        .build(); // Creates a CameraPosition from the builder
-                mMapboxMap.animateCamera(CameraUpdateFactory
-                        .newCameraPosition(camPos), 2000);
+                if (marker == null) {
+                    CameraPosition camPos = new CameraPosition.Builder()
+                            .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
+                            .zoom(10) // Sets the zoom
+                            .bearing(0) // Rotate the camera
+                            .tilt(0) // Set the camera tilt
+                            .build(); // Creates a CameraPosition from the builder
+                    mMapboxMap.animateCamera(CameraUpdateFactory
+                            .newCameraPosition(camPos), 2000);
+                    marker = mMapboxMap.addMarker(new MarkerOptions().position(GalleryActivity.imgData.get(position).latLng));
+
+                    Toast.makeText(getContext(), "first", Toast.LENGTH_SHORT).show();
+                } else {
+                    marker.setPosition(GalleryActivity.imgData.get(position).latLng);
+
+                    // move camera
+                    CameraPosition camPos = new CameraPosition.Builder()
+                            .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
+                            .zoom(mMapboxMap.getCameraPosition().zoom) // Sets the zoom
+                            .bearing(0) // Rotate the camera
+                            .tilt(0) // Set the camera tilt
+                            .build(); // Creates a CameraPosition from the builder
+                    mMapboxMap.animateCamera(CameraUpdateFactory
+                            .newCameraPosition(camPos), 2000);
+                }
             }
         });
         return fragmentView;
@@ -156,13 +169,11 @@ public class GalleryFragment extends Fragment {
                     + " must implement OnFragmentInteractionListener");
         }
     }
-
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
-
 
     /**
      * This interface must be implemented by activities that contain this

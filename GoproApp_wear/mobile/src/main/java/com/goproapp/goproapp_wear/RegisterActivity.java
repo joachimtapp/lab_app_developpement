@@ -23,8 +23,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText mEmailView;
@@ -50,6 +53,9 @@ public class RegisterActivity extends AppCompatActivity {
         mProgressView = findViewById(R.id.reg_login_progress);
 
         mPasswordView = (EditText) findViewById(R.id.reg_password);
+
+        mEmailView.setText(getIntent().getStringExtra("email"));
+        mPasswordView.setText(getIntent().getStringExtra("password"));
         //firebase auth
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -71,9 +77,6 @@ public class RegisterActivity extends AppCompatActivity {
                 attemptRegister();
             }
         });
-
-
-
     }
 
 
@@ -142,9 +145,11 @@ public class RegisterActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
+                                LoginActivity.active_user=new User();
                                 FirebaseUser user = mAuth.getCurrentUser();
                                 writeNewUser(user.getUid(), first_name,last_name, user.getEmail());
                                 updateUI(user);
+
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Toast.makeText(RegisterActivity.this, "Authentication failed.",
@@ -171,19 +176,40 @@ public class RegisterActivity extends AppCompatActivity {
     private void updateUI(FirebaseUser user) {
         if (user != null) {
 
-            Intent intent;
-            intent = new Intent(RegisterActivity.this, MainActivity.class);
-            intent.putExtra("UserId", user.getUid());
-
-            RegisterActivity.this.startActivity(intent);
-
+            LoginActivity.userID=user.getUid();
+            readUserProfile(LoginActivity.userID);
         } else {
             Intent intent;
-            intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            intent = new Intent(RegisterActivity.this, RegisterActivity.class);
 
             RegisterActivity.this.startActivity(intent);
         }
     }
+
+    private void readUserProfile(String userID) {
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference profileRef = database.getReference("users");
+        profileRef.child(LoginActivity.userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String first_name_db = dataSnapshot.child("first_name").getValue(String.class);
+                String last_name_db = dataSnapshot.child("last_name").getValue(String.class);
+                String email_db = dataSnapshot.child("email").getValue(String.class);
+                LoginActivity.active_user.first_name=first_name_db;
+                LoginActivity.active_user.last_name=last_name_db;
+                LoginActivity.active_user.email=email_db;
+                Intent intent;
+                intent = new Intent(RegisterActivity.this, MainActivity.class);
+                RegisterActivity.this.startActivity(intent);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+// Empty
+            }
+        });
+
+    }
+
     /**
      * Shows the progress UI and hides the login form.
      */
