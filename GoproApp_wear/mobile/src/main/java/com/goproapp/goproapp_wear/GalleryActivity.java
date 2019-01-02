@@ -2,6 +2,8 @@ package com.goproapp.goproapp_wear;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +20,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,9 +31,20 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 
-public class GalleryActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
+
+public class GalleryActivity extends AppCompatActivity
+        implements GalleryFragment.OnFragmentInteractionListener,
+        GalleryMapFragment.OnFragmentInteractionListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -46,11 +60,12 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private static CustomViewPager mViewPager;
     private DrawerLayout mDrawerLayout;
+    public static List<ImgData> imgData=new ArrayList<ImgData>();
+    private MyFirebaseRecordingListener mFirebaseRecordingListener;
+    private DatabaseReference databaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, "pk.eyJ1IjoiZ29wcm9hcHAiLCJhIjoiY2pwamxsZjJtMDd4dzNxcHF5OTh6Y2wzeCJ9.4pbFJ5Iqk1a2PIiEPyhzPg");
         setContentView(R.layout.activity_gallery);
@@ -75,7 +90,6 @@ public class GalleryActivity extends AppCompatActivity {
                         return true;
                     }
                 });
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //set drawer button
         setSupportActionBar(toolbar);
@@ -98,14 +112,7 @@ public class GalleryActivity extends AppCompatActivity {
         DrawerHandler dh = new DrawerHandler();
 
         dh.setUserDrawer(navigationView);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+
     }
 
     @Override
@@ -131,50 +138,61 @@ public class GalleryActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    public void gallerySync(View view) {
+    //read Database
+    @Override
+    public void onResume() {
+        super.onResume();
+        databaseRef = FirebaseDatabase.getInstance().getReference();
+        mFirebaseRecordingListener = new MyFirebaseRecordingListener();
+        databaseRef.child("users").child(MainActivity.userID).child("Data").addValueEventListener
+                (mFirebaseRecordingListener);
     }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        public PlaceholderFragment() {
-        }
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView =null;
-            switch (getArguments().getInt(ARG_SECTION_NUMBER)){
-                case 1:
-                    rootView=inflater.inflate(R.layout.fragment_gallery, container, false);
-                    break;
-                case 2:
-                    rootView=inflater.inflate(R.layout.fragment_gallery_map, container, false);
-                    break;
-            }
-             return rootView;
-        }
+    @Override
+    public void onPause() {
+        super.onPause();
+        databaseRef.child("users").child(MainActivity.userID).child("Data").removeEventListener
+                (mFirebaseRecordingListener);
     }
+//    /**
+//     * A placeholder fragment containing a simple view.
+//     */
+//    public static class PlaceholderFragment extends Fragment {
+//        /**
+//         * The fragment argument representing the section number for this
+//         * fragment.
+//         */
+//        private static final String ARG_SECTION_NUMBER = "section_number";
+//
+//        public PlaceholderFragment() {
+//        }
+//
+//        /**
+//         * Returns a new instance of this fragment for the given section
+//         * number.
+//         */
+//        public static PlaceholderFragment newInstance(int sectionNumber) {
+//            PlaceholderFragment fragment = new PlaceholderFragment();
+//            Bundle args = new Bundle();
+//            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+//            fragment.setArguments(args);
+//            return fragment;
+//        }
+//
+//        @Override
+//        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+//                                 Bundle savedInstanceState) {
+//            View rootView =null;
+//            switch (getArguments().getInt(ARG_SECTION_NUMBER)){
+//                case 1:
+//                    rootView=inflater.inflate(R.layout.fragment_gallery, container, false);
+//                    break;
+//                case 2:
+//                    rootView=inflater.inflate(R.layout.fragment_gallery_map, container, false);
+//                    break;
+//            }
+//             return rootView;
+//        }
+//    }
 
     /**
      * A {@LINK FRAGMENTPAGERADAPTER} THAT RETURNS A FRAGMENT CORRESPONDING TO
@@ -188,14 +206,49 @@ public class GalleryActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
+//
             // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            if (position == 0)
+                return GalleryFragment.newInstance();
+            else if (position == 1)
+                return GalleryMapFragment.newInstance();
+            else return null;
         }
+
         @Override
         public int getCount() {
-            // Show 3 total pages.
+            // Show 2 total pages.
             return 2;
+        }
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
+    private class MyFirebaseRecordingListener implements ValueEventListener {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            for (final DataSnapshot rec : dataSnapshot.getChildren()) {
+                final ImgData newImgData = new ImgData();
+                String db_date = rec.child("date").getValue().toString();
+                String db_HR = rec.child("heart_rate").getValue().toString();
+                String db_position = rec.child("position").getValue().toString();
+
+                ImgData newData=new ImgData();
+                newData.date=db_date;
+                newData.bpm=db_HR;
+                String[] latLng=db_position.split(",");
+                double latitude = Double.parseDouble(latLng[0]);
+                double longitude = Double.parseDouble(latLng[1]);
+                newData.latLng=new LatLng(latitude, longitude);
+                imgData.add(newData);
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.v("err", databaseError.toString());
         }
     }
 }

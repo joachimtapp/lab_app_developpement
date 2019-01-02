@@ -1,12 +1,34 @@
 package com.goproapp.goproapp_wear;
 
+import android.animation.ObjectAnimator;
+import android.animation.TypeEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+
+import com.mapbox.mapboxsdk.annotations.BaseMarkerViewOptions;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -17,16 +39,17 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class GalleryFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     private OnFragmentInteractionListener mListener;
+    private View fragmentView;
+    private ImageAdapter adapter;
+    private GridView gridView;
+    private TextView dateView;
+    private TextView bpmView;
+    private MapView mapView;
+    private Marker marker;
+    public static MapboxMap mMapboxMap;
+    private int nPrevSelGridItem = -1;
+    private View viewPrev;
 
     public GalleryFragment() {
         // Required empty public constructor
@@ -36,35 +59,85 @@ public class GalleryFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment GalleryFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static GalleryFragment newInstance(String param1, String param2) {
+    public static GalleryFragment newInstance() {
         GalleryFragment fragment = new GalleryFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
+
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_gallery, container, false);
 
+        fragmentView = inflater.inflate(R.layout.fragment_gallery, container, false);
+        gridView = fragmentView.findViewById(R.id.galleryThumbnails);
+        dateView = fragmentView.findViewById(R.id.galleryDateValue);
+        bpmView =fragmentView.findViewById(R.id.bpmValue);
+        mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
+        adapter = new ImageAdapter(getContext());
+        gridView.setAdapter(adapter);
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                mMapboxMap = mapboxMap;
+                marker = mapboxMap.addMarker(new MarkerOptions().position(GalleryActivity.imgData.get(0).latLng));
+
+                CameraPosition camPos = new CameraPosition.Builder()
+                        .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
+                        .zoom(mMapboxMap.getCameraPosition().zoom) // Sets the zoom
+                        .bearing(0) // Rotate the camera
+                        .tilt(0) // Set the camera tilt
+                        .build(); // Creates a CameraPosition from the builder
+                mMapboxMap.animateCamera(CameraUpdateFactory
+                        .newCameraPosition(camPos), 2000);
+
+            }
+        });
+
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v,
+                                    int position, long id) {
+                try {
+                    if (nPrevSelGridItem != -1) {
+                        viewPrev = (View) gridView.getChildAt(nPrevSelGridItem);
+                        viewPrev.setBackgroundColor(Color.WHITE);
+                    }
+                    nPrevSelGridItem = position;
+                    if (nPrevSelGridItem == position) {
+                        //View viewPrev = (View) gridview.getChildAt(nPrevSelGridItem);
+                        v.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                dateView.setText(GalleryActivity.imgData.get(position).date);
+                bpmView.setText(GalleryActivity.imgData.get(position).bpm);
+
+                //move marker
+                marker.setPosition(GalleryActivity.imgData.get(position).latLng);
+                // move camera
+                CameraPosition camPos = new CameraPosition.Builder()
+                        .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
+                        .zoom(mMapboxMap.getCameraPosition().zoom) // Sets the zoom
+                        .bearing(0) // Rotate the camera
+                        .tilt(0) // Set the camera tilt
+                        .build(); // Creates a CameraPosition from the builder
+                mMapboxMap.animateCamera(CameraUpdateFactory
+                        .newCameraPosition(camPos), 2000);
+            }
+        });
+        return fragmentView;
     }
+
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
@@ -90,6 +163,7 @@ public class GalleryFragment extends Fragment {
         mListener = null;
     }
 
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -104,4 +178,62 @@ public class GalleryFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+    private class ImageAdapter extends BaseAdapter {
+        private Context mContext;
+
+        public ImageAdapter(Context c) {
+            mContext = c;
+        }
+
+        public int getCount() {
+
+            return mThumbIds.length;
+        }
+
+        public Object getItem(int position) {
+            return null;
+        }
+
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        // create a new ImageView for each item referenced by the Adapter
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ImageView imageView;
+            if (convertView == null) {
+                // if it's not recycled, initialize some attributes
+                imageView = new ImageView(mContext);
+//                imageView.setLayoutParams(new ViewGroup.LayoutParams(85, 85));
+                imageView.setAdjustViewBounds(true);
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imageView.setPadding(8, 8, 8, 8);
+            } else {
+                imageView = (ImageView) convertView;
+            }
+
+            imageView.setImageResource(mThumbIds[position]);
+            return imageView;
+        }
+
+        // references to our images
+        private Integer[] mThumbIds = {
+                R.drawable.sample_2, R.drawable.sample_3,
+                R.drawable.sample_4,
+//                R.drawable.sample_5,
+//                R.drawable.sample_6, R.drawable.sample_7,
+//                R.drawable.sample_0, R.drawable.sample_1,
+//                R.drawable.sample_2, R.drawable.sample_3,
+//                R.drawable.sample_4, R.drawable.sample_5,
+//                R.drawable.sample_6, R.drawable.sample_7,
+//                R.drawable.sample_0, R.drawable.sample_1,
+//                R.drawable.sample_2, R.drawable.sample_3,
+//                R.drawable.sample_4, R.drawable.sample_5,
+//                R.drawable.sample_6, R.drawable.sample_7
+        };
+
+    }
+
+
 }

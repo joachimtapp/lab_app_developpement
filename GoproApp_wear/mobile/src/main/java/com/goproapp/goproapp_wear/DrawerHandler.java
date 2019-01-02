@@ -7,6 +7,8 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -32,19 +34,25 @@ public class DrawerHandler {
         }
         return intent;
 
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        drawer.closeDrawer(GravityCompat.START);
         }
     public void setUserDrawer(NavigationView navigationView ){
 
         View hView =  navigationView.getHeaderView(0);
         TextView nav_email = (TextView)hView.findViewById(R.id.logged_email);
         TextView nav_name = (TextView)hView.findViewById(R.id.logged_name);
-        if (MainActivity.active_user!=null) {
+        Menu menuNav=navigationView.getMenu();
+        MenuItem nav_gallery = menuNav.findItem(R.id.nav_gallery);
+        if (MainActivity.userID!=null) {
             nav_email.setText(MainActivity.active_user.email);
             nav_name.setText(MainActivity.active_user.first_name + " " + MainActivity.active_user.last_name);
+            nav_gallery.setEnabled(true);
         }
-        else nav_name.setText("Please log in");
+        else {
+            nav_name.setText("Please log in");
+            nav_gallery.setEnabled(false);
+        }
+
+
 
     }
 }

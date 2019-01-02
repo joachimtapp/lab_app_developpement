@@ -9,7 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 
 /**
@@ -34,62 +39,79 @@ public class GalleryMapFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     *
+     *
      * @return A new instance of fragment GalleryMapFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static GalleryMapFragment newInstance(String param1, String param2) {
+    public static GalleryMapFragment newInstance() {
         GalleryMapFragment fragment = new GalleryMapFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
+
         return fragment;
     }
-    @Override
-    public void onStart() {
-        super.onStart();
-        mapView.onStart();
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        mapView.onResume();
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
-        mapView.onPause();
-    }
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        mapView.onLowMemory();
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mapView.onDestroy();
-    }
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
-    }
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//        mapView.onStart();
+//    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        mapView.onResume();
+//    }
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        mapView.onPause();
+//    }
+//    @Override
+//    public void onLowMemory() {
+//        super.onLowMemory();
+//        mapView.onLowMemory();
+//    }
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        mapView.onDestroy();
+//    }
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        mapView.onSaveInstanceState(outState);
+//    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-        mapView = (MapView) getView().findViewById(R.id.galleryMapView);
-        mapView.onCreate(savedInstanceState);
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View fragmentView=inflater.inflate(R.layout.fragment_gallery_map, container, false);
+        mapView = (MapView) fragmentView.findViewById(R.id.galleryMapView);
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+
+                for(ImgData im :GalleryActivity.imgData) {
+
+
+                    mapboxMap.addMarker(new MarkerOptions().position(im.latLng));
+                }
+                CameraPosition camPos = new CameraPosition.Builder()
+                        .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
+                        .zoom(0) // Sets the zoom
+                        .bearing(0) // Rotate the camera
+                        .tilt(0) // Set the camera tilt
+                        .build(); // Creates a CameraPosition from the builder
+                mapboxMap.animateCamera(CameraUpdateFactory
+                        .newCameraPosition(camPos), 2000);
+
+            }
+        });
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_gallery_map, container, false);
+        return fragmentView;
 
     }
 

@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity
     public static User active_user;
     private static final int LOGGED = 1;
     public static final String USERID = "USERID";
-    private String userID;
+    public static String userID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
