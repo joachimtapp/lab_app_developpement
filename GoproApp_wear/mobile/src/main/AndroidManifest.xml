@@ -41,11 +41,6 @@
             android:label="@string/title_activity_gallery"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".LiveStreamActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_live_stream"
-            android:theme="@style/FullscreenTheme" />
-        <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
         <!--
@@ -63,7 +58,11 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
-        <activity android:name=".RegisterActivity"></activity>
+        <activity android:name=".RegisterActivity" />
+        <activity
+            android:name=".LiveStreamActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

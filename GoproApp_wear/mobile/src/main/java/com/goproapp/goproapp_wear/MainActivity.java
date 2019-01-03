@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        DrawerHandler dh = new DrawerHandler();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
 

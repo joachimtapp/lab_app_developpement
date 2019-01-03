@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="val_res">
+        <item>480p</item>
+        <item>720p</item>
+        <item>1080p</item>
+        <item>2.7K</item>
+        <item>4K</item>
+    </string-array>
+
+    <string-array name="val_FPS">
+        <item>30FPS</item>
+        <item>60FPS</item>
+        <item>240FPS</item>
+    </string-array>
+
+    <string-array name="val_FOV">
+        <item>Narrow</item>
+        <item>Medium</item>
+        <item>Wide</item>
+        <item>Ultra Wide</item>
+    </string-array>
+
+
+</resources>
