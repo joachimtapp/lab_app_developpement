@@ -1,6 +1,8 @@
 package com.goproapp.goproapp_wear;
 
+import android.animation.ObjectAnimator;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -10,20 +12,27 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 public class LiveStreamActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
+    private ImageButton mMenuDeployer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,10 +86,50 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FOV.setAdapter(adapter_FOV);
         spinner_FPS.setAdapter(adapter_FPS);
 
+
+        //Rotate button on the side of menu each time it is pressed and slide in and out the menu
+        mMenuDeployer = findViewById(R.id.menuDeployer);
+        mMenuDeployer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View view = findViewById(R.id.side_menu);
+                ObjectAnimator animation_menu;
+                ObjectAnimator animation_button;
+                float deg;
+                float px;
+                float dip = 200f;
+                Resources r = getResources();
+
+                if(mMenuDeployer.getRotation() == 180F) {
+                    deg = 0F;
+                    px = 0;
+                } else {
+                    deg = 180F;
+                    px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,dip,r.getDisplayMetrics());
+                }
+
+                //mMenuDeployer.animate().rotation(deg).setInterpolator(new AccelerateDecelerateInterpolator());
+
+                animation_button = ObjectAnimator.ofFloat(mMenuDeployer, "rotation", deg);
+                animation_menu = ObjectAnimator.ofFloat(view, "translationX", px);
+
+                animation_menu.setDuration(700);
+                animation_button.setDuration(700);
+
+                animation_button.setInterpolator(new AccelerateDecelerateInterpolator());
+                animation_menu.setInterpolator(new AccelerateDecelerateInterpolator());
+
+                animation_menu.start();
+                animation_button.start();
+            }
+        });
+
+
         spinner_res.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(LiveStreamActivity.this, "New resolution selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //TODO : Update other spinners according to new resolution and send new parameter to GoPro
             }
 
             @Override
@@ -93,6 +142,7 @@ public class LiveStreamActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(LiveStreamActivity.this, "New FOV selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //TODO : Update other spinners according to new FOV and send new parameters to GoPro
             }
 
             @Override
@@ -105,10 +155,33 @@ public class LiveStreamActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(LiveStreamActivity.this, "New FPS rate selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //TODO : Send data to GoPro.
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        SeekBar EV_bar = findViewById(R.id.EV_bar);
+        TextView EV_text = findViewById(R.id.EV_val);
+
+        EV_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                EV_text.setText("EV : " + (progress - 4.)/2);
+                //TODO : Send new parameter to GoPro
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
 
             }
         });
@@ -142,9 +215,6 @@ public class LiveStreamActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
-            case R.id.action_settings:
-                //setting button action
-                return true;
         }
 
 
