@@ -234,9 +234,9 @@ public class LiveStreamActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(this, R.layout.spinner_item, FOV_spinner);
         ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(this,  R.layout.spinner_item, FPS_spinner);
 
-        adapter_res.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adapter_FOV.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adapter_FPS.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapter_res.setDropDownViewResource(R.layout.spinner_dropdown);
+        adapter_FOV.setDropDownViewResource(R.layout.spinner_dropdown);
+        adapter_FPS.setDropDownViewResource(R.layout.spinner_dropdown);
 
         spinner_res.setAdapter(adapter_res);
         spinner_FOV.setAdapter(adapter_FOV);
@@ -251,15 +251,15 @@ public class LiveStreamActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(LiveStreamActivity.this, "New resolution selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
-                //TODO : Update other spinners according to new resolution and send new parameter to GoPro
+                //TODO : send new parameter to GoPro
                 FOV_spinner = goProCombinations.getFov(spinner_res.getSelectedItem().toString());
                 FPS_spinner = goProCombinations.getFPS(spinner_res.getSelectedItem().toString());
 
                 ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(parent.getContext(), R.layout.spinner_item, FOV_spinner);
                 ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(parent.getContext(),  R.layout.spinner_item, FPS_spinner);
 
-                adapter_FOV.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                adapter_FPS.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                adapter_FOV.setDropDownViewResource(R.layout.spinner_dropdown);
+                adapter_FPS.setDropDownViewResource(R.layout.spinner_dropdown);
 
                 spinner_FOV.setAdapter(adapter_FOV);
                 spinner_FPS.setAdapter(adapter_FPS);
