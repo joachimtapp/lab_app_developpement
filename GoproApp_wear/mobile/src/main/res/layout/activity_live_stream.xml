@@ -2,17 +2,17 @@
 <!-- Use DrawerLayout as root container for activity -->
 <android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true" >
+    android:fitsSystemWindows="true">
 
     <!-- Put Full screen content here -->
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- Background image for stream -->
         <ImageView
             android:id="@+id/imageView2"
             android:layout_width="match_parent"
@@ -21,24 +21,125 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@color/colorAccent" />
 
+        <!-- Mode menu -->
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="27dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
-            <include
-                layout="@layout/quick_menu_live"
-                android:id="@+id/side_menu"
-                android:layout_width="250dp"
-                android:layout_height="wrap_content" />
+
+
+            <View
+                android:id="@+id/selectedMode"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_margin="8dp"
+                android:background="@color/selected"/>
+
+            <LinearLayout
+                android:id="@+id/modeMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/modePhoto"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_margin="11dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    app:srcCompat="@drawable/ic_info_black_24dp" />
+
+                <ImageButton
+                    android:id="@+id/modeVideo"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_margin="11dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    app:srcCompat="@drawable/ic_info_black_24dp" />
+
+                <ImageButton
+                    android:id="@+id/modeBurst"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_margin="11dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    app:srcCompat="@drawable/ic_info_black_24dp" />
+
+                <ImageButton
+                    android:id="@+id/modePosition"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_margin="11dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    app:srcCompat="@drawable/ic_info_black_24dp" />
+            </LinearLayout>
         </RelativeLayout>
 
+
+        <!-- Right side menu -->
+        <LinearLayout
+            android:id="@+id/side_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="27dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/menuDeployer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@android:drawable/ic_media_play"
+                android:background="@android:color/transparent"/>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <include
+                    android:id="@+id/menu_photo"
+                    layout="@layout/side_menu_photo"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/menu_video"
+                    layout="@layout/side_menu_video"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/menu_burst"
+                    layout="@layout/side_menu_burst"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/menu_position"
+                    layout="@layout/side_menu_position"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content" />
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <!-- Bottom center menu -->
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:id="@+id/EV_view">
 
             <TextView
                 android:id="@+id/EV_val"
