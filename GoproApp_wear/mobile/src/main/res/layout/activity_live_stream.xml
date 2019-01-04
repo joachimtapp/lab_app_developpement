@@ -106,30 +106,30 @@
                 android:background="@android:color/transparent"/>
 
             <RelativeLayout
-                android:layout_width="wrap_content"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content">
                 <include
                     android:id="@+id/menu_photo"
                     layout="@layout/side_menu_photo"
-                    android:layout_width="200dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
                 <include
                     android:id="@+id/menu_video"
                     layout="@layout/side_menu_video"
-                    android:layout_width="200dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
                 <include
                     android:id="@+id/menu_burst"
                     layout="@layout/side_menu_burst"
-                    android:layout_width="200dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
                 <include
                     android:id="@+id/menu_position"
                     layout="@layout/side_menu_position"
-                    android:layout_width="200dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </RelativeLayout>
 

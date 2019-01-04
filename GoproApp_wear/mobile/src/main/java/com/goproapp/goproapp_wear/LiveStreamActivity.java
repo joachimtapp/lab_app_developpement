@@ -20,7 +20,6 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -28,8 +27,11 @@ public class LiveStreamActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private ImageButton mMenuDeployer;
-    private static boolean upDown = true;
+    private static boolean down_EV = true;
     private ArrayList<View> menus = new ArrayList<>();
+    private GoProCombinations goProCombinations;
+    private ArrayList<String> FPS_spinner;
+    private ArrayList<String> FOV_spinner;
 
     private static final int MENU_PHOTO = 0;
     private static final int MENU_VIDEO = 1;
@@ -40,6 +42,8 @@ public class LiveStreamActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_stream);
+
+        goProCombinations = new GoProCombinations(getResources().getStringArray(R.array.val_FPS), getResources().getStringArray(R.array.val_FOV));
 
         // Setup drawer and drawer button on the left
         setupDrawer();
@@ -146,12 +150,12 @@ public class LiveStreamActivity extends AppCompatActivity {
 
                 View view = findViewById(R.id.EV_view);
                 ObjectAnimator animator;
-                if(upDown){
+                if(down_EV){
                     animator = ObjectAnimator.ofFloat(view, "translationY", 60);
                 } else {
                     animator = ObjectAnimator.ofFloat(view, "translationY", 0);
                 }
-                upDown = !upDown;
+                down_EV = !down_EV;
                 animator.setDuration(700);
                 animator.setInterpolator(new AccelerateDecelerateInterpolator());
                 animator.start();
@@ -216,14 +220,19 @@ public class LiveStreamActivity extends AppCompatActivity {
     }
 
     private void setupSpinner(){
+
         // Add items to spinner of menu
         Spinner spinner_res = findViewById(R.id.spinner_res);
         Spinner spinner_FOV = findViewById(R.id.spinner_FOV);
         Spinner spinner_FPS = findViewById(R.id.spinner_FPS);
 
         ArrayAdapter<CharSequence> adapter_res = ArrayAdapter.createFromResource(this, R.array.val_res, R.layout.spinner_item);
-        ArrayAdapter<CharSequence> adapter_FOV = ArrayAdapter.createFromResource(this, R.array.val_FOV, R.layout.spinner_item);
-        ArrayAdapter<CharSequence> adapter_FPS = ArrayAdapter.createFromResource(this, R.array.val_FPS, R.layout.spinner_item);
+
+        FOV_spinner = goProCombinations.getFov("1080p");
+        FPS_spinner = goProCombinations.getFPS("1080p");
+
+        ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(this, R.layout.spinner_item, FOV_spinner);
+        ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(this,  R.layout.spinner_item, FPS_spinner);
 
         adapter_res.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         adapter_FOV.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -233,11 +242,27 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FOV.setAdapter(adapter_FOV);
         spinner_FPS.setAdapter(adapter_FPS);
 
+        // Set initial state
+        spinner_res.setSelection(4);
+        spinner_FPS.setSelection(5);
+        spinner_FOV.setSelection(2);
+
         spinner_res.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(LiveStreamActivity.this, "New resolution selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LiveStreamActivity.this, "New resolution selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
                 //TODO : Update other spinners according to new resolution and send new parameter to GoPro
+                FOV_spinner = goProCombinations.getFov(spinner_res.getSelectedItem().toString());
+                FPS_spinner = goProCombinations.getFPS(spinner_res.getSelectedItem().toString());
+
+                ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(parent.getContext(), R.layout.spinner_item, FOV_spinner);
+                ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(parent.getContext(),  R.layout.spinner_item, FPS_spinner);
+
+                adapter_FOV.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                adapter_FPS.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+                spinner_FOV.setAdapter(adapter_FOV);
+                spinner_FPS.setAdapter(adapter_FPS);
             }
 
             @Override
@@ -249,8 +274,8 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FOV.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(LiveStreamActivity.this, "New FOV selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
-                //TODO : Update other spinners according to new FOV and send new parameters to GoPro
+                //Toast.makeText(LiveStreamActivity.this, "New FOV selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //TODO : send new parameters to GoPro
             }
 
             @Override
@@ -262,7 +287,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FPS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(LiveStreamActivity.this, "New FPS rate selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LiveStreamActivity.this, "New FPS rate selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
                 //TODO : Send data to GoPro.
             }
 

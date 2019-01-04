@@ -1,23 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="val_res">
-        <item>480p</item>
+        <item>WVGA</item>
         <item>720p</item>
+        <item>720p S</item>
+        <item>960p</item>
         <item>1080p</item>
+        <item>1080p S</item>
+        <item>1440p</item>
         <item>2.7K</item>
+        <item>2.7K S</item>
+        <item>2.7K 4:3</item>
         <item>4K</item>
+        <item>4K S</item>
     </string-array>
 
     <string-array name="val_FPS">
-        <item>30FPS</item>
-        <item>60FPS</item>
-        <item>240FPS</item>
+        <item>24 FPS</item>
+        <item>25 FPS</item>
+        <item>30 FPS</item>
+        <item>48 FPS</item>
+        <item>50 FPS</item>
+        <item>60 FPS</item>
+        <item>80 FPS</item>
+        <item>90 FPS</item>
+        <item>120 FPS</item>
+        <item>240 FPS</item>
     </string-array>
 
     <string-array name="val_FOV">
         <item>Narrow</item>
         <item>Medium</item>
-        <item>Wide</item>
         <item>Ultra Wide</item>
     </string-array>
 
