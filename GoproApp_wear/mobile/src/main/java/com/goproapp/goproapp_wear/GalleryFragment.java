@@ -4,22 +4,36 @@ import android.animation.ObjectAnimator;
 import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageException;
+import com.google.firebase.storage.StorageReference;
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.BaseMarkerViewOptions;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
@@ -44,15 +58,56 @@ public class GalleryFragment extends Fragment {
     private ImageAdapter adapter;
     private GridView gridView;
     private TextView dateView;
+    private TextView swipeHint;
     private TextView bpmView;
+    private LinearLayout linearLayoutInfo;
     private MapView mapView;
     private Marker marker;
+    private SwipeRefreshLayout mSwipeRefresh;
+
     public static MapboxMap mMapboxMap;
     private int nPrevSelGridItem = -1; //used highlight selected picture
     private View viewPrev;
 
     public GalleryFragment() {
         // Required empty public constructor
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        mapView.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mapView.onResume();
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+    @Override
+    public void onSaveInstanceState (final Bundle outState){
+        super.onSaveInstanceState(outState);
+        mapView.onSaveInstanceState(outState);
     }
 
     /**
@@ -71,19 +126,36 @@ public class GalleryFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mapbox.getInstance(getContext(), getString(R.string.accessToken));
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         fragmentView = inflater.inflate(R.layout.fragment_gallery, container, false);
         gridView = fragmentView.findViewById(R.id.galleryThumbnails);
         dateView = fragmentView.findViewById(R.id.galleryDateValue);
         bpmView = fragmentView.findViewById(R.id.bpmValue);
+        swipeHint = fragmentView.findViewById(R.id.swipeHint);
         mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
-        adapter = new ImageAdapter(getContext());
-        gridView.setAdapter(adapter);
+        linearLayoutInfo= fragmentView.findViewById(R.id.linearLayoutInfo);
+
+        if(GalleryActivity.imgData.size()>0){
+            swipeHint.setAlpha(0.0f);
+            adapter = new ImageAdapter(getContext());
+            gridView.setAdapter(adapter);
+        }
+        mSwipeRefresh = fragmentView.findViewById(R.id.swiperefresh);
+        mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeHint.setAlpha(0.0f);
+                adapter = new ImageAdapter(getContext());
+                gridView.setAdapter(adapter);
+            }
+        });
+
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
@@ -97,6 +169,7 @@ public class GalleryFragment extends Fragment {
                         .build(); // Creates a CameraPosition from the builder
                 mMapboxMap.animateCamera(CameraUpdateFactory
                         .newCameraPosition(camPos), 2000);
+
             }
         });
 
@@ -111,7 +184,6 @@ public class GalleryFragment extends Fragment {
                     }
                     nPrevSelGridItem = position;
                     if (nPrevSelGridItem == position) {
-                        //View viewPrev = (View) gridview.getChildAt(nPrevSelGridItem);
                         v.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                     }
                 } catch (Exception e) {
@@ -119,7 +191,7 @@ public class GalleryFragment extends Fragment {
                 }
                 dateView.setText(GalleryActivity.imgData.get(position).date);
                 bpmView.setText(GalleryActivity.imgData.get(position).bpm);
-
+                linearLayoutInfo.setVisibility(viewPrev.VISIBLE);
                 //move marker
                 if (marker == null) {
                     CameraPosition camPos = new CameraPosition.Builder()
@@ -132,7 +204,6 @@ public class GalleryFragment extends Fragment {
                             .newCameraPosition(camPos), 2000);
                     marker = mMapboxMap.addMarker(new MarkerOptions().position(GalleryActivity.imgData.get(position).latLng));
 
-                    Toast.makeText(getContext(), "first", Toast.LENGTH_SHORT).show();
                 } else {
                     marker.setPosition(GalleryActivity.imgData.get(position).latLng);
 
@@ -169,6 +240,7 @@ public class GalleryFragment extends Fragment {
                     + " must implement OnFragmentInteractionListener");
         }
     }
+
     @Override
     public void onDetach() {
         super.onDetach();
@@ -198,8 +270,7 @@ public class GalleryFragment extends Fragment {
         }
 
         public int getCount() {
-
-            return mThumbIds.length;
+            return GalleryActivity.imgData.size();
         }
 
         public Object getItem(int position) {
@@ -224,25 +295,25 @@ public class GalleryFragment extends Fragment {
                 imageView = (ImageView) convertView;
             }
 
-            imageView.setImageResource(mThumbIds[position]);
+            StorageReference mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(GalleryActivity.imgData.get(position).imgUrl);
+            mStorageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(
+                    new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap newImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            imageView.setImageBitmap(newImg);
+                            GalleryActivity.imgData.get(position).img = newImg;
+                            mSwipeRefresh.setRefreshing(false);
+                        }
+                    });
+
+//            imageView.setImageResource(mThumbIds[position]);
+//            TODO
+//            if(GalleryActivity.imgBitmap!=null) {
+//                imageView.setImageBitmap(GalleryActivity.imgBitmap.get(0));
+//            }
             return imageView;
         }
-
-        // references to our images
-        private Integer[] mThumbIds = {
-                R.drawable.sample_2, R.drawable.sample_3,
-                R.drawable.sample_4,
-//                R.drawable.sample_5,
-//                R.drawable.sample_6, R.drawable.sample_7,
-//                R.drawable.sample_0, R.drawable.sample_1,
-//                R.drawable.sample_2, R.drawable.sample_3,
-//                R.drawable.sample_4, R.drawable.sample_5,
-//                R.drawable.sample_6, R.drawable.sample_7,
-//                R.drawable.sample_0, R.drawable.sample_1,
-//                R.drawable.sample_2, R.drawable.sample_3,
-//                R.drawable.sample_4, R.drawable.sample_5,
-//                R.drawable.sample_6, R.drawable.sample_7
-        };
 
     }
 

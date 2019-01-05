@@ -1,20 +1,35 @@
 package com.goproapp.goproapp_wear;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.BaseMarkerViewOptions;
+import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.MarkerView;
+import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Projection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -28,8 +43,12 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 public class GalleryMapFragment extends Fragment {
 
     private MapView mapView;
+    private ImageView galleryMapImg;
 
     private OnFragmentInteractionListener mListener;
+    private MapView.OnCameraDidChangeListener mCameraListener;
+
+    private List<MarkerViewOptions> markerViews = new ArrayList<MarkerViewOptions>();
 
     public GalleryMapFragment() {
         // Required empty public constructor
@@ -39,8 +58,6 @@ public class GalleryMapFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     *
-     *
      * @return A new instance of fragment GalleryMapFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -49,56 +66,75 @@ public class GalleryMapFragment extends Fragment {
 
         return fragment;
     }
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        mapView.onStart();
-//    }
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        mapView.onResume();
-//    }
-//    @Override
-//    public void onPause() {
-//        super.onPause();
-//        mapView.onPause();
-//    }
-//    @Override
-//    public void onLowMemory() {
-//        super.onLowMemory();
-//        mapView.onLowMemory();
-//    }
-//    @Override
-//    public void onDestroy() {
-//        super.onDestroy();
-//        mapView.onDestroy();
-//    }
-//    @Override
-//    public void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        mapView.onSaveInstanceState(outState);
-//    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        mapView.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mapView.onResume();
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+    @Override
+    public void onSaveInstanceState (final Bundle outState){
+        super.onSaveInstanceState(outState);
+        mapView.onSaveInstanceState(outState);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Mapbox.getInstance(getContext(), getString(R.string.accessToken));
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View fragmentView=inflater.inflate(R.layout.fragment_gallery_map, container, false);
+        View fragmentView = inflater.inflate(R.layout.fragment_gallery_map, container, false);
         mapView = (MapView) fragmentView.findViewById(R.id.galleryMapView);
+        galleryMapImg = fragmentView.findViewById(R.id.galleryMapImg);
+
+        mCameraListener = new MapView.OnCameraDidChangeListener() {
+            @Override
+            public void onCameraDidChange(boolean animated) {
+                galleryMapImg.setAlpha(0.0f);
+                mapView.removeOnCameraDidChangeListener(mCameraListener);
+            }
+        };
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
-
-                for(ImgData im :GalleryActivity.imgData) {
-
-
-                    mapboxMap.addMarker(new MarkerOptions().position(im.latLng));
+                int cnt = 0;
+                for (ImgData im : GalleryActivity.imgData) {
+                    MarkerViewOptions opt = new MarkerViewOptions().position(im.latLng).title(String.valueOf(cnt));
+                    markerViews.add(opt);
+                    cnt++;
                 }
+                mapboxMap.addMarkerViews(markerViews);
+
                 CameraPosition camPos = new CameraPosition.Builder()
                         .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
                         .zoom(0) // Sets the zoom
@@ -107,6 +143,19 @@ public class GalleryMapFragment extends Fragment {
                         .build(); // Creates a CameraPosition from the builder
                 mapboxMap.animateCamera(CameraUpdateFactory
                         .newCameraPosition(camPos), 2000);
+                mapboxMap.getMarkerViewManager().setOnMarkerViewClickListener(new MapboxMap.OnMarkerViewClickListener() {
+                    @Override
+                    public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
+                        galleryMapImg.setImageBitmap(GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).img);
+                        Projection mapProjection = mapboxMap.getProjection();
+                        PointF screenPosition = mapProjection.toScreenLocation(marker.getPosition());
+                        galleryMapImg.setX(screenPosition.x);
+                        galleryMapImg.setY(screenPosition.y);
+                        galleryMapImg.setAlpha(1.0f);
+                        mapView.addOnCameraDidChangeListener(mCameraListener);
+                        return true;
+                    }
+                });
 
             }
         });

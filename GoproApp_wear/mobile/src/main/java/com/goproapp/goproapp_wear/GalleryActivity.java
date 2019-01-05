@@ -2,6 +2,9 @@ package com.goproapp.goproapp_wear;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -28,14 +31,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
@@ -64,10 +71,50 @@ public class GalleryActivity extends AppCompatActivity
     private MyFirebaseRecordingListener mFirebaseRecordingListener;
     private DatabaseReference databaseRef;
 
+
+    //    @Override
+//    public void onStart() {
+//        super.onStart();
+//        mapView.onStart();
+//    }
+//
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        mapView.onStop();
+//    }
+//
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        mapView.onResume();
+//    }
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        mapView.onPause();
+//    }
+//    @Override
+//    public void onLowMemory() {
+//        super.onLowMemory();
+//        mapView.onLowMemory();
+//    }
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        mapView.onDestroy();
+//    }
+//    @Override
+//    public void onSaveInstanceState (final Bundle outState){
+//        super.onSaveInstanceState(outState);
+//        mapView.onSaveInstanceState(outState);
+//    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Mapbox.getInstance(this, "pk.eyJ1IjoiZ29wcm9hcHAiLCJhIjoiY2pwamxsZjJtMDd4dzNxcHF5OTh6Y2wzeCJ9.4pbFJ5Iqk1a2PIiEPyhzPg");
+
+//     Mapbox.getInstance(this, getString(R.string.accessToken));
         setContentView(R.layout.activity_gallery);
         //handle drawer
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -113,6 +160,7 @@ public class GalleryActivity extends AppCompatActivity
 
         dh.setUserDrawer(navigationView);
 
+
     }
 
     @Override
@@ -138,8 +186,13 @@ public class GalleryActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
-
-    //read Database
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Intent intent;
+        intent = new Intent(GalleryActivity.this, GalleryActivity.class);
+        GalleryActivity.this.startActivity(intent);
+    }
     @Override
     public void onResume() {
         super.onResume();
@@ -192,12 +245,14 @@ public class GalleryActivity extends AppCompatActivity
     private class MyFirebaseRecordingListener implements ValueEventListener {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
+            if(imgData.size()==0)
             for (final DataSnapshot rec : dataSnapshot.getChildren()) {
+
                 final ImgData newImgData = new ImgData();
                 String db_date = rec.child("date").getValue().toString();
                 String db_HR = rec.child("heart_rate").getValue().toString();
                 String db_position = rec.child("position").getValue().toString();
-
+                String db_imUrl = rec.child("picture").getValue().toString();
                 ImgData newData = new ImgData();
                 newData.date = db_date;
                 newData.bpm = db_HR;
@@ -205,6 +260,7 @@ public class GalleryActivity extends AppCompatActivity
                 double latitude = Double.parseDouble(latLng[0]);
                 double longitude = Double.parseDouble(latLng[1]);
                 newData.latLng = new LatLng(latitude, longitude);
+                newData.imgUrl = db_imUrl;
                 imgData.add(newData);
             }
         }
