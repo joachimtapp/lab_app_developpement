@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="val_res">
+    <string-array name="val_res_video">
         <item>WVGA</item>
         <item>720p</item>
         <item>720p S</item>
@@ -34,5 +34,10 @@
         <item>Ultra Wide</item>
     </string-array>
 
+    <string-array name="val_res_photo">
+        <item>2MPX</item>
+        <item>5MPX</item>
+        <item>12MPX</item>
+    </string-array>
 
 </resources>
