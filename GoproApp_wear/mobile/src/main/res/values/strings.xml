@@ -12,18 +12,16 @@
     <string name="prompt_password">Password </string>
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_invalid_email">Email address invalid</string>
+    <string name="error_invalid_password">Password require at least 6 characters</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
     <string name="title_activity_gallery">GalleryActivity</string>
-    <string name="section_format">Hello World from section: %1$d</string>
     <string name="tab_text_1">Gallery</string>
     <string name="tab_text_2">Gallery on Map</string>
-    <string name="tab_text_3">Tab 3</string>
 
     <string name="title_activity_live_stream">LiveStreamActivity</string>
     <string name="dummy_button">Dummy Button</string>
@@ -103,6 +101,8 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="title_activity_maps">Map</string>
     <string name="action_register">Register</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
     <string name="accessToken">pk.eyJ1IjoiZ29wcm9hcHAiLCJhIjoiY2pwamxsZjJtMDd4dzNxcHF5OTh6Y2wzeCJ9.4pbFJ5Iqk1a2PIiEPyhzPg</string>
+    <string name="galleryEmpty">Your gallery is empty</string>
+    <string name="loginFail">Log in failed</string>
 </resources>

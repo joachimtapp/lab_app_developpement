@@ -72,6 +72,7 @@ public class GalleryFragment extends Fragment {
     public GalleryFragment() {
         // Required empty public constructor
     }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -89,23 +90,27 @@ public class GalleryFragment extends Fragment {
         super.onResume();
         mapView.onResume();
     }
+
     @Override
     public void onPause() {
         super.onPause();
         mapView.onPause();
     }
+
     @Override
     public void onLowMemory() {
         super.onLowMemory();
         mapView.onLowMemory();
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
     }
+
     @Override
-    public void onSaveInstanceState (final Bundle outState){
+    public void onSaveInstanceState(final Bundle outState) {
         super.onSaveInstanceState(outState);
         mapView.onSaveInstanceState(outState);
     }
@@ -139,9 +144,9 @@ public class GalleryFragment extends Fragment {
         bpmView = fragmentView.findViewById(R.id.bpmValue);
         swipeHint = fragmentView.findViewById(R.id.swipeHint);
         mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
-        linearLayoutInfo= fragmentView.findViewById(R.id.linearLayoutInfo);
+        linearLayoutInfo = fragmentView.findViewById(R.id.linearLayoutInfo);
 
-        if(GalleryActivity.imgData.size()>0){
+        if (GalleryActivity.imgData.size() > 0) {//consider the case of already downloaded images
             swipeHint.setAlpha(0.0f);
             adapter = new ImageAdapter(getContext());
             gridView.setAdapter(adapter);
@@ -150,9 +155,15 @@ public class GalleryFragment extends Fragment {
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                swipeHint.setAlpha(0.0f);
-                adapter = new ImageAdapter(getContext());
-                gridView.setAdapter(adapter);
+                if(GalleryActivity.imgData.size()>0) {//check if you have images or not
+                    swipeHint.setAlpha(0.0f);
+                    adapter = new ImageAdapter(getContext());
+                    gridView.setAdapter(adapter);
+                }
+                else {
+                    swipeHint.setText(getString(R.string.galleryEmpty));
+                    mSwipeRefresh.setRefreshing(false);
+                }
             }
         });
 
@@ -160,15 +171,16 @@ public class GalleryFragment extends Fragment {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 mMapboxMap = mapboxMap;
-
-                CameraPosition camPos = new CameraPosition.Builder()
-                        .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
-                        .zoom(0) // Sets the zoom
-                        .bearing(0) // Rotate the camera
-                        .tilt(0) // Set the camera tilt
-                        .build(); // Creates a CameraPosition from the builder
-                mMapboxMap.animateCamera(CameraUpdateFactory
-                        .newCameraPosition(camPos), 2000);
+                if (GalleryActivity.imgData.size() > 0) {
+                    CameraPosition camPos = new CameraPosition.Builder()
+                            .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
+                            .zoom(0) // Sets the zoom
+                            .bearing(0) // Rotate the camera
+                            .tilt(0) // Set the camera tilt
+                            .build(); // Creates a CameraPosition from the builder
+                    mMapboxMap.animateCamera(CameraUpdateFactory
+                            .newCameraPosition(camPos), 2000);
+                }
 
             }
         });

@@ -38,20 +38,17 @@ public class RegisterActivity extends AppCompatActivity {
     private View mLoginFormView;
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
-    private LoginActivity.UserLoginTask mAuthTask = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-
         mEmailView = findViewById(R.id.reg_mail);
         firstnameView = findViewById(R.id.reg_f_name);
         lastnameView = findViewById(R.id.reg_l_name);
         mLoginFormView = findViewById(R.id.reg_login_form);
         mProgressView = findViewById(R.id.reg_login_progress);
-
         mPasswordView = (EditText) findViewById(R.id.reg_password);
 
         mEmailView.setText(getIntent().getStringExtra("email"));
@@ -63,7 +60,6 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-
                     return true;
                 }
                 return false;
@@ -73,23 +69,17 @@ public class RegisterActivity extends AppCompatActivity {
         mEmailRegisterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 attemptRegister();
             }
         });
     }
 
-
     private void writeNewUser(String userId, String first_name, String last_name, String email) {
-        User user = new User(first_name,last_name, email);
+        User user = new User(first_name, last_name, email);
         mDatabase.child("users").child(userId).setValue(user);
     }
 
     private void attemptRegister() {
-        if (mAuthTask != null) {
-            return;
-        }
-
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -97,8 +87,8 @@ public class RegisterActivity extends AppCompatActivity {
         lastnameView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        final String email = mEmailView.getText().toString();
+        final String password = mPasswordView.getText().toString();
         final String first_name = firstnameView.getText().toString();
         final String last_name = lastnameView.getText().toString();
 
@@ -114,11 +104,13 @@ public class RegisterActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(first_name)) {
             firstnameView.setError(getString(R.string.error_field_required));
             focusView = firstnameView;
-            cancel = true;}
+            cancel = true;
+        }
         if (TextUtils.isEmpty(last_name)) {
             lastnameView.setError(getString(R.string.error_field_required));
             focusView = lastnameView;
-            cancel = true;}
+            cancel = true;
+        }
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
@@ -145,16 +137,16 @@ public class RegisterActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
-                                LoginActivity.active_user=new User();
+                                LoginActivity.active_user = new User();
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                writeNewUser(user.getUid(), first_name,last_name, user.getEmail());
+                                writeNewUser(user.getUid(), first_name, last_name, user.getEmail());
                                 updateUI(user);
 
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Toast.makeText(RegisterActivity.this, "Authentication failed.",
                                         Toast.LENGTH_SHORT).show();
-                                updateUI(null);
+                                showProgress(false);
                             }
                         }
                     });
@@ -162,49 +154,36 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-//        return email.contains("@");
-        return true;
+        return email.contains("@")&&email.contains(".");
     }
 
-
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() >= 6;
     }
 
     private void updateUI(FirebaseUser user) {
-        if (user != null) {
-
-            LoginActivity.userID=user.getUid();
-            readUserProfile(LoginActivity.userID);
-        } else {
-            Intent intent;
-            intent = new Intent(RegisterActivity.this, RegisterActivity.class);
-
-            RegisterActivity.this.startActivity(intent);
-        }
+        LoginActivity.userID = user.getUid();
+        readUserProfile(LoginActivity.userID);
     }
 
     private void readUserProfile(String userID) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference profileRef = database.getReference("users");
-        profileRef.child(LoginActivity.userID).addValueEventListener(new ValueEventListener() {
+        profileRef.child(userID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String first_name_db = dataSnapshot.child("first_name").getValue(String.class);
                 String last_name_db = dataSnapshot.child("last_name").getValue(String.class);
                 String email_db = dataSnapshot.child("email").getValue(String.class);
-                LoginActivity.active_user.first_name=first_name_db;
-                LoginActivity.active_user.last_name=last_name_db;
-                LoginActivity.active_user.email=email_db;
+                LoginActivity.active_user.first_name = first_name_db;
+                LoginActivity.active_user.last_name = last_name_db;
+                LoginActivity.active_user.email = email_db;
                 Intent intent;
                 intent = new Intent(RegisterActivity.this, MainActivity.class);
                 RegisterActivity.this.startActivity(intent);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-// Empty
             }
         });
 

@@ -58,11 +58,6 @@ import java.util.List;
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
 
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
-
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
@@ -76,10 +71,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-
-//        updateUI(currentUser);
     }
 
     @Override
@@ -88,57 +79,54 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mEmailView = findViewById(R.id.email);
 
-
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView = findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-
                     return true;
                 }
                 return false;
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.sign_in_button);
+        Button mEmailSignInButton = findViewById(R.id.sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
             }
         });
-        Button mEmailRegisterButton = (Button) findViewById(R.id.register_button);
+        Button mEmailRegisterButton = findViewById(R.id.register_button);
         mEmailRegisterButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent;
                 intent = new Intent(LoginActivity.this, RegisterActivity.class);
 
-                intent.putExtra("email",mEmailView.getText().toString());
-                intent.putExtra("password",mPasswordView.getText().toString());
+                intent.putExtra("email", mEmailView.getText().toString());
+                intent.putExtra("password", mPasswordView.getText().toString());
 
                 LoginActivity.this.startActivity(intent);
             }
         });
-
-
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         //firebase auth
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
+
     private void attemptLogin() {
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
         View focusView = null;
-        boolean cancel= false;
+        boolean cancel = false;
         // Check for a valid password, if the user entered one.
         if (TextUtils.isEmpty(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
+            mPasswordView.setError(getString(R.string.error_field_required));
             focusView = mPasswordView;
             cancel = true;
         }
@@ -146,6 +134,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
+            focusView = mEmailView;
+            cancel = true;
+        }
+        else if(!isEmailValid(email)){
+            mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
         }
@@ -161,13 +154,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
-
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                active_user=new User();
+                                active_user = new User();
                                 updateUI(user);
                             } else {
-                                Toast.makeText(LoginActivity.this, "Log in failed like all you try in life.",
+                                Toast.makeText(LoginActivity.this, getString(R.string.loginFail),
                                         Toast.LENGTH_SHORT).show();
+                                showProgress(false);
                             }
                         }
                     });
@@ -175,16 +168,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private void updateUI(FirebaseUser user) {
-        if( user != null ) {
-            userID=user.getUid();
+            userID = user.getUid();
+            GalleryActivity.imgData.clear();//clear previous user images
             readUserProfile(userID);
-        }
-        else{
-            Intent intent;
-            intent = new Intent(LoginActivity.this, LoginActivity.class);
-            LoginActivity.this.startActivity(intent);
-        }
     }
+
     private void readUserProfile(String userId) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference profileRef = database.getReference("users");
@@ -194,20 +182,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 String first_name_db = dataSnapshot.child("first_name").getValue(String.class);
                 String last_name_db = dataSnapshot.child("last_name").getValue(String.class);
                 String email_db = dataSnapshot.child("email").getValue(String.class);
-                active_user.first_name=first_name_db;
-                active_user.last_name=last_name_db;
-                active_user.email=email_db;
+                active_user.first_name = first_name_db;
+                active_user.last_name = last_name_db;
+                active_user.email = email_db;
                 Intent intent;
                 intent = new Intent(LoginActivity.this, MainActivity.class);
                 LoginActivity.this.startActivity(intent);
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-// Empty
             }
         });
 
     }
+
     /**
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
@@ -215,15 +204,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-//        return email.contains("@");
-        return true;
-    }
-
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() >= 6;
+        return email.contains("@");
     }
 
     /**
@@ -293,7 +274,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
     }
 
     private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
@@ -311,59 +291,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 ContactsContract.CommonDataKinds.Email.ADDRESS,
                 ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
         };
-
         int ADDRESS = 0;
         int IS_PRIMARY = 1;
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
-
-    }
 }
 
