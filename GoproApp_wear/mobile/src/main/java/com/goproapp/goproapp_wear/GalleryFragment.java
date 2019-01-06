@@ -1,40 +1,27 @@
 package com.goproapp.goproapp_wear;
 
-import android.animation.ObjectAnimator;
-import android.animation.TypeEvaluator;
-import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageException;
 import com.google.firebase.storage.StorageReference;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.BaseMarkerViewOptions;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -44,15 +31,9 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link GalleryFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link GalleryFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class GalleryFragment extends Fragment {
+
+    //declaration of view elements
     private OnFragmentInteractionListener mListener;
     private View fragmentView;
     private ImageAdapter adapter;
@@ -73,6 +54,7 @@ public class GalleryFragment extends Fragment {
         // Required empty public constructor
     }
 
+    //Mapbox required overrides
     @Override
     public void onStart() {
         super.onStart();
@@ -115,16 +97,8 @@ public class GalleryFragment extends Fragment {
         mapView.onSaveInstanceState(outState);
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment GalleryFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static GalleryFragment newInstance() {
         GalleryFragment fragment = new GalleryFragment();
-
         return fragment;
     }
 
@@ -133,7 +107,6 @@ public class GalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(getContext(), getString(R.string.accessToken));
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -155,12 +128,11 @@ public class GalleryFragment extends Fragment {
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if(GalleryActivity.imgData.size()>0) {//check if you have images or not
+                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
                     swipeHint.setAlpha(0.0f);
                     adapter = new ImageAdapter(getContext());
                     gridView.setAdapter(adapter);
-                }
-                else {
+                } else {
                     swipeHint.setText(getString(R.string.galleryEmpty));
                     mSwipeRefresh.setRefreshing(false);
                 }
@@ -172,8 +144,9 @@ public class GalleryFragment extends Fragment {
             public void onMapReady(MapboxMap mapboxMap) {
                 mMapboxMap = mapboxMap;
                 if (GalleryActivity.imgData.size() > 0) {
+                    //set initial map position
                     CameraPosition camPos = new CameraPosition.Builder()
-                            .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
+                            .target(new LatLng(48.769183, 21.661252))// Sets the new camera position
                             .zoom(0) // Sets the zoom
                             .bearing(0) // Rotate the camera
                             .tilt(0) // Set the camera tilt
@@ -185,10 +158,11 @@ public class GalleryFragment extends Fragment {
             }
         });
 
-
+        //handle image click
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
+                //highlight selected picture
                 try {
                     if (nPrevSelGridItem != -1) {
                         viewPrev = (View) gridView.getChildAt(nPrevSelGridItem);
@@ -204,7 +178,7 @@ public class GalleryFragment extends Fragment {
                 dateView.setText(GalleryActivity.imgData.get(position).date);
                 bpmView.setText(GalleryActivity.imgData.get(position).bpm);
                 linearLayoutInfo.setVisibility(viewPrev.VISIBLE);
-                //move marker
+                //move marker and create it if necessary
                 if (marker == null) {
                     CameraPosition camPos = new CameraPosition.Builder()
                             .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
@@ -234,14 +208,6 @@ public class GalleryFragment extends Fragment {
         return fragmentView;
     }
 
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -259,18 +225,8 @@ public class GalleryFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 
@@ -293,13 +249,12 @@ public class GalleryFragment extends Fragment {
             return 0;
         }
 
-        // create a new ImageView for each item referenced by the Adapter
+        //Download the images and create a new ImageView for each
         public View getView(int position, View convertView, ViewGroup parent) {
             ImageView imageView;
             if (convertView == null) {
                 // if it's not recycled, initialize some attributes
                 imageView = new ImageView(mContext);
-//                imageView.setLayoutParams(new ViewGroup.LayoutParams(85, 85));
                 imageView.setAdjustViewBounds(true);
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 imageView.setPadding(8, 8, 8, 8);
@@ -318,16 +273,7 @@ public class GalleryFragment extends Fragment {
                             mSwipeRefresh.setRefreshing(false);
                         }
                     });
-
-//            imageView.setImageResource(mThumbIds[position]);
-//            TODO
-//            if(GalleryActivity.imgBitmap!=null) {
-//                imageView.setImageBitmap(GalleryActivity.imgBitmap.get(0));
-//            }
             return imageView;
         }
-
     }
-
-
 }
