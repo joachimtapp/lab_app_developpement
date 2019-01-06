@@ -2,24 +2,19 @@ package com.goproapp.goproapp_wear;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Point;
+import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.BaseMarkerViewOptions;
 import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.annotations.MarkerView;
 import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -146,7 +141,9 @@ public class GalleryMapFragment extends Fragment {
                 mapboxMap.getMarkerViewManager().setOnMarkerViewClickListener(new MapboxMap.OnMarkerViewClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
-                        galleryMapImg.setImageBitmap(GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).img);
+                        Bitmap img = GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).img;
+                        Bitmap img_resize = resizeImage(img, 200);
+                        galleryMapImg.setImageBitmap(img_resize);
                         Projection mapProjection = mapboxMap.getProjection();
                         PointF screenPosition = mapProjection.toScreenLocation(marker.getPosition());
                         galleryMapImg.setX(screenPosition.x);
@@ -201,5 +198,37 @@ public class GalleryMapFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+
+    private Bitmap resizeImage(Bitmap bitmap, int newSize) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        // Image smaller, return it as is!
+        if (width <= newSize && height <= newSize) return bitmap;
+
+        int newWidth;
+        int newHeight;
+
+        if (width > height) {
+            newWidth = newSize;
+            newHeight = (newSize * height) / width;
+        } else if (width < height) {
+            newHeight = newSize;
+            newWidth = (newSize * width) / height;
+        } else {
+            newHeight = newSize;
+            newWidth = newSize;
+        }
+
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        return Bitmap.createBitmap(bitmap, 0, 0,
+                width, height, matrix, true);
     }
 }
