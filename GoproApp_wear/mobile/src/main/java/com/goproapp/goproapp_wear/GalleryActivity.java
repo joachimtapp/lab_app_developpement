@@ -139,11 +139,12 @@ public class GalleryActivity extends AppCompatActivity
                 });
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        //set drawer button
-//        setSupportActionBar(toolbar);
-//        ActionBar actionbar = getSupportActionBar();
-//        actionbar.setDisplayHomeAsUpEnabled(true);
-//        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        //set drawer button
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -160,15 +161,6 @@ public class GalleryActivity extends AppCompatActivity
         DrawerHandler dh = new DrawerHandler();
 
         dh.setUserDrawer(navigationView);
-
-
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_gallery, menu);
-        return true;
     }
 
     @Override
@@ -179,8 +171,6 @@ public class GalleryActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
-            case R.id.action_settings:
-                //setting button action
                 return true;
         }
 
