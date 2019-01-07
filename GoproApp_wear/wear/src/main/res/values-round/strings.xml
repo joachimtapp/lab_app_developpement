@@ -1,3 +1,4 @@
 <resources>
+    <string name="accessToken">pk.eyJ1IjoiZ29wcm9hcHAiLCJhIjoiY2pwamxsZjJtMDd4dzNxcHF5OTh6Y2wzeCJ9.4pbFJ5Iqk1a2PIiEPyhzPg</string>
     <string name="hello_world">Hello Round World!</string>
 </resources>

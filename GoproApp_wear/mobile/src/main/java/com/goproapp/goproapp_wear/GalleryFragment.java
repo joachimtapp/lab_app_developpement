@@ -225,26 +225,21 @@ public class GalleryFragment extends Fragment {
         mListener = null;
     }
 
-
     public interface OnFragmentInteractionListener {
         void onFragmentInteraction(Uri uri);
     }
 
     private class ImageAdapter extends BaseAdapter {
         private Context mContext;
-
         public ImageAdapter(Context c) {
             mContext = c;
         }
-
         public int getCount() {
             return GalleryActivity.imgData.size();
         }
-
         public Object getItem(int position) {
             return null;
         }
-
         public long getItemId(int position) {
             return 0;
         }
@@ -264,7 +259,7 @@ public class GalleryFragment extends Fragment {
 
             StorageReference mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(GalleryActivity.imgData.get(position).imgUrl);
             mStorageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(
-                    new OnSuccessListener<byte[]>() {
+                    new OnSuccessListener<byte[]>(){
                         @Override
                         public void onSuccess(byte[] bytes) {
                             Bitmap newImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
