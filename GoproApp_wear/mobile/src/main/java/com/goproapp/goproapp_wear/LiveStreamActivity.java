@@ -36,7 +36,6 @@ public class LiveStreamActivity extends AppCompatActivity {
     private Spinner spinner_FPS_video;
     private Spinner spinner_FOV_video;
 
-    private Spinner spinner_res_photo;
     private Spinner spinner_FOV_photo;
 
     private GoProCombinations goProCombinations;
@@ -44,15 +43,27 @@ public class LiveStreamActivity extends AppCompatActivity {
     private ArrayList<String> FOV_spinner_video;
     private Switch switchWB_video;
     private Switch switchISO_video;
+    private Switch switchProTune_video;
     private SeekBar seekBarWB_video;
     private SeekBar seekBarISO_video;
 
     private Switch switchWB_photo;
     private Switch switchISO_photo;
     private Switch switchShutter_photo;
+    private Switch switchProTune_photo;
     private SeekBar seekBarWB_photo;
-    private SeekBar seekBarISO_photo;
+    private SeekBar seekBarISO_min_photo;
+    private SeekBar seekBarISO_max_photo;
     private SeekBar seekBarShutter_photo;
+
+    private Spinner spinner_FOV_burst;
+    private Spinner spinner_rate_burst;
+    private Switch switchProTune_burst;
+    private Switch switchWB_burst;
+    private Switch switchISO_burst;
+    private SeekBar seekBarWB_burst;
+    private SeekBar seekBarISO_min_burst;
+    private SeekBar seekBarISO_max_burst;
 
     private static final int MENU_PHOTO = 0;
     private static final int MENU_VIDEO = 1;
@@ -240,6 +251,8 @@ public class LiveStreamActivity extends AppCompatActivity {
         videoMenuSetup();
 
         photoSetup();
+
+        burstSetup();
     }
 
 
@@ -307,17 +320,135 @@ public class LiveStreamActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void burstSetup(){
+        spinner_FOV_burst = findViewById(R.id.spinner_FOV_burst);
+        spinner_rate_burst = findViewById(R.id.spinner_rate_burst);
+        switchProTune_burst = findViewById(R.id.switchProTune_burst);
+        switchWB_burst = findViewById(R.id.switchWB_burst);
+        seekBarWB_burst = findViewById(R.id.seekBarWB_burst);
+        switchISO_burst = findViewById(R.id.switchISO_burst);
+        seekBarISO_max_burst = findViewById(R.id.seekBarISO_max_burst);
+        seekBarISO_min_burst = findViewById(R.id.seekBarISO_min_burst);
+
+        seekBarISO_min_burst.setEnabled(false);
+        seekBarISO_max_burst.setEnabled(false);
+        seekBarWB_burst.setEnabled(false);
+
+        ArrayAdapter<CharSequence> adapter_FOV = ArrayAdapter.createFromResource(getApplicationContext(), R.array.valFOV_burst, R.layout.spinner_item);
+        ArrayAdapter<CharSequence> adapter_rate = ArrayAdapter.createFromResource(getApplicationContext(), R.array.val_burst_rate, R.layout.spinner_item);
+
+        adapter_FOV.setDropDownViewResource(R.layout.spinner_dropdown);
+        adapter_rate.setDropDownViewResource(R.layout.spinner_dropdown);
+
+        spinner_FOV_burst.setAdapter(adapter_FOV);
+        spinner_rate_burst.setAdapter(adapter_rate);
+
+        setupCallbackBurst();
+
+    }
+
+    private void setupCallbackBurst(){
+
+        switchProTune_burst.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    switchISO_burst.setEnabled(true);
+                    if(switchISO_burst.isChecked()){
+                        seekBarISO_min_burst.setEnabled(false);
+                        seekBarISO_max_burst.setEnabled(false);
+                    } else {
+                        seekBarISO_min_burst.setEnabled(true);
+                        seekBarISO_max_burst.setEnabled(true);
+                    }
+                    switchWB_burst.setEnabled(true);
+                    if(switchWB_burst.isChecked()){
+                        seekBarWB_burst.setEnabled(false);
+                    } else {
+                        seekBarWB_burst.setEnabled(true);
+                    }
+                } else {
+                    switchISO_burst.setEnabled(false);
+                    seekBarISO_min_burst.setEnabled(false);
+                    seekBarISO_max_burst.setEnabled(false);
+                    switchWB_burst.setEnabled(false);
+                    seekBarWB_burst.setEnabled(false);
+                }
+            }
+        });
+
+        switchWB_burst.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    seekBarWB_burst.setEnabled(false);
+                } else {
+                    seekBarWB_burst.setEnabled(true);
+                }
+            }
+        });
+
+        switchISO_burst.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    seekBarISO_min_burst.setEnabled(false);
+                    seekBarISO_max_burst.setEnabled(false);
+                } else {
+                    seekBarISO_min_burst.setEnabled(true);
+                    seekBarISO_max_burst.setEnabled(true);
+                }
+            }
+        });
+
+        seekBarISO_min_burst.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(progress > seekBarISO_max_burst.getProgress()){
+                    seekBarISO_max_burst.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        seekBarISO_max_burst.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(progress < seekBarISO_min_burst.getProgress()){
+                    seekBarISO_min_burst.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
+    }
+
     private void photoSetup(){
-        spinner_res_photo = findViewById(R.id.spinner_res_photo);
         spinner_FOV_photo = findViewById(R.id.spinner_FOV_photo);
 
-        ArrayAdapter<CharSequence> adapter_res = ArrayAdapter.createFromResource(getApplicationContext(), R.array.val_res_photo, R.layout.spinner_item);
-        ArrayAdapter<CharSequence> adapter_FOV = ArrayAdapter.createFromResource(getApplicationContext(), R.array.val_FOV, R.layout.spinner_item);
+        ArrayAdapter<CharSequence> adapter_FOV = ArrayAdapter.createFromResource(getApplicationContext(), R.array.val_FOV_photo, R.layout.spinner_item);
 
-        adapter_res.setDropDownViewResource(R.layout.spinner_dropdown);
         adapter_FOV.setDropDownViewResource(R.layout.spinner_dropdown);
 
-        spinner_res_photo.setAdapter(adapter_res);
         spinner_FOV_photo.setAdapter(adapter_FOV);
 
         switchWB_photo = findViewById(R.id.switchWB_photo);
@@ -325,27 +456,55 @@ public class LiveStreamActivity extends AppCompatActivity {
         switchShutter_photo = findViewById(R.id.switchShutter_photo);
 
         seekBarWB_photo = findViewById(R.id.seekBarWB_photo);
-        seekBarISO_photo = findViewById(R.id.seekBarISO_photo);
+        seekBarISO_min_photo = findViewById(R.id.seekBarISO_min_burst);
+        seekBarISO_max_photo = findViewById(R.id.seekBarISO_max_photo);
         seekBarShutter_photo = findViewById(R.id.seekBarShutter_photo);
 
         seekBarWB_photo.setEnabled(false);
-        seekBarISO_photo.setEnabled(false);
+        seekBarISO_min_photo.setEnabled(false);
+        seekBarISO_max_photo.setEnabled(false);
         seekBarShutter_photo.setEnabled(false);
+
+        switchProTune_photo = findViewById(R.id.switchProTune_photo);
 
         setupCallbackPhoto();
     }
 
     private void setupCallbackPhoto(){
 
-        spinner_res_photo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        switchProTune_photo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //TODO : send data to GopPro
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    switchISO_photo.setEnabled(true);
+                    if(switchISO_photo.isChecked()){
+                        seekBarISO_min_photo.setEnabled(false);
+                        seekBarISO_max_photo.setEnabled(false);
+                    } else {
+                        seekBarISO_min_photo.setEnabled(true);
+                        seekBarISO_max_photo.setEnabled(true);
+                    }
+                    switchWB_photo.setEnabled(true);
+                    if(switchWB_photo.isChecked()){
+                        seekBarWB_photo.setEnabled(false);
+                    } else {
+                        seekBarWB_photo.setEnabled(true);
+                    }
+                    switchShutter_photo.setEnabled(true);
+                    if(switchShutter_photo.isChecked()){
+                        seekBarShutter_photo.setEnabled(false);
+                    } else {
+                        seekBarShutter_photo.setEnabled(true);
+                    }
+                } else {
+                    switchISO_photo.setEnabled(false);
+                    seekBarISO_min_photo.setEnabled(false);
+                    seekBarISO_max_photo.setEnabled(false);
+                    switchWB_photo.setEnabled(false);
+                    seekBarWB_photo.setEnabled(false);
+                    switchShutter_photo.setEnabled(false);
+                    seekBarShutter_photo.setEnabled(false);
+                }
             }
         });
 
@@ -376,9 +535,11 @@ public class LiveStreamActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    seekBarISO_photo.setEnabled(false);
+                    seekBarISO_min_photo.setEnabled(false);
+                    seekBarISO_max_photo.setEnabled(false);
                 } else {
-                    seekBarISO_photo.setEnabled(true);
+                    seekBarISO_min_photo.setEnabled(true);
+                    seekBarISO_max_photo.setEnabled(true);
                 }
             }
         });
@@ -393,6 +554,44 @@ public class LiveStreamActivity extends AppCompatActivity {
                 }
             }
         });
+
+        seekBarISO_max_photo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(progress < seekBarISO_min_photo.getProgress()){
+                    seekBarISO_min_photo.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        seekBarISO_min_photo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(progress > seekBarISO_max_photo.getProgress()){
+                    seekBarISO_max_photo.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     private void videoMenuSetup(){
@@ -403,25 +602,27 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FPS_video = findViewById(R.id.spinner_FPS_video);
 
         ArrayAdapter<CharSequence> adapter_res = ArrayAdapter.createFromResource(getApplicationContext(), R.array.val_res_video, R.layout.spinner_item);
-
-        FOV_spinner_video = goProCombinations.getFov("1080p");
-        FPS_spinner_video = goProCombinations.getFPS("1080p");
-
-        ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(getApplicationContext(), R.layout.spinner_item, FOV_spinner_video);
-        ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(getApplicationContext(), R.layout.spinner_item, FPS_spinner_video);
-
         adapter_res.setDropDownViewResource(R.layout.spinner_dropdown);
-        adapter_FOV.setDropDownViewResource(R.layout.spinner_dropdown);
-        adapter_FPS.setDropDownViewResource(R.layout.spinner_dropdown);
-
         spinner_res_video.setAdapter(adapter_res);
-        spinner_FOV_video.setAdapter(adapter_FOV);
-        spinner_FPS_video.setAdapter(adapter_FPS);
+        spinner_res_video.setSelection(3);
 
-        // Set initial state
-        spinner_res_video.setSelection(4);
-        spinner_FPS_video.setSelection(5);
-        spinner_FOV_video.setSelection(2);
+
+        FPS_spinner_video = goProCombinations.getFPS(spinner_res_video.getSelectedItem().toString());
+        ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(getApplicationContext(), R.layout.spinner_item, FPS_spinner_video);
+        adapter_FPS.setDropDownViewResource(R.layout.spinner_dropdown);
+        spinner_FPS_video.setAdapter(adapter_FPS);
+        spinner_FPS_video.setSelection(3);
+
+
+        FOV_spinner_video = goProCombinations.getFov(spinner_res_video.getSelectedItem().toString(), spinner_FPS_video.getSelectedItem().toString());
+        ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(getApplicationContext(), R.layout.spinner_item, FOV_spinner_video);
+        adapter_FOV.setDropDownViewResource(R.layout.spinner_dropdown);
+        spinner_FOV_video.setAdapter(adapter_FOV);
+        spinner_FOV_video.setSelection(3);
+
+        spinner_res_video.setSelection(3);
+        spinner_FPS_video.setSelection(3);
+        spinner_FOV_video.setSelection(3);
 
         // Setup WB
         switchWB_video = findViewById(R.id.switchWB_video);
@@ -432,19 +633,49 @@ public class LiveStreamActivity extends AppCompatActivity {
         seekBarISO_video = findViewById(R.id.seekBarISO_video);
         seekBarISO_video.setEnabled(false);
 
+
+        switchProTune_video = findViewById(R.id.switchProTune_video);
+
+
         setupCallbackVideo();
 
     }
 
-
     private void setupCallbackVideo(){
+
+        switchProTune_video.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    switchISO_video.setEnabled(true);
+                    if(switchISO_video.isChecked()){
+                        seekBarISO_video.setEnabled(false);
+                    } else {
+                        seekBarISO_video.setEnabled(true);
+                    }
+                    switchWB_video.setEnabled(true);
+                    if(switchWB_video.isChecked()){
+                        seekBarWB_video.setEnabled(false);
+                    } else {
+                        seekBarWB_video.setEnabled(true);
+                    }
+                } else {
+                    switchISO_video.setEnabled(false);
+                    seekBarISO_video.setEnabled(false);
+                    switchWB_video.setEnabled(false);
+                    seekBarWB_video.setEnabled(false);
+                }
+            }
+        });
+
         spinner_res_video.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(LiveStreamActivity.this, "New resolution selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
                 //TODO : send new parameter to GoPro
-                FOV_spinner_video = goProCombinations.getFov(spinner_res_video.getSelectedItem().toString());
                 FPS_spinner_video = goProCombinations.getFPS(spinner_res_video.getSelectedItem().toString());
+                FOV_spinner_video = goProCombinations.getFov(spinner_res_video.getSelectedItem().toString(), spinner_FPS_video.getSelectedItem().toString());
+
 
                 ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(parent.getContext(), R.layout.spinner_item, FOV_spinner_video);
                 ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(parent.getContext(),  R.layout.spinner_item, FPS_spinner_video);
@@ -480,6 +711,13 @@ public class LiveStreamActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(LiveStreamActivity.this, "New FPS rate selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
                 //TODO : Send data to GoPro.
+                FOV_spinner_video = goProCombinations.getFov(spinner_res_video.getSelectedItem().toString(), spinner_FPS_video.getSelectedItem().toString());
+
+                ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(parent.getContext(), R.layout.spinner_item, FOV_spinner_video);
+
+                adapter_FOV.setDropDownViewResource(R.layout.spinner_dropdown);
+
+                spinner_FOV_video.setAdapter(adapter_FOV);
             }
 
             @Override
@@ -489,6 +727,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         });
 
         switchWB_video.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){

@@ -1,43 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="val_res_video">
-        <item>WVGA</item>
+        <item>480p</item>
         <item>720p</item>
-        <item>720p S</item>
         <item>960p</item>
         <item>1080p</item>
-        <item>1080p S</item>
         <item>1440p</item>
         <item>2.7K</item>
-        <item>2.7K S</item>
         <item>2.7K 4:3</item>
         <item>4K</item>
-        <item>4K S</item>
     </string-array>
 
     <string-array name="val_FPS">
         <item>24 FPS</item>
-        <item>25 FPS</item>
         <item>30 FPS</item>
         <item>48 FPS</item>
-        <item>50 FPS</item>
         <item>60 FPS</item>
         <item>80 FPS</item>
         <item>90 FPS</item>
+        <item>100 FPS</item>
         <item>120 FPS</item>
         <item>240 FPS</item>
     </string-array>
 
     <string-array name="val_FOV">
         <item>Narrow</item>
+        <item>Linear</item>
         <item>Medium</item>
-        <item>Ultra Wide</item>
+        <item>Wide</item>
+        <item>Super View</item>
     </string-array>
 
-    <string-array name="val_res_photo">
-        <item>2MPX</item>
-        <item>5MPX</item>
-        <item>12MPX</item>
+
+    <string-array name="val_FOV_photo">
+        <item>Narrow</item>
+        <item>Linear</item>
+        <item>Medium</item>
+        <item>Wide</item>
+    </string-array>
+
+    <string-array name="val_burst_rate">
+        <item>3/1</item>
+        <item>5/1</item>
+        <item>10/1</item>
+        <item>10/2</item>
+        <item>10/3</item>
+        <item>30/1</item>
+        <item>30/2</item>
+        <item>30/3</item>
+        <item>30/6</item>
+    </string-array>
+
+    <string-array name="valFOV_burst">
+        <item>Narrow</item>
+        <item>Linear</item>
+        <item>Medium</item>
+        <item>Wide</item>
     </string-array>
 
 </resources>

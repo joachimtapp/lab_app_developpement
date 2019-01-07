@@ -8,43 +8,6 @@
     android:orientation="vertical">
 
     <!-- First item -->
-    <android.support.constraint.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/text_res"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="Resolution"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Must add relative layout around spinner, otherwise arrows disappear when background image is added -->
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:layout_gravity="end"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <Spinner
-                android:id="@+id/spinner_res_photo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:popupBackground="@color/spinner_background"
-                android:textAlignment="viewEnd" />
-        </RelativeLayout>
-
-    </android.support.constraint.ConstraintLayout>
 
     <!-- Second item -->
     <android.support.constraint.ConstraintLayout
@@ -75,7 +38,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <Spinner
-                android:id="@+id/spinner_FOV_photo"
+                android:id="@+id/spinner_FOV_burst"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
@@ -83,6 +46,74 @@
                 android:textAlignment="viewEnd" />
         </RelativeLayout>
 
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Rate"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Must add relative layout around spinner, otherwise arrows disappear when background image is added -->
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <Spinner
+                android:id="@+id/spinner_rate_burst"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:popupBackground="@color/spinner_background"
+                android:textAlignment="viewEnd" />
+        </RelativeLayout>
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/textVie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="ProTune"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Switch
+            android:id="@+id/switchProTune_burst"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:checked="true"
+            android:text=""
+            android:textOff=""
+            android:textOn=""
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -101,7 +132,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <Switch
-            android:id="@+id/switchWB_photo"
+            android:id="@+id/switchWB_burst"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -180,7 +211,7 @@
         </LinearLayout>
 
         <SeekBar
-            android:id="@+id/seekBarWB_photo"
+            android:id="@+id/seekBarWB_burst"
             style="@style/Widget.AppCompat.SeekBar.Discrete"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -212,7 +243,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <Switch
-            android:id="@+id/switchISO_photo"
+            android:id="@+id/switchISO_burst"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -230,73 +261,168 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/constraintLayout2"
+        <TextView
+            android:id="@+id/textView9"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:text="Min"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraintLayout14"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView9">
 
             <TextView
                 android:id="@+id/tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="41dp"
+                android:layout_marginEnd="177dp"
                 android:layout_weight="1"
                 android:text="100"
                 android:textAlignment="center"
                 android:textSize="8sp"
-                app:layout_constraintEnd_toStartOf="@+id/tv1" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/tv1"
                 android:layout_width="15dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="41dp"
+                android:layout_marginEnd="133dp"
                 android:layout_weight="1"
                 android:text="200"
                 android:textAlignment="center"
                 android:textSize="8sp"
-                app:layout_constraintEnd_toStartOf="@+id/tv2" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/tv2"
                 android:layout_width="15dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="41dp"
+                android:layout_marginEnd="91dp"
                 android:layout_weight="1"
                 android:text="400"
                 android:textAlignment="center"
                 android:textSize="8sp"
-                app:layout_constraintEnd_toStartOf="@+id/tv3" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/tv3"
                 android:layout_width="15dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="1dp"
+                android:layout_marginEnd="49dp"
                 android:layout_weight="1"
                 android:text="800"
                 android:textAlignment="center"
                 android:textSize="8sp"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+            <TextView
+                android:id="@+id/textView8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="1600"
+                android:textSize="8sp"
+                app:layout_constraintEnd_toEndOf="parent" />
+
         </android.support.constraint.ConstraintLayout>
 
         <SeekBar
-            android:id="@+id/seekBarISO_photo"
+            android:id="@+id/seekBarISO_min_burst"
             style="@style/Widget.AppCompat.SeekBar.Discrete"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:max="3"
+            android:max="4"
             android:progress="1"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/constraintLayout2" />
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout14" />
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Max"
+            app:layout_constraintTop_toBottomOf="@+id/seekBarISO_min_burst" />
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraintLayout13"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/textView10"
+            app:layout_constraintTop_toBottomOf="@+id/textView10">
+
+            <TextView
+                android:id="@+id/a"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="177dp"
+                android:layout_weight="1"
+                android:text="100"
+                android:textAlignment="center"
+                android:textSize="8sp"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/s"
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="133dp"
+                android:layout_weight="1"
+                android:text="200"
+                android:textAlignment="center"
+                android:textSize="8sp"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/d"
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="91dp"
+                android:layout_weight="1"
+                android:text="400"
+                android:textAlignment="center"
+                android:textSize="8sp"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/f"
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="49dp"
+                android:layout_weight="1"
+                android:text="800"
+                android:textAlignment="center"
+                android:textSize="8sp"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/g"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="1600"
+                android:textSize="8sp"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </android.support.constraint.ConstraintLayout>
+
+        <SeekBar
+            android:id="@+id/seekBarISO_max_burst"
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="-1dp"
+            android:max="4"
+            android:progress="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout13" />
     </android.support.constraint.ConstraintLayout>
 
 

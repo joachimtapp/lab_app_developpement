@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Resolution V"
+            android:text="Resolution"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -125,6 +125,36 @@
                 android:textAlignment="viewEnd" />
         </RelativeLayout>
 
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/textVie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="ProTune"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Switch
+            android:id="@+id/switchProTune_video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:checked="true"
+            android:text=""
+            android:textOff=""
+            android:textOn=""
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -289,7 +319,7 @@
                 android:textSize="8sp" />
 
             <TextView
-                android:id="@+id/tv1"
+                android:id="@+id/q"
                 android:layout_width="26dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
@@ -300,7 +330,7 @@
                 android:textSize="8sp" />
 
             <TextView
-                android:id="@+id/tv2"
+                android:id="@+id/d"
                 android:layout_width="26dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
