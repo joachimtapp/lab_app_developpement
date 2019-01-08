@@ -69,6 +69,8 @@ public class LiveStreamActivity extends AppCompatActivity {
     private SeekBar seekBarISO_max_burst;
     private LinearLayout proTune_burst;
 
+    GoProInterface goProInterface;
+    private String MODE;
 
     private static final int MENU_PHOTO = 0;
     private static final int MENU_VIDEO = 1;
@@ -81,6 +83,10 @@ public class LiveStreamActivity extends AppCompatActivity {
         setContentView(R.layout.activity_live_stream);
 
         goProCombinations = new GoProCombinations(getResources().getStringArray(R.array.val_FPS), getResources().getStringArray(R.array.val_FOV));
+        goProInterface = new GoProInterface();
+
+        // Setup camera
+        setupCamera();
 
         // Setup drawer and drawer button on the left
         setupDrawer();
@@ -95,6 +101,12 @@ public class LiveStreamActivity extends AppCompatActivity {
         setupModeMenu();
     }
 
+    private void setupCamera(){
+
+        goProInterface.setMode(GoProInterface.MODE_PHOTO);
+
+    }
+
     private void setupModeMenu(){
         ImageButton buttonPhoto = findViewById(R.id.modePhoto);
         ImageButton buttonVideo = findViewById(R.id.modeVideo);
@@ -102,9 +114,12 @@ public class LiveStreamActivity extends AppCompatActivity {
         ImageButton buttonPosition = findViewById(R.id.modePosition);
 
 
+
         buttonPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                goProInterface.setMode(GoProInterface.MODE_PHOTO);
+                MODE = GoProInterface.MODE_PHOTO;
                 changeMenu(MENU_PHOTO);
             }
         });
@@ -112,6 +127,8 @@ public class LiveStreamActivity extends AppCompatActivity {
         buttonVideo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                goProInterface.setMode(GoProInterface.MODE_VIDEO);
+                MODE = GoProInterface.MODE_VIDEO;
                 changeMenu(MENU_VIDEO);
             }
         });
@@ -119,6 +136,8 @@ public class LiveStreamActivity extends AppCompatActivity {
         buttonBurst.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                goProInterface.setMode(GoProInterface.MODE_BURST);
+                MODE = GoProInterface.MODE_BURST;
                 changeMenu(MENU_BURST);
             }
         });
@@ -126,6 +145,8 @@ public class LiveStreamActivity extends AppCompatActivity {
         buttonPosition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                goProInterface.setMode(GoProInterface.MODE_VIDEO);
+                MODE = GoProInterface.MODE_VIDEO;
                 changeMenu(MENU_POSITION);
             }
         });
@@ -155,8 +176,11 @@ public class LiveStreamActivity extends AppCompatActivity {
         SeekBar EV_bar = findViewById(R.id.EV_bar);
         TextView EV_text = findViewById(R.id.EV_val);
 
+        MODE = GoProInterface.MODE_PHOTO;
+
         // Place SeekBar in the middle
         EV_bar.setProgress(4);
+        goProInterface.setEV(EV_bar.getProgress(), MODE);
 
         // Set text of TextView
         EV_text.setText("EV : " + (EV_bar.getProgress() - 4.)/2);
@@ -167,6 +191,7 @@ public class LiveStreamActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 EV_text.setText("EV : " + (progress - 4.)/2);
                 //TODO : Send new parameter to GoPro
+                goProInterface.setEV(progress, MODE);
             }
 
             @Override
@@ -460,6 +485,7 @@ public class LiveStreamActivity extends AppCompatActivity {
 
         switchProTune_photo.setChecked(false);
         proTune_photo.setVisibility(View.INVISIBLE);
+        goProInterface.setProTunePhoto(false);
 
         setupCallbackPhoto();
     }
@@ -474,6 +500,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                 } else {
                     proTune_photo.setVisibility(View.INVISIBLE);
                 }
+                goProInterface.setProTunePhoto(isChecked);
             }
         });
 
@@ -481,6 +508,7 @@ public class LiveStreamActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //TODO send data to GoPro
+                goProInterface.setFOVPhoto(spinner_FOV_photo.getSelectedItem().toString());
             }
 
             @Override
@@ -494,9 +522,28 @@ public class LiveStreamActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
                     seekBarWB_photo.setEnabled(false);
+                    goProInterface.setBWAutoPhoto();
                 } else {
                     seekBarWB_photo.setEnabled(true);
+                    goProInterface.setBWPhoto(seekBarWB_photo.getProgress());
                 }
+            }
+        });
+
+        seekBarWB_photo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                goProInterface.setBWPhoto(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
 
@@ -506,9 +553,13 @@ public class LiveStreamActivity extends AppCompatActivity {
                 if(isChecked){
                     seekBarISO_min_photo.setEnabled(false);
                     seekBarISO_max_photo.setEnabled(false);
+                    goProInterface.setISOMinPhoto(0);
+                    goProInterface.setISOMaxPhoto(4);
                 } else {
                     seekBarISO_min_photo.setEnabled(true);
                     seekBarISO_max_photo.setEnabled(true);
+                    goProInterface.setISOMinPhoto(seekBarISO_min_photo.getProgress());
+                    goProInterface.setISOMaxPhoto(seekBarISO_max_photo.getProgress());
                 }
             }
         });
@@ -518,9 +569,28 @@ public class LiveStreamActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
                     seekBarShutter_photo.setEnabled(false);
+                    goProInterface.setShutterAutoPhoto();
                 } else {
                     seekBarShutter_photo.setEnabled(true);
+                    goProInterface.setShutterPhoto(seekBarShutter_photo.getProgress());
                 }
+            }
+        });
+
+        seekBarShutter_photo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                goProInterface.setShutterPhoto(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
 
@@ -530,6 +600,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                 if(progress < seekBarISO_min_photo.getProgress()){
                     seekBarISO_min_photo.setProgress(progress);
                 }
+                goProInterface.setISOMaxPhoto(progress);
             }
 
             @Override
@@ -549,6 +620,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                 if(progress > seekBarISO_max_photo.getProgress()){
                     seekBarISO_max_photo.setProgress(progress);
                 }
+                goProInterface.setISOMinPhoto(progress);
             }
 
             @Override
