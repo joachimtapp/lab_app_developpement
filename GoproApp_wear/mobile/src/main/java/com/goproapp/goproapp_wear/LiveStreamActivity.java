@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -46,6 +47,7 @@ public class LiveStreamActivity extends AppCompatActivity {
     private Switch switchProTune_video;
     private SeekBar seekBarWB_video;
     private SeekBar seekBarISO_video;
+    private LinearLayout proTune_video;
 
     private Switch switchWB_photo;
     private Switch switchISO_photo;
@@ -55,6 +57,7 @@ public class LiveStreamActivity extends AppCompatActivity {
     private SeekBar seekBarISO_min_photo;
     private SeekBar seekBarISO_max_photo;
     private SeekBar seekBarShutter_photo;
+    private LinearLayout proTune_photo;
 
     private Spinner spinner_FOV_burst;
     private Spinner spinner_rate_burst;
@@ -64,6 +67,8 @@ public class LiveStreamActivity extends AppCompatActivity {
     private SeekBar seekBarWB_burst;
     private SeekBar seekBarISO_min_burst;
     private SeekBar seekBarISO_max_burst;
+    private LinearLayout proTune_burst;
+
 
     private static final int MENU_PHOTO = 0;
     private static final int MENU_VIDEO = 1;
@@ -250,9 +255,9 @@ public class LiveStreamActivity extends AppCompatActivity {
 
         videoMenuSetup();
 
-        photoSetup();
+        photoMenuSetup();
 
-        burstSetup();
+        burstMenuSetup();
     }
 
 
@@ -320,7 +325,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void burstSetup(){
+    private void burstMenuSetup(){
         spinner_FOV_burst = findViewById(R.id.spinner_FOV_burst);
         spinner_rate_burst = findViewById(R.id.spinner_rate_burst);
         switchProTune_burst = findViewById(R.id.switchProTune_burst);
@@ -329,6 +334,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         switchISO_burst = findViewById(R.id.switchISO_burst);
         seekBarISO_max_burst = findViewById(R.id.seekBarISO_max_burst);
         seekBarISO_min_burst = findViewById(R.id.seekBarISO_min_burst);
+        proTune_burst = findViewById(R.id.protune_burst);
 
         seekBarISO_min_burst.setEnabled(false);
         seekBarISO_max_burst.setEnabled(false);
@@ -343,6 +349,9 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FOV_burst.setAdapter(adapter_FOV);
         spinner_rate_burst.setAdapter(adapter_rate);
 
+        switchProTune_burst.setChecked(false);
+        proTune_burst.setVisibility(View.INVISIBLE);
+
         setupCallbackBurst();
 
     }
@@ -353,26 +362,9 @@ public class LiveStreamActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    switchISO_burst.setEnabled(true);
-                    if(switchISO_burst.isChecked()){
-                        seekBarISO_min_burst.setEnabled(false);
-                        seekBarISO_max_burst.setEnabled(false);
-                    } else {
-                        seekBarISO_min_burst.setEnabled(true);
-                        seekBarISO_max_burst.setEnabled(true);
-                    }
-                    switchWB_burst.setEnabled(true);
-                    if(switchWB_burst.isChecked()){
-                        seekBarWB_burst.setEnabled(false);
-                    } else {
-                        seekBarWB_burst.setEnabled(true);
-                    }
+                    proTune_burst.setVisibility(View.VISIBLE);
                 } else {
-                    switchISO_burst.setEnabled(false);
-                    seekBarISO_min_burst.setEnabled(false);
-                    seekBarISO_max_burst.setEnabled(false);
-                    switchWB_burst.setEnabled(false);
-                    seekBarWB_burst.setEnabled(false);
+                    proTune_burst.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -442,8 +434,16 @@ public class LiveStreamActivity extends AppCompatActivity {
 
     }
 
-    private void photoSetup(){
+    private void photoMenuSetup(){
         spinner_FOV_photo = findViewById(R.id.spinner_FOV_photo);
+        switchWB_photo = findViewById(R.id.switchWB_photo);
+        switchISO_photo = findViewById(R.id.switchISO_photo);
+        switchShutter_photo = findViewById(R.id.switchShutter_photo);
+        seekBarWB_photo = findViewById(R.id.seekBarWB_photo);
+        seekBarISO_min_photo = findViewById(R.id.seekBarISO_min_photo);
+        seekBarISO_max_photo = findViewById(R.id.seekBarISO_max_photo);
+        seekBarShutter_photo = findViewById(R.id.seekBarShutter_photo);
+        proTune_photo = findViewById(R.id.protune_photo);
 
         ArrayAdapter<CharSequence> adapter_FOV = ArrayAdapter.createFromResource(getApplicationContext(), R.array.val_FOV_photo, R.layout.spinner_item);
 
@@ -451,21 +451,15 @@ public class LiveStreamActivity extends AppCompatActivity {
 
         spinner_FOV_photo.setAdapter(adapter_FOV);
 
-        switchWB_photo = findViewById(R.id.switchWB_photo);
-        switchISO_photo = findViewById(R.id.switchISO_photo);
-        switchShutter_photo = findViewById(R.id.switchShutter_photo);
-
-        seekBarWB_photo = findViewById(R.id.seekBarWB_photo);
-        seekBarISO_min_photo = findViewById(R.id.seekBarISO_min_burst);
-        seekBarISO_max_photo = findViewById(R.id.seekBarISO_max_photo);
-        seekBarShutter_photo = findViewById(R.id.seekBarShutter_photo);
-
         seekBarWB_photo.setEnabled(false);
         seekBarISO_min_photo.setEnabled(false);
         seekBarISO_max_photo.setEnabled(false);
         seekBarShutter_photo.setEnabled(false);
 
         switchProTune_photo = findViewById(R.id.switchProTune_photo);
+
+        switchProTune_photo.setChecked(false);
+        proTune_photo.setVisibility(View.INVISIBLE);
 
         setupCallbackPhoto();
     }
@@ -476,34 +470,9 @@ public class LiveStreamActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    switchISO_photo.setEnabled(true);
-                    if(switchISO_photo.isChecked()){
-                        seekBarISO_min_photo.setEnabled(false);
-                        seekBarISO_max_photo.setEnabled(false);
-                    } else {
-                        seekBarISO_min_photo.setEnabled(true);
-                        seekBarISO_max_photo.setEnabled(true);
-                    }
-                    switchWB_photo.setEnabled(true);
-                    if(switchWB_photo.isChecked()){
-                        seekBarWB_photo.setEnabled(false);
-                    } else {
-                        seekBarWB_photo.setEnabled(true);
-                    }
-                    switchShutter_photo.setEnabled(true);
-                    if(switchShutter_photo.isChecked()){
-                        seekBarShutter_photo.setEnabled(false);
-                    } else {
-                        seekBarShutter_photo.setEnabled(true);
-                    }
+                    proTune_photo.setVisibility(View.VISIBLE);
                 } else {
-                    switchISO_photo.setEnabled(false);
-                    seekBarISO_min_photo.setEnabled(false);
-                    seekBarISO_max_photo.setEnabled(false);
-                    switchWB_photo.setEnabled(false);
-                    seekBarWB_photo.setEnabled(false);
-                    switchShutter_photo.setEnabled(false);
-                    seekBarShutter_photo.setEnabled(false);
+                    proTune_photo.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -600,6 +569,12 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_res_video = findViewById(R.id.spinner_res_video);
         spinner_FOV_video = findViewById(R.id.spinner_FOV_video);
         spinner_FPS_video = findViewById(R.id.spinner_FPS_video);
+        switchWB_video = findViewById(R.id.switchWB_video);
+        seekBarWB_video = findViewById(R.id.seekBarWB_video);
+        switchISO_video = findViewById(R.id.switchISO_video);
+        seekBarISO_video = findViewById(R.id.seekBarISO_video);
+        switchProTune_video = findViewById(R.id.switchProTune_video);
+        proTune_video = findViewById(R.id.protune_video);
 
         ArrayAdapter<CharSequence> adapter_res = ArrayAdapter.createFromResource(getApplicationContext(), R.array.val_res_video, R.layout.spinner_item);
         adapter_res.setDropDownViewResource(R.layout.spinner_dropdown);
@@ -625,17 +600,11 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FOV_video.setSelection(3);
 
         // Setup WB
-        switchWB_video = findViewById(R.id.switchWB_video);
-        seekBarWB_video = findViewById(R.id.seekBarWB_video);
         seekBarWB_video.setEnabled(false);
-
-        switchISO_video = findViewById(R.id.switchISO_video);
-        seekBarISO_video = findViewById(R.id.seekBarISO_video);
         seekBarISO_video.setEnabled(false);
 
-
-        switchProTune_video = findViewById(R.id.switchProTune_video);
-
+        switchProTune_video.setChecked(false);
+        proTune_video.setVisibility(View.INVISIBLE);
 
         setupCallbackVideo();
 
@@ -646,24 +615,10 @@ public class LiveStreamActivity extends AppCompatActivity {
         switchProTune_video.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    switchISO_video.setEnabled(true);
-                    if(switchISO_video.isChecked()){
-                        seekBarISO_video.setEnabled(false);
-                    } else {
-                        seekBarISO_video.setEnabled(true);
-                    }
-                    switchWB_video.setEnabled(true);
-                    if(switchWB_video.isChecked()){
-                        seekBarWB_video.setEnabled(false);
-                    } else {
-                        seekBarWB_video.setEnabled(true);
-                    }
+                if(isChecked) {
+                    proTune_video.setVisibility(View.VISIBLE);
                 } else {
-                    switchISO_video.setEnabled(false);
-                    seekBarISO_video.setEnabled(false);
-                    switchWB_video.setEnabled(false);
-                    seekBarWB_video.setEnabled(false);
+                    proTune_video.setVisibility(View.INVISIBLE);
                 }
             }
         });
