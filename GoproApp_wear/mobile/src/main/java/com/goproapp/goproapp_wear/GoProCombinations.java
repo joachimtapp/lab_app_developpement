@@ -135,7 +135,7 @@ public class GoProCombinations {
                         indices = new ArrayList<>(Arrays.asList(3));
                         break;
                 }
-                indices.forEach(ind -> output.add(fps.get(ind)));
+                indices.forEach(ind -> output.add(fov.get(ind)));
                 break;
         }
         return output;
