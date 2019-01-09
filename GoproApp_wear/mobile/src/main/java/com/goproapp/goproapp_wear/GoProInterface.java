@@ -121,33 +121,35 @@ public class GoProInterface {
         String url = "http://10.5.5.9/gp/gpControl/setting/13/";
         switch (iso){
             case 0:
-                url = url + "8";
+                url = url + "2";
                 break;
             case 1:
-                url = url + "7";
+                url = url + "4";
                 break;
             case 2:
-                url = url + "4";
+                url = url + "1";
                 break;
             case 3:
                 url = url + "3";
                 break;
             case 4:
-                url = url + "2";
-                break;
-            case 5:
-                url = url + "1";
-                break;
-            case 6:
                 url = url + "0";
                 break;
         }
         sendRequest(url);
     }
 
+    public void setISOMin(Integer iso_min, String mode){
+        String url = "http://10.5.5.9/gp/gpControl/setting/";
 
-    public void setISOMin(Integer iso_min){
-        String url = "http://10.5.5.9/gp/gpControl/setting/75/";
+        switch (mode){
+            case MODE_PHOTO:
+                url = url + "75/";
+                break;
+            case MODE_BURST:
+                url = url + "76/";
+                break;
+        }
         switch (iso_min){
             case 0:
                 url = url + "3";
@@ -171,8 +173,17 @@ public class GoProInterface {
         sendRequest(url);
     }
 
-    public void setISOMax(Integer iso_max){
-        String url = "http://10.5.5.9/gp/gpControl/setting/24/";
+    public void setISOMax(Integer iso_max, String mode){
+        String url = "http://10.5.5.9/gp/gpControl/setting/";
+
+        switch (mode){
+            case MODE_PHOTO:
+                url = url + "24/";
+                break;
+            case MODE_BURST:
+                url = url + "37/";
+                break;
+        }
         switch (iso_max){
             case 0:
                 url = url + "3";
@@ -196,11 +207,11 @@ public class GoProInterface {
         sendRequest(url);
     }
 
-    public void setShutterAutoPhoto(){
+    public void setShutterAuto(){
         sendRequest("http://10.5.5.9/gp/gpControl/setting/97/0");
     }
 
-    public void setShutterPhoto(Integer shutter){
+    public void setShutter(Integer shutter){
         String url = "http://10.5.5.9/gp/gpControl/setting/97/";
         shutter = shutter + 1;
         url = url + shutter.toString();
@@ -326,6 +337,45 @@ public class GoProInterface {
 
         sendRequest(url);
 
+    }
+
+    public void setBurstRate(String burstRate){
+        String url = "http://10.5.5.9/gp/gpControl/setting/29/";
+        switch (burstRate){
+            case "3/1":
+                url = url + "0";
+                break;
+            case "5/1":
+                url = url + "1";
+                break;
+            case "10/1":
+                url = url + "2";
+                break;
+            case "10/2":
+                url = url + "3";
+                break;
+            case "10/3":
+                url = url + "4";
+                break;
+            case "30/1":
+                url = url + "5";
+                break;
+            case "30/2":
+                url = url + "6";
+                break;
+            case "30/3":
+                url = url + "7";
+                break;
+            case "30/6":
+                url = url + "8";
+                break;
+        }
+
+        sendRequest(url);
+    }
+
+    public void setFOVBurst(String fov){
+        setFOVPhoto(fov);
     }
 
     public void setWB(Integer wb, String mode){
