@@ -1,6 +1,7 @@
 package com.goproapp.goproapp_wear;
 
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -71,6 +73,9 @@ public class LiveStreamActivity extends AppCompatActivity {
     private SeekBar seekBarISO_max_burst;
     private LinearLayout proTune_burst;
 
+    private ImageButton shutterButton;
+    private Boolean recording = false;
+
     GoProInterface goProInterface;
     private String MODE;
 
@@ -86,6 +91,25 @@ public class LiveStreamActivity extends AppCompatActivity {
 
         goProCombinations = new GoProCombinations(getResources().getStringArray(R.array.val_FPS), getResources().getStringArray(R.array.val_FOV));
         goProInterface = new GoProInterface();
+
+        shutterButton = findViewById(R.id.shutterButton);
+        shutterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(MODE.equals(GoProInterface.MODE_VIDEO)){
+                    if(recording){
+                        goProInterface.shutterStop();
+                        // TODO : change buton to normall button
+                    } else {
+                        goProInterface.shutter();
+                        // TODO : Change button to recording button
+                    }
+                    recording = !recording;
+                } else {
+                    goProInterface.shutter();
+                }
+            }
+        });
 
         // Setup camera
         setupCamera();
@@ -286,7 +310,6 @@ public class LiveStreamActivity extends AppCompatActivity {
 
         burstMenuSetup();
     }
-
 
     private void setupDrawer() {
         //Add Transparent drawer to have access to floating menu

@@ -1,19 +1,22 @@
 package com.goproapp.goproapp_wear;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 
 public class HttpGetRequest extends AsyncTask<String, Void, String> {
     public static final String REQUEST_METHOD = "GET";
     public static final int READ_TIMEOUT = 15000;
     public static final int CONNECTION_TIMEOUT = 15000;
+
+    public HttpGetRequest(){
+    }
+
     @Override
     protected String doInBackground(String... params){
         String stringUrl = params[0];
@@ -51,6 +54,8 @@ public class HttpGetRequest extends AsyncTask<String, Void, String> {
         catch(IOException e){
             e.printStackTrace();
             result = null;
+
+            //TODO : Find a way to tell the user that it failed
         }
         return result;
     }

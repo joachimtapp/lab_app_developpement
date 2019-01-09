@@ -2,6 +2,7 @@
 <!-- Use DrawerLayout as root container for activity -->
 <android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -22,6 +23,19 @@
             app:srcCompat="@android:color/holo_blue_light" />
 
         <!-- Mode menu -->
+        <ImageButton
+            android:id="@+id/shutterButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@mipmap/ic_launcher_round"
+            android:background="@android:color/transparent"/>
+
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -55,7 +69,7 @@
                     android:layout_margin="11dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/ic_info_black_24dp" />
+                    app:srcCompat="@drawable/ic_menu_camera" />
 
                 <ImageButton
                     android:id="@+id/modeVideo"
@@ -64,7 +78,7 @@
                     android:layout_margin="11dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/ic_info_black_24dp" />
+                    app:srcCompat="@drawable/ic_menu_slideshow" />
 
                 <ImageButton
                     android:id="@+id/modeBurst"
@@ -73,7 +87,7 @@
                     android:layout_margin="11dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/ic_info_black_24dp" />
+                    app:srcCompat="@drawable/ic_menu_gallery" />
 
                 <ImageButton
                     android:id="@+id/modePosition"
@@ -172,18 +186,15 @@
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:layout_marginBottom="16dp"
                 android:max="8"
                 android:progress="1"
-                android:thumb="@drawable/ic_info_black_24dp"
+                android:progressBackgroundTint="@android:color/transparent"
+                android:progressTint="@android:color/transparent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                android:progressTint="@android:color/transparent"
-                android:progressBackgroundTint="@android:color/transparent"/>
+                app:layout_constraintStart_toStartOf="parent" />
 
             <ImageView
                 android:id="@+id/imageView4"
@@ -195,6 +206,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/EV_bar"
                 app:srcCompat="@android:drawable/btn_default_small" />
+
         </android.support.constraint.ConstraintLayout>
 
     </android.support.constraint.ConstraintLayout>

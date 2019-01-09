@@ -1,6 +1,8 @@
 package com.goproapp.goproapp_wear;
 
 
+import android.content.Context;
+
 public class GoProInterface {
 
     static final String MODE_VIDEO = "VIDEO";
@@ -9,12 +11,19 @@ public class GoProInterface {
     static final String ISO_MODE_LOCK = "LOCK";
     static final String ISO_MODE_MAX = "MAX";
 
-
     public GoProInterface(){
 
         // Activate GPS Tag
         sendRequest("http://10.5.5.9/gp/gpControl/setting/83/1");
 
+    }
+
+    public void shutter(){
+        sendRequest("http://10.5.5.9/gp/gpControl/command/shutter?p=1");
+    }
+
+    public void shutterStop(){
+        sendRequest("http://10.5.5.9/gp/gpControl/command/shutter?p=0");
     }
 
     public void setMode(String mode){
