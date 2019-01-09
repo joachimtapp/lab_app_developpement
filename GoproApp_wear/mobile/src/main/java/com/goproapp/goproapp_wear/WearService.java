@@ -135,6 +135,7 @@ public class WearService extends WearableListenerService {
                 width, height, matrix, true);
     }
 
+    // Receiving data
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         Log.v(TAG, "onDataChanged: " + dataEvents);
@@ -175,6 +176,11 @@ public class WearService extends WearableListenerService {
                         intent.putExtra("REPLACE_THIS_WITH_A_STRING_OF_ARRAYLIST_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY", arraylist);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
+                    case BuildConfig.W_dist_path:
+                        int trig_dist = dataMapItem.getDataMap().getInt(BuildConfig.W_dist_val);
+                        intent = new Intent(LiveStreamActivity.TRIG_DIST_INT);
+                        intent.putExtra(LiveStreamActivity.TRIG_DIST_VAL, trig_dist);
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                     default:
                         Log.v(TAG, "Data changed for unhandled path: " + uri);
                         break;
@@ -188,6 +194,7 @@ public class WearService extends WearableListenerService {
         }
     }
 
+    // Receiving messages
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         // A message has been received from the Wear API
@@ -245,7 +252,7 @@ public class WearService extends WearableListenerService {
                 .addOnSuccessListener(new OnSuccessListener<Integer>() {
                     @Override
                     public void onSuccess(Integer integer) {
-                        Log.v(TAG, "Sent message to " + nodeId + ". Result = " + integer);
+                        Log.e(TAG, "Sent message to " + nodeId + ". Result = " + integer);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -262,7 +269,7 @@ public class WearService extends WearableListenerService {
     }
 
     void sendMessageToNodes(final String message, final String path) {
-        Log.v(TAG, "Sending message " + message);
+        Log.e(TAG, "Sending message " + message);
         // Lists all the nodes (devices) connected to the Wear API
         Wearable.getNodeClient(this).getConnectedNodes().addOnCompleteListener(new OnCompleteListener<List<Node>>() {
             @Override
@@ -328,6 +335,6 @@ public class WearService extends WearableListenerService {
 
     // Constants
     public enum ACTION_SEND {
-        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, PROFILE_SEND
+        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, PROFILE_SEND, COORDS_SEND
     }
 }

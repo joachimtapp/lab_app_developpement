@@ -71,6 +71,12 @@ public class WearService extends WearableListenerService {
             case PROFILE_SEND:
 
                 break;
+
+            case DIST:
+                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_dist_path);
+                putDataMapRequest.getDataMap().putInt(BuildConfig.W_dist_val, intent.getIntExtra(DIST_TRIG, -1));
+                sendPutDataMapRequest(putDataMapRequest);
+                break;
             default:
                 Log.w(TAG, "Unknown action");
                 break;
@@ -87,6 +93,7 @@ public class WearService extends WearableListenerService {
     public static final String IMAGE = "IMAGE";
     public static final String PATH = "PATH";
     public static final String PROFILE = "PROFILE";
+    public static final String DIST_TRIG = "DIST_TRIG";
 
     public static Asset createAssetFromBitmap(Bitmap bitmap) {
         bitmap = resizeImage(bitmap, 390);
@@ -328,6 +335,6 @@ public class WearService extends WearableListenerService {
 
     // Constants
     public enum ACTION_SEND {
-        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, PROFILE_SEND
+        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, PROFILE_SEND, DIST
     }
 }

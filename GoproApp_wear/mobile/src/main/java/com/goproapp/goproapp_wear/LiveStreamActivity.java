@@ -2,10 +2,14 @@ package com.goproapp.goproapp_wear;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -73,6 +77,8 @@ public class LiveStreamActivity extends AppCompatActivity {
     private SeekBar seekBarISO_max_burst;
     private LinearLayout proTune_burst;
 
+    private TextView distText;
+
     private ImageButton shutterButton;
     private Boolean recording = false;
 
@@ -83,6 +89,9 @@ public class LiveStreamActivity extends AppCompatActivity {
     private static final int MENU_VIDEO = 1;
     private static final int MENU_BURST = 2;
     private static final int MENU_POSITION = 3;
+
+    public static final String TRIG_DIST_INT = "TRIG_DIST";
+    public static final String TRIG_DIST_VAL = "TRIG_DIST_VAL";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +119,16 @@ public class LiveStreamActivity extends AppCompatActivity {
                 }
             }
         });
+
+        distText = findViewById(R.id.distTrig);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Integer distVal = intent.getIntExtra(TRIG_DIST_VAL, 0);
+                distText.setText(distVal.toString());
+            }
+        }, new IntentFilter(TRIG_DIST_INT));
 
         // Setup camera
         setupCamera();
@@ -176,6 +195,10 @@ public class LiveStreamActivity extends AppCompatActivity {
                 goProInterface.setMode(GoProInterface.MODE_VIDEO);
                 MODE = GoProInterface.MODE_VIDEO;
                 changeMenu(MENU_POSITION);
+                Intent intent = new Intent(LiveStreamActivity.this, WearService.class);
+                intent.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
+                intent.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_mainactivity);
+                startService(intent);
             }
         });
 

@@ -52,7 +52,7 @@ public class HttpGetRequest extends AsyncTask<String, Void, String> {
             result = stringBuilder.toString();
         }
         catch(IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
             result = null;
 
             //TODO : Find a way to tell the user that it failed

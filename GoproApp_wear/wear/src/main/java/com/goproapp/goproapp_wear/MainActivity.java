@@ -1,8 +1,6 @@
 package com.goproapp.goproapp_wear;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -10,11 +8,14 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+// Icons made by <a href="https://www.flaticon.com/authors/chanut" title="Chanut">Chanut</a> licensed by <a href="http://creativecommons.org/licenses/by/3.0/"
 
 public class MainActivity extends WearableActivity implements
         LocationListener {
@@ -51,6 +52,17 @@ public class MainActivity extends WearableActivity implements
         }
         // Enables Always-on
         setAmbientEnabled();
+
+        Button dist = findViewById(R.id.sendDist);
+        dist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, WearService.class);
+                intent.setAction(WearService.ACTION_SEND.DIST.name());
+                intent.putExtra(WearService.DIST_TRIG, 30);
+                startService(intent);
+            }
+        });
     }
 
     @Override
@@ -67,9 +79,9 @@ public class MainActivity extends WearableActivity implements
 
     private void updateDisplay() {
         if (isAmbient()) {
-            mLayout.setBackgroundColor(getResources().getColor(android.R.color.black, getTheme()));
+            //mLayout.setBackgroundColor(getResources().getColor(android.R.color.black, getTheme()));
         } else {
-            mLayout.setBackgroundColor(getResources().getColor(android.R.color.white, getTheme()));
+            //mLayout.setBackgroundColor(getResources().getColor(android.R.color.white, getTheme()));
         }
     }
 
@@ -98,5 +110,8 @@ public class MainActivity extends WearableActivity implements
     @Override
     public void onProviderDisabled(String s) {
 
+    }
+
+    public void MapBtnClicked(View view) {
     }
 }

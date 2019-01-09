@@ -69,7 +69,7 @@
                     android:layout_margin="11dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/ic_menu_camera" />
+                    app:srcCompat="@drawable/photo" />
 
                 <ImageButton
                     android:id="@+id/modeVideo"
