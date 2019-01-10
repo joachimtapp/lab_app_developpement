@@ -1,0 +1,180 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+MERGED from [com.android.support:design:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\design-28.0.0.aar\7a1c3c0cf3fd78c73667d957dbeb2fbf\AndroidManifest.xml:17:1-24:12
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\0ca79bcdaa603b906a9088532f2520b1\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\43f8422dabdd31d5b82d20b7327e4348\AndroidManifest.xml:2:1-11:12
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\d36cdc59a0d4822be59b6e67ea16d66e\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\c8a85611c8ec8d0f9336df40b09d66c3\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:recyclerview-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\recyclerview-v7-28.0.0.aar\57e13087e40a7a345c984f28c4685a11\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\885c883e27050d9b68fe2107bc7d65ff\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\84b9a44eeb9b6e74f846daad4b22f43d\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\db1b270ddb4be619aebbfd9054a0412a\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:transition:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\transition-28.0.0.aar\eabd5d815c4e8d9b6b7047f4078d6855\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:loader:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\9b8a643b8977e62b5c28a77e078e3c65\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\36c87a158ee3bdad92f466ab524e907b\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\a0884c78092b4a553b5c4f8bca565f4d\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\891df209a84e9f7cb9acd4310ce36f88\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\5848f1af003739a3009a9b4aa87f6b7d\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:customview:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\3b8ab183a3796abdd6cb3bcd9354cd44\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\dd55a8ae44d1a95e41fe45548ab0c1ce\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\a500ec2c5befdf4bc0b0e9c68ce9b962\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\2d161df066122127658d0a33cee3f2f3\AndroidManifest.xml:17:1-24:12
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\7bc146354eac82877e4fb3404da67d41\AndroidManifest.xml:17:1-25:12
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\52021c10f3dadc9e2ead727c0bb92b73\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:cardview-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\cardview-v7-28.0.0.aar\20b52edefc0177f1ea7521d4ba3e089d\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\fc7b04fa0da0773e2c4e247713e1d891\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\c7bc5b4896b8dea912ef8177eebe2fd4\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\b82f03eb2c1c1894d7e2d2014421e5ed\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:print:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\08791fe97e26b38995957bfbe3899c97\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\cb8a40fd9e2d16362da863b64fc3dc27\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\dec75ed8189b217f6d136872f830a1cc\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\99e40625108593b79a49c71ace320592\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\c9db23c7cd1f4fe0e2993ed65c9721ac\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\3bc6148f207d3d5df4781a9c6c66a396\AndroidManifest.xml:17:1-22:12
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+	package
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:3:5-41
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+	android:versionCode
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:1-26:12
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:2:11-69
+application
+ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:5:5-24:19
+MERGED from [com.android.support:design:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\design-28.0.0.aar\7a1c3c0cf3fd78c73667d957dbeb2fbf\AndroidManifest.xml:22:5-20
+MERGED from [com.android.support:design:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\design-28.0.0.aar\7a1c3c0cf3fd78c73667d957dbeb2fbf\AndroidManifest.xml:22:5-20
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\43f8422dabdd31d5b82d20b7327e4348\AndroidManifest.xml:9:5-20
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\43f8422dabdd31d5b82d20b7327e4348\AndroidManifest.xml:9:5-20
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\2d161df066122127658d0a33cee3f2f3\AndroidManifest.xml:22:5-94
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\2d161df066122127658d0a33cee3f2f3\AndroidManifest.xml:22:5-94
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\7bc146354eac82877e4fb3404da67d41\AndroidManifest.xml:22:5-23:19
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\7bc146354eac82877e4fb3404da67d41\AndroidManifest.xml:22:5-23:19
+	android:appComponentFactory
+		ADDED from [com.android.support:support-compat:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\2d161df066122127658d0a33cee3f2f3\AndroidManifest.xml:22:18-91
+	android:supportsRtl
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:10:9-35
+	android:label
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:8:9-41
+	android:roundIcon
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:9:9-54
+	android:icon
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:7:9-43
+	android:allowBackup
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:6:9-35
+	android:theme
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:11:9-40
+activity#com.example.guill.goproapp.MainActivity
+ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:12:9-21:20
+	android:label
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:14:13-45
+	android:theme
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:15:13-56
+	android:name
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:13:13-41
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:16:13-20:29
+action#android.intent.action.MAIN
+ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:17:17-69
+	android:name
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:17:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:19:17-77
+	android:name
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:19:27-74
+activity#com.example.guill.goproapp.LivestreamActivity
+ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:22:9-56
+	android:name
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:22:19-53
+activity#com.example.guill.goproapp.GalleryActivity
+ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:23:9-62
+	android:name
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml:23:19-50
+uses-sdk
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+MERGED from [com.android.support:design:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\design-28.0.0.aar\7a1c3c0cf3fd78c73667d957dbeb2fbf\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:design:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\design-28.0.0.aar\7a1c3c0cf3fd78c73667d957dbeb2fbf\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\0ca79bcdaa603b906a9088532f2520b1\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\0ca79bcdaa603b906a9088532f2520b1\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\43f8422dabdd31d5b82d20b7327e4348\AndroidManifest.xml:5:5-7:41
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\43f8422dabdd31d5b82d20b7327e4348\AndroidManifest.xml:5:5-7:41
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\d36cdc59a0d4822be59b6e67ea16d66e\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\d36cdc59a0d4822be59b6e67ea16d66e\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\c8a85611c8ec8d0f9336df40b09d66c3\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\c8a85611c8ec8d0f9336df40b09d66c3\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:recyclerview-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\recyclerview-v7-28.0.0.aar\57e13087e40a7a345c984f28c4685a11\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:recyclerview-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\recyclerview-v7-28.0.0.aar\57e13087e40a7a345c984f28c4685a11\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\885c883e27050d9b68fe2107bc7d65ff\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\885c883e27050d9b68fe2107bc7d65ff\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\84b9a44eeb9b6e74f846daad4b22f43d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\84b9a44eeb9b6e74f846daad4b22f43d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\db1b270ddb4be619aebbfd9054a0412a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\db1b270ddb4be619aebbfd9054a0412a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:transition:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\transition-28.0.0.aar\eabd5d815c4e8d9b6b7047f4078d6855\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:transition:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\transition-28.0.0.aar\eabd5d815c4e8d9b6b7047f4078d6855\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:loader:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\9b8a643b8977e62b5c28a77e078e3c65\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:loader:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\9b8a643b8977e62b5c28a77e078e3c65\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\36c87a158ee3bdad92f466ab524e907b\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\36c87a158ee3bdad92f466ab524e907b\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\a0884c78092b4a553b5c4f8bca565f4d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\a0884c78092b4a553b5c4f8bca565f4d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\891df209a84e9f7cb9acd4310ce36f88\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\891df209a84e9f7cb9acd4310ce36f88\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\5848f1af003739a3009a9b4aa87f6b7d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\5848f1af003739a3009a9b4aa87f6b7d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:customview:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\3b8ab183a3796abdd6cb3bcd9354cd44\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:customview:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\3b8ab183a3796abdd6cb3bcd9354cd44\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\dd55a8ae44d1a95e41fe45548ab0c1ce\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\dd55a8ae44d1a95e41fe45548ab0c1ce\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\a500ec2c5befdf4bc0b0e9c68ce9b962\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\a500ec2c5befdf4bc0b0e9c68ce9b962\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\2d161df066122127658d0a33cee3f2f3\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\2d161df066122127658d0a33cee3f2f3\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\7bc146354eac82877e4fb3404da67d41\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\7bc146354eac82877e4fb3404da67d41\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\52021c10f3dadc9e2ead727c0bb92b73\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\52021c10f3dadc9e2ead727c0bb92b73\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:cardview-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\cardview-v7-28.0.0.aar\20b52edefc0177f1ea7521d4ba3e089d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:cardview-v7:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\cardview-v7-28.0.0.aar\20b52edefc0177f1ea7521d4ba3e089d\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\fc7b04fa0da0773e2c4e247713e1d891\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\fc7b04fa0da0773e2c4e247713e1d891\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\c7bc5b4896b8dea912ef8177eebe2fd4\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\c7bc5b4896b8dea912ef8177eebe2fd4\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\b82f03eb2c1c1894d7e2d2014421e5ed\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\b82f03eb2c1c1894d7e2d2014421e5ed\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:print:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\08791fe97e26b38995957bfbe3899c97\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:print:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\08791fe97e26b38995957bfbe3899c97\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\cb8a40fd9e2d16362da863b64fc3dc27\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\cb8a40fd9e2d16362da863b64fc3dc27\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\dec75ed8189b217f6d136872f830a1cc\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\dec75ed8189b217f6d136872f830a1cc\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\99e40625108593b79a49c71ace320592\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\99e40625108593b79a49c71ace320592\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\c9db23c7cd1f4fe0e2993ed65c9721ac\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\c9db23c7cd1f4fe0e2993ed65c9721ac\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\3bc6148f207d3d5df4781a9c6c66a396\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\guill\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\3bc6148f207d3d5df4781a9c6c66a396\AndroidManifest.xml:20:5-44
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\guill\AndroidStudioProjects\Lab4_Fragments_Menus\GoproApp\app\src\main\AndroidManifest.xml

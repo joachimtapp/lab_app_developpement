@@ -1,0 +1,4 @@
+#Tue Nov 20 19:22:09 CET 2018
+base.0=C\:\\Users\\guill\\AndroidStudioProjects\\Lab4_Fragments_Menus\\GoproApp\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\10
+path.0=classes.dex
+renamed.0=classes.dex
