@@ -4,10 +4,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +21,12 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.gson.JsonArray;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
@@ -30,6 +36,30 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import retrofit2.http.Url;
 
 public class GalleryFragment extends Fragment {
 
@@ -45,10 +75,14 @@ public class GalleryFragment extends Fragment {
     private MapView mapView;
     private Marker marker;
     private SwipeRefreshLayout mSwipeRefresh;
-
+    private List<String> localData;
+    private List<String> goProData = new ArrayList<>();
+    private String goProDir;
     public static MapboxMap mMapboxMap;
     private int nPrevSelGridItem = -1; //used highlight selected picture
     private View viewPrev;
+
+    private ImageView feckinView;
 
     public GalleryFragment() {
         // Required empty public constructor
@@ -118,6 +152,7 @@ public class GalleryFragment extends Fragment {
         swipeHint = fragmentView.findViewById(R.id.swipeHint);
         mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
         linearLayoutInfo = fragmentView.findViewById(R.id.linearLayoutInfo);
+        feckinView = fragmentView.findViewById(R.id.feckinView);
 
         if (GalleryActivity.imgData.size() > 0) {//consider the case of already downloaded images
             swipeHint.setAlpha(0.0f);
@@ -128,14 +163,18 @@ public class GalleryFragment extends Fragment {
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
-                    swipeHint.setAlpha(0.0f);
-                    adapter = new ImageAdapter(getContext());
-                    gridView.setAdapter(adapter);
-                } else {
-                    swipeHint.setText(getString(R.string.galleryEmpty));
-                    mSwipeRefresh.setRefreshing(false);
-                }
+
+//                GetGoProMediaList();
+                DownloadGoProData();
+                mSwipeRefresh.setRefreshing(false);
+//                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
+//                    swipeHint.setAlpha(0.0f);
+//                    adapter = new ImageAdapter(getContext());
+//                    gridView.setAdapter(adapter);
+//                } else {
+//                    swipeHint.setText(getString(R.string.galleryEmpty));
+//                    mSwipeRefresh.setRefreshing(false);
+//                }
             }
         });
 
@@ -208,6 +247,185 @@ public class GalleryFragment extends Fragment {
         return fragmentView;
     }
 
+    private void GetGoProMediaList() {
+//        sendRequest("http://10.5.5.9:8080/gp/gpMediaList");
+        new SendPostRequest().execute("http://10.5.5.9:8080/gp/gpMediaList");
+    }
+
+
+    private class SendPostRequest extends AsyncTask<String, Void, String> {
+
+        protected void onPreExecute() {
+        }
+
+        protected String doInBackground(String... arg0) {
+
+            try {
+
+                URL url = new URL(arg0[0]); // here is your URL path
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000 /* milliseconds */);
+                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(
+                                    conn.getInputStream()));
+                    StringBuffer sb = new StringBuffer("");
+                    String line = "";
+
+                    while ((line = in.readLine()) != null) {
+
+                        sb.append(line);
+                        break;
+                    }
+
+                    in.close();
+                    Log.v("debug", "ici " + sb.toString());
+                    return sb.toString();
+
+                } else {
+                    return new String("false : " + responseCode);
+                }
+            } catch (Exception e) {
+                return new String("Exception: " + e.getMessage());
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            Log.v("debug", result);
+            byte[] b = result.getBytes();
+            Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
+            feckinView.setImageBitmap(bitmap);
+            Toast.makeText(getContext(), "maybe??????", Toast.LENGTH_SHORT).show();
+
+            try {
+                JSONObject obj = new JSONObject(result);
+                JSONArray array =obj.getJSONArray("media").getJSONObject(0).getJSONArray("fs");
+                goProDir=obj.getJSONArray("media").getJSONObject(0).getString("d");
+                for(int i=0;i<array.length();i++) {
+
+                    JSONObject media =array.getJSONObject(i);
+                    Log.v("debug","dir= "+goProDir+" name= "+media.getString("n"));
+                    goProData.add(media.getString("n"));
+                }
+
+            } catch (Throwable tx) {
+                Log.v("debug", "Could not parse malformed JSON: \"" + result + "\"");
+            }
+
+
+        }
+    }
+
+    private class SendHttpRequestTask extends AsyncTask<String, Void, byte[]> {
+
+        @Override
+        protected byte[] doInBackground(String... params) {
+            String url = params[0];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+
+                HttpURLConnection con = (HttpURLConnection) ( new URL(url)).openConnection();
+//                con.setRequestMethod("POST");
+//                con.setDoInput(true);
+//                con.setDoOutput(true);
+//                con.connect();
+
+                con.setReadTimeout(15000 /* milliseconds */);
+                con.setConnectTimeout(15000 /* milliseconds */);
+                con.setRequestMethod("POST");
+                con.setDoInput(true);
+                con.setDoOutput(true);
+
+
+                int responseCode = con.getResponseCode();
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+
+                    BufferedInputStream bin =new BufferedInputStream(con.getInputStream());
+                    byte[] buf = new byte[1024];
+
+//                    while ( is.read(b) != -1)
+//                        baos.write(b);
+                    int bytesRead=0;
+                    while ((bin.read(buf))!=-1){
+                        baos.write(buf);
+                    }
+                    con.disconnect();
+
+
+                    return baos.toByteArray();
+
+                } else {
+                    Toast.makeText(getContext(), "fail", Toast.LENGTH_SHORT).show();
+                    return new byte[0];
+                }
+            }
+            catch(Throwable t) {
+                t.printStackTrace();
+            }
+            Toast.makeText(getContext(), "fail2", Toast.LENGTH_SHORT).show();
+            return new byte[0];
+        }
+
+        @Override
+        protected void onPostExecute(byte[] result) {
+            Bitmap img = BitmapFactory.decodeByteArray(result, 0, result.length);
+            feckinView.setImageBitmap(img);
+        }
+    }
+    public byte[] downloadImage(String imgName,String url) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            System.out.println("URL ["+url+"] - Name ["+imgName+"]");
+
+            HttpURLConnection con = (HttpURLConnection) ( new URL(url)).openConnection();
+            con.setRequestMethod("POST");
+            con.setDoInput(true);
+            con.setDoOutput(true);
+            con.connect();
+            con.getOutputStream();
+
+            InputStream is = con.getInputStream();
+            byte[] b = new byte[1024];
+
+            while ( is.read(b) != -1)
+                baos.write(b);
+
+            con.disconnect();
+        }
+        catch(Throwable t) {
+            t.printStackTrace();
+        }
+
+        return baos.toByteArray();
+    }
+
+
+    private void DownloadGoProData() {
+        Toast.makeText(getContext(), "maybe??", Toast.LENGTH_SHORT).show();
+
+//        new SendPostRequest().execute(" http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/GOPR0050.JPG");
+//        Drawable img=LoadImageFromWebOperations(" http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/GOPR0050.JPG");
+//        feckinView.setImageDrawable(getResources().getDrawable(R.drawable.sample_0));URL url = new URL("urlPath");
+
+    new SendHttpRequestTask().execute(" http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/GOPR0050.JPG");
+
+    }
+
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -231,15 +449,19 @@ public class GalleryFragment extends Fragment {
 
     private class ImageAdapter extends BaseAdapter {
         private Context mContext;
+
         public ImageAdapter(Context c) {
             mContext = c;
         }
+
         public int getCount() {
             return GalleryActivity.imgData.size();
         }
+
         public Object getItem(int position) {
             return null;
         }
+
         public long getItemId(int position) {
             return 0;
         }
@@ -259,7 +481,7 @@ public class GalleryFragment extends Fragment {
 
             StorageReference mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(GalleryActivity.imgData.get(position).imgUrl);
             mStorageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(
-                    new OnSuccessListener<byte[]>(){
+                    new OnSuccessListener<byte[]>() {
                         @Override
                         public void onSuccess(byte[] bytes) {
                             Bitmap newImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);

@@ -429,6 +429,7 @@ public class GoProInterface {
     private void sendRequest(String url){
         HttpGetRequest httpGetRequest = new HttpGetRequest();
         httpGetRequest.execute(url);
+
     }
 
 }
