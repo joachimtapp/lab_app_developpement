@@ -109,4 +109,6 @@ public class MainActivity extends WearableActivity implements
 
     public void MapBtnClicked(View view) {
     }
+
+
 }
