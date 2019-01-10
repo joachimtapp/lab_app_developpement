@@ -2,7 +2,6 @@
 <!-- Use DrawerLayout as root container for activity -->
 <android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -30,11 +29,11 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
+            android:background="@android:color/transparent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@mipmap/ic_launcher_round"
-            android:background="@android:color/transparent"/>
+            app:srcCompat="@drawable/shutter_small" />
 
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -51,10 +50,10 @@
 
             <View
                 android:id="@+id/selectedMode"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_margin="8dp"
-                android:background="@color/selected"/>
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_margin="12dp"
+                android:background="@drawable/background_selection" />
 
             <LinearLayout
                 android:id="@+id/modeMenu"
@@ -64,39 +63,39 @@
 
                 <ImageButton
                     android:id="@+id/modePhoto"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_margin="11dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/photo" />
+                    app:srcCompat="@drawable/photo_small" />
 
                 <ImageButton
                     android:id="@+id/modeVideo"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_margin="11dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/ic_menu_slideshow" />
+                    app:srcCompat="@drawable/video_small" />
 
                 <ImageButton
                     android:id="@+id/modeBurst"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_margin="11dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/ic_menu_gallery" />
+                    app:srcCompat="@drawable/burst_small" />
 
                 <ImageButton
                     android:id="@+id/modePosition"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_margin="11dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/ic_info_black_24dp" />
+                    app:srcCompat="@drawable/position_small" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -115,9 +114,11 @@
                 android:id="@+id/menuDeployer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="7dp"
                 android:layout_weight="1"
-                app:srcCompat="@android:drawable/ic_media_play"
-                android:background="@android:color/transparent"/>
+                android:background="@android:color/transparent"
+                app:srcCompat="@drawable/arrow_small" />
 
             <RelativeLayout
                 android:layout_width="200dp"

@@ -1,7 +1,6 @@
 package com.goproapp.goproapp_wear;
 
 import android.animation.ObjectAnimator;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,13 +12,14 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
@@ -102,16 +102,30 @@ public class LiveStreamActivity extends AppCompatActivity {
         goProInterface = new GoProInterface();
 
         shutterButton = findViewById(R.id.shutterButton);
+        Animation animation_out = new AlphaAnimation(1.0F, 0.5F);
+        Animation animation_in = new AlphaAnimation(0.5F, 1.0F);
+        animation_out.setDuration(100);
+        animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
+        animation_in.setStartOffset(100);
+        animation_in.setDuration(100);
+        animation_in.setInterpolator(new AccelerateDecelerateInterpolator());
+
         shutterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                shutterButton.startAnimation(animation_in);
+                shutterButton.startAnimation(animation_out);
+
+
                 if(MODE.equals(GoProInterface.MODE_VIDEO)){
                     if(recording){
                         goProInterface.shutterStop();
-                        // TODO : change buton to normall button
+                        // TODO : change button to normal button
+                        shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_small));
                     } else {
                         goProInterface.shutter();
                         // TODO : Change button to recording button
+                        shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_stop_small));
                     }
                     recording = !recording;
                 } else {
@@ -214,7 +228,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         menus.get(view).setVisibility(View.VISIBLE);
 
         Resources r = getResources();
-        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,46.5F*view, r.getDisplayMetrics());
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,52.5F*view, r.getDisplayMetrics());
 
         View boxView = findViewById(R.id.selectedMode);
         ObjectAnimator animation = ObjectAnimator.ofFloat(boxView, "translationX", px);

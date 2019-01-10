@@ -7,7 +7,7 @@
     <color name="black_overlay">#66000000</color>
 
     <color name="unselected">#00000000</color>
-    <color name="selected">#80D3D3D3</color>
+    <color name="selected">#d81b60</color>
 
     <color name="spinner_background">#000000</color>
     <color name="spinner_text">#000000</color>
