@@ -46,7 +46,7 @@ public class DrawerHandler {
         }
         else {
             nav_name.setText("Please log in");
-            nav_gallery.setEnabled(false);
+//            nav_gallery.setEnabled(false);
         }
 
     }
