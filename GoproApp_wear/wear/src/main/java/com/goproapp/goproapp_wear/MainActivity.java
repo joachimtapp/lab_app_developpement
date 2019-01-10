@@ -78,11 +78,7 @@ public class MainActivity extends WearableActivity implements
     }
 
     private void updateDisplay() {
-        if (isAmbient()) {
-            //mLayout.setBackgroundColor(getResources().getColor(android.R.color.black, getTheme()));
-        } else {
-            //mLayout.setBackgroundColor(getResources().getColor(android.R.color.white, getTheme()));
-        }
+
     }
 
 
@@ -94,7 +90,6 @@ public class MainActivity extends WearableActivity implements
         TextView textViewLocation = findViewById(R.id.testView);
         if (textViewLocation != null)
             textViewLocation.setText("Lat: " + latitude + "\nLon: " + longitude);
-        Toast.makeText(this, "wtf????", Toast.LENGTH_SHORT).show();
     }
 
     @Override
