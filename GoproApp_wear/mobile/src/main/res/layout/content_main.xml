@@ -9,34 +9,34 @@
     tools:showIn="@layout/app_bar_main">
 
     <TextView
-        android:id="@+id/text_maingoprostatu"
-        android:layout_width="261dp"
-        android:layout_height="24dp"
-        android:text="GoPro not conected"
+        android:id="@+id/text_main_gopro_statu"
+        android:layout_width="225dp"
+        android:layout_height="25dp"
+        android:text="Connect your GoPro !"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center"
         app:layout_constraintVertical_bias="0.784" />
 
     <Button
         android:id="@+id/button_maincon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:layout_marginEnd="3dp"
-        android:layout_marginBottom="48dp"
+        android:layout_marginBottom="8dp"
         android:onClick="onMainConnect"
         android:text="Connect"
-        app:layout_constraintBottom_toTopOf="@+id/text_maingoprostatu"
+        app:layout_constraintBottom_toTopOf="@+id/text_main_gopro_statu"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/image_mainim"
-        android:layout_width="210dp"
-        android:layout_height="245dp"
+        android:layout_width="268dp"
+        android:layout_height="281dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
@@ -45,6 +45,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.32"
+        app:layout_constraintVertical_bias="0.285"
         app:srcCompat="@mipmap/ic_launcher_round" />
+
 </android.support.constraint.ConstraintLayout>

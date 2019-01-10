@@ -52,9 +52,25 @@ public class MainActivity extends AppCompatActivity
 
         navigationView.setNavigationItemSelectedListener(this);
 
+        //launch the diaporama
+        //setMainImage();
+
     }
+
+    private void setMainImage() {
+
+
+    }
+
     // button callbak -> fetch a wifi connection
     public void onMainConnect(View view) {
+        // start the wifi settings of the device
+        selectWifiNetwork();
+
+    }
+
+    private void selectWifiNetwork() {
+        // fetch wifi
         startActivityForResult(new Intent(
                 Settings.ACTION_WIFI_SETTINGS), 0);
     }
@@ -63,18 +79,36 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0) {
+            // Wifimanager get the wifi networks selected
             WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            // info of the wifi network selected
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            // name of the wifi selected
             String ssid = wifiInfo.getSSID();
             if (!wifiManager.isWifiEnabled()) {
+                // problem if wifimanager not available
                 Toast.makeText(MainActivity.this,
                         "connection problem", Toast.LENGTH_SHORT).show();
             } else {
                 //String name = wifiInfo.getSSID();
                 Toast.makeText(MainActivity.this,
                         "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
-                TextView maingoprostatu = findViewById(R.id.text_maingoprostatu);
-                maingoprostatu.setText("Connected to :"+ssid);
+                TextView maingoprostatu = findViewById(R.id.text_main_gopro_statu);
+                // check if the network correspont to a Gopro -> the 2 first letter of the network ssid are : "ep..."
+                String NetworkIdCheck = ssid.substring(0,3);
+                maingoprostatu.setText("Connected to :"+NetworkIdCheck);
+
+                if (NetworkIdCheck.equals("GP")){
+                    Toast.makeText(MainActivity.this,
+                            "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
+                            maingoprostatu.setText("Connected to the Gopro :"+ssid);
+
+                } else {
+                    Toast.makeText(MainActivity.this,
+                            ssid+"Network is not a GoPro", Toast.LENGTH_SHORT).show();
+                            maingoprostatu.setText("Please connect to a GoPro");
+                }
+
             }
         }
 
