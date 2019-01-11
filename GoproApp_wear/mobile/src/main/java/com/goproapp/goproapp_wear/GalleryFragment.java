@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Base64;
@@ -72,7 +71,6 @@ public class GalleryFragment extends Fragment {
     private int nPrevSelGridItem = -1; //used highlight selected picture
     private View viewPrev;
 
-    private ImageView feckinView;
 
     public GalleryFragment() {
         // Required empty public constructor
@@ -131,17 +129,19 @@ public class GalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(getContext(), getString(R.string.accessToken));
     }
-    private class DownloadTask extends AsyncTask<String,Void,Bitmap> {
+
+    private class DownloadTask extends AsyncTask<String, Void, Wrapper> {
         // Before the tasks execution
         protected void onPreExecute() {
             // Display the progress dialog on async task start
         }
 
         // Do the task in background/non UI thread
-        protected Bitmap doInBackground(String... params) {
+        protected Wrapper doInBackground(String... params) {
+            Wrapper wrap=new Wrapper();
             URL url = null;
             try {
-                url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/"+params[0]);
+                url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + params[0]);
 //                url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/"+params[0]);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -157,7 +157,9 @@ public class GalleryFragment extends Fragment {
                 Bitmap bmp = BitmapFactory.decodeStream(bufferedInputStream);
 
                 // Return the downloaded bitmap
-                return bmp;
+                wrap.imgBmp=bmp;
+                wrap.imgName=params[0];
+                return wrap;
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -169,28 +171,28 @@ public class GalleryFragment extends Fragment {
         }
 
         // When all async task done
-        protected void onPostExecute(Bitmap result) {
+        protected void onPostExecute(Wrapper result) {
             // Hide the progress dialog
 
             if (result != null) {
                 // Display the downloaded image into ImageView
                 ImgData newImg = new ImgData();
-//            newImg.imgString = getStringFromBitmap(result.imgBmp);
-                newImg.imgBmp = result;
-//                newImg.name = result.imgName;
-//                newImg.bpm = "foo";
-//                newImg.latLng = new LatLng(48.769183, 21.661252);
-//                if (result.imgName.toLowerCase().contains("jpg")) {
+                newImg.imgString = getStringFromBitmap(result.imgBmp);
+//                newImg.imgBmp = result.imgBmp;
+                newImg.bpm="foo";
+                newImg.name = result.imgName;
+                newImg.latLng = new LatLng(48.769183, 21.661252);
+                if (result.imgName.toLowerCase().contains("jpg")) {
+                GalleryActivity.imgData.add(newImg);
+                    new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
+                } else {
+                    newImg.date = "getDate";
                     GalleryActivity.imgData.add(newImg);
-//                    new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
-//                } else {
-//                    newImg.date = "getDate";
-//                    GalleryActivity.imgData.add(newImg);
-//                }
+                }
                 swipeHint.setAlpha(0.0f);
                 adapter = new ImageAdapter(getContext());
                 gridView.setAdapter(adapter);
-
+                localData.add(newImg.name);
             } else {
                 // Notify user that an error occurred while downloading image
                 Toast.makeText(getContext(), "dow err", Toast.LENGTH_SHORT).show();
@@ -208,8 +210,7 @@ public class GalleryFragment extends Fragment {
         swipeHint = fragmentView.findViewById(R.id.swipeHint);
         mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
         linearLayoutInfo = fragmentView.findViewById(R.id.linearLayoutInfo);
-        feckinView = fragmentView.findViewById(R.id.feckinView);
-
+        localData.clear();
         for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
             localData.add(GalleryActivity.imgData.get(i).name);
         }
@@ -223,17 +224,16 @@ public class GalleryFragment extends Fragment {
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-//                GetGoProMediaList();
-                new DownloadTask().execute("GOPR0050.JPG");
+                GetGoProMediaList();
                 mSwipeRefresh.setRefreshing(false);
-//                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
-//                    swipeHint.setAlpha(0.0f);
-//                    adapter = new ImageAdapter(getContext());
-//                    gridView.setAdapter(adapter);
-//                } else {
-//                    swipeHint.setText(getString(R.string.galleryEmpty));
-//                    mSwipeRefresh.setRefreshing(false);
-//                }
+                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
+                    swipeHint.setAlpha(0.0f);
+                    adapter = new ImageAdapter(getContext());
+                    gridView.setAdapter(adapter);
+                } else {
+                    swipeHint.setText(getString(R.string.galleryEmpty));
+                    mSwipeRefresh.setRefreshing(false);
+                }
             }
         });
 
@@ -312,13 +312,13 @@ public class GalleryFragment extends Fragment {
     }
 
 
-    private class SendPostRequest extends AsyncTask<String, Void, ImageAndInfo> {
+    private class SendPostRequest extends AsyncTask<String, Void, Wrapper> {
 
         protected void onPreExecute() {
         }
 
-        protected ImageAndInfo doInBackground(String... arg0) {
-            ImageAndInfo imgAndInfo = new ImageAndInfo();
+        protected Wrapper doInBackground(String... arg0) {
+            Wrapper imgAndInfo = new Wrapper();
             imgAndInfo.imgName = arg0[1];
 
             try {
@@ -361,7 +361,7 @@ public class GalleryFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(ImageAndInfo result) {
+        protected void onPostExecute(Wrapper result) {
 
             Log.v("debug", "result: " + result.text);
             //recover data names
@@ -398,90 +398,10 @@ public class GalleryFragment extends Fragment {
         }
     }
 
-    private class ImageAndInfo {
+    private class Wrapper {
         Bitmap imgBmp;
         String text;
         String imgName;
-    }
-
-    private class DownloadImgTask extends AsyncTask<String, Void, ImageAndInfo> {
-
-        @Override
-        protected ImageAndInfo doInBackground(String... params) {
-
-            ImageAndInfo newImg = new ImageAndInfo();
-            HttpURLConnection con = null;
-            String imageName = params[0];
-            String url = "http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + imageName ;
-//            String url = "http://10.5.5.9:8080/videos/DCIM/100GOPRO/" + imageName;
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                con = (HttpURLConnection) (new URL(url)).openConnection();
-                con.setReadTimeout(15000 /* milliseconds */);
-                con.setConnectTimeout(15000 /* milliseconds */);
-//                con.setRequestMethod("POST");
-//                con.setDoInput(true);
-//                con.setDoOutput(true);
-
-                con.connect();
-                InputStream inputStream = con.getInputStream();
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-//                Bitmap bmp = BitmapFactory.decodeStream(bufferedInputStream);
-
-//                int responseCode = con.getResponseCode();
-//                if (responseCode == HttpsURLConnection.HTTP_OK) {
-
-
-//                    BufferedInputStream bin = new BufferedInputStream(con.getInputStream());
-//                    byte[] buf = new byte[1024];
-//
-//                    while ((bin.read(buf)) != -1) {
-//                        baos.write(buf);
-//                    }
-//                    con.disconnect();
-
-                localData.add(imageName);
-
-
-                newImg.imgBmp = BitmapFactory.decodeStream(bufferedInputStream);
-                newImg.imgName = imageName;
-                return newImg;
-
-//                } else {
-//                    Toast.makeText(getContext(), "fail", Toast.LENGTH_SHORT).show();
-//                    return newImg;
-//                }
-            }catch(IOException e){
-                e.printStackTrace();
-                Log.v("Myinfo", imageName + " no bytesteam");
-                return newImg;
-            }finally{
-                // Disconnect the http url connection
-                con.disconnect();
-            }
-        }
-
-        @Override
-        protected void onPostExecute(ImageAndInfo result) {
-            if (result != null) {
-                ImgData newImg = new ImgData();
-//            newImg.imgString = getStringFromBitmap(result.imgBmp);
-                newImg.imgBmp = result.imgBmp;
-                newImg.name = result.imgName;
-                newImg.bpm = "foo";
-                newImg.latLng = new LatLng(48.769183, 21.661252);
-                if (result.imgName.toLowerCase().contains("jpg")) {
-                    GalleryActivity.imgData.add(newImg);
-                    new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
-                } else {
-                    newImg.date = "getDate";
-                    GalleryActivity.imgData.add(newImg);
-                }
-                swipeHint.setAlpha(0.0f);
-                adapter = new ImageAdapter(getContext());
-                gridView.setAdapter(adapter);
-            }
-        }
     }
 
 
@@ -490,11 +410,8 @@ public class GalleryFragment extends Fragment {
         toGet.removeAll(localData);
 
         for (String item : toGet) {
-
-            if(item.contains("JPG")){
-                Log.v("Myinfo","item: "+item);
-//                new DownloadImgTask().execute(item);
-            }
+            Log.v("Myinfo", "item: " + item);
+            new DownloadTask().execute(item);
         }
     }
 
@@ -563,7 +480,7 @@ public class GalleryFragment extends Fragment {
 //                        }
 //                    });
 //            imageView.setImageBitmap(getBitmapFromString(GalleryActivity.imgData.get(position).imgString));
-            imageView.setImageBitmap(GalleryActivity.imgData.get(position).imgBmp);
+            imageView.setImageBitmap(getBitmapFromString(GalleryActivity.imgData.get(position).imgString));
             return imageView;
         }
     }

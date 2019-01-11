@@ -1,7 +1,5 @@
 package com.goproapp.goproapp_wear;
 
-import android.graphics.Bitmap;
-
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 public class ImgData {
@@ -11,5 +9,4 @@ public class ImgData {
     protected LatLng latLng;
     protected String imgUrl;
     protected String imgString;
-    protected Bitmap imgBmp;
 }

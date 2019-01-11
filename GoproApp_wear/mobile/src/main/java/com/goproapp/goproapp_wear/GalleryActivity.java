@@ -2,7 +2,10 @@ package com.goproapp.goproapp_wear;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -15,14 +18,23 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
@@ -30,6 +42,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -49,8 +62,14 @@ public class GalleryActivity extends AppCompatActivity
     private static CustomViewPager mViewPager;
     private DrawerLayout mDrawerLayout;
     public static List<ImgData> imgData = new ArrayList<ImgData>();
-    private MyFirebaseRecordingListener mFirebaseRecordingListener;
+
+    //Firebase
+//    private MyFirebaseRecordingListener mFirebaseRefcordingListener;
     private DatabaseReference databaseRef;
+    private FirebaseDatabase database;
+
+    private FirebaseStorage storage;
+    private StorageReference storageReference;
 
     private String imgDataFile = "imgDataFile";
 
@@ -60,10 +79,9 @@ public class GalleryActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_gallery);
-
-//        readLocalData();
-
-        LoginActivity.userID = "foo";
+        readLocalData();
+        //initialise firebase
+        database = FirebaseDatabase.getInstance();
 
         //handle drawer
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -134,17 +152,55 @@ public class GalleryActivity extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
-        databaseRef = FirebaseDatabase.getInstance().getReference();
-        mFirebaseRecordingListener = new MyFirebaseRecordingListener();
-        databaseRef.child("users").child(LoginActivity.userID).child("Data").addValueEventListener
-                (mFirebaseRecordingListener);
+//        databaseRef = FirebaseDatabase.getInstance().getReference();
+//        mFirebaseRecordingListener = new MyFirebaseRecordingListener();
+//        databaseRef.child("users").child(LoginActivity.userID).child("Data").addValueEventListener
+//                (mFirebaseRecordingListener);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        databaseRef.child("users").child(LoginActivity.userID).child("Data").removeEventListener
-                (mFirebaseRecordingListener);
+//        databaseRef.child("users").child(LoginActivity.userID).child("Data").removeEventListener
+//                (mFirebaseRecordingListener);
+    }
+
+    public void Upload(View view) {
+        storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference();
+
+        int id=0;
+        String imgString=imgData.get(id).imgString;
+        StorageReference ref = storageReference.child(LoginActivity.userID).child(imgData.get(id).name);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        getBitmapFromString(imgString).compress(Bitmap.CompressFormat.PNG, 0, bos);
+
+
+        ref.putBytes(bos.toByteArray()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Toast.makeText(GalleryActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
+                        Task<Uri> downloadUrl = taskSnapshot.getMetadata().getReference()
+                                .getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(final Uri uri) {
+                                        imgData.get(id).imgUrl = uri.toString();
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(GalleryActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+        String name;
+        name=imgData.get(id).name.replace(".", "");
+        databaseRef = database.getReference().child(LoginActivity.userID).child("Data").child(name);
+
+        databaseRef.child("picture").setValue("test");//imgData.get(id).imgUrl);
     }
 
     //return the fragment for each section
@@ -172,38 +228,37 @@ public class GalleryActivity extends AppCompatActivity
 
     @Override
     public void onFragmentInteraction(Uri uri) {
-
     }
 
-    //get user stored data
-    private class MyFirebaseRecordingListener implements ValueEventListener {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            if (imgData.size() == 0)
-                for (final DataSnapshot rec : dataSnapshot.getChildren()) {
-
-                    final ImgData newImgData = new ImgData();
-                    String db_date = rec.child("text").getValue().toString();
-                    String db_HR = rec.child("heart_rate").getValue().toString();
-                    String db_position = rec.child("position").getValue().toString();
-                    String db_imUrl = rec.child("picture").getValue().toString();
-                    ImgData newData = new ImgData();
-                    newData.date = db_date;
-                    newData.bpm = db_HR;
-                    String[] latLng = db_position.split(",");
-                    double latitude = Double.parseDouble(latLng[0]);
-                    double longitude = Double.parseDouble(latLng[1]);
-                    newData.latLng = new LatLng(latitude, longitude);
-                    newData.imgUrl = db_imUrl;
-                    imgData.add(newData);
-                }
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-            Log.v("err", databaseError.toString());
-        }
-    }
+//    //get user stored data
+//    private class MyFirebaseRecordingListener implements ValueEventListener {
+//        @Override
+//        public void onDataChange(DataSnapshot dataSnapshot) {
+//            if (imgData.size() == 0)
+//                for (final DataSnapshot rec : dataSnapshot.getChildren()) {
+//
+//                    final ImgData newImgData = new ImgData();
+//                    String db_date = rec.child("text").getValue().toString();
+//                    String db_HR = rec.child("heart_rate").getValue().toString();
+//                    String db_position = rec.child("position").getValue().toString();
+//                    String db_imUrl = rec.child("picture").getValue().toString();
+//                    ImgData newData = new ImgData();
+//                    newData.date = db_date;
+//                    newData.bpm = db_HR;
+//                    String[] latLng = db_position.split(",");
+//                    double latitude = Double.parseDouble(latLng[0]);
+//                    double longitude = Double.parseDouble(latLng[1]);
+//                    newData.latLng = new LatLng(latitude, longitude);
+//                    newData.imgUrl = db_imUrl;
+//                    imgData.add(newData);
+//                }
+//        }
+//
+//        @Override
+//        public void onCancelled(DatabaseError databaseError) {
+//            Log.v("err", databaseError.toString());
+//        }
+//    }
 
     private void readLocalData() {
         try {
@@ -250,29 +305,30 @@ public class GalleryActivity extends AppCompatActivity
 
         } catch (IOException e) {
         }
-
-
     }
 
-    class NameList {
-        List<ImgData> list;
-        //getter and setter
+    private Bitmap getBitmapFromString(String stringPicture) {
+        /*
+         * This Function converts the String back to Bitmap
+         * */
+        byte[] decodedString = Base64.decode(stringPicture, Base64.DEFAULT);
+        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        return decodedByte;
     }
-
     @Override
     protected void onStop() {
         super.onStop();
-//        FileOutputStream outputStream;
-//        Gson gson = new Gson();
-//        String json = gson.toJson(imgData);
-//        Log.d("debug","write "+json);
-//        try {
-//            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
-//            outputStream.write(json.getBytes());
-//            outputStream.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        FileOutputStream outputStream;
+        Gson gson = new Gson();
+        String json = gson.toJson(imgData);
+        Log.d("debug","write "+json);
+        try {
+            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
+            outputStream.write(json.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 
