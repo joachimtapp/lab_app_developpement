@@ -2,12 +2,14 @@ package com.goproapp.goproapp_wear;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -143,8 +145,8 @@ public class GalleryMapFragment extends Fragment {
                     //show thumbnail on map if already downloaded
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
-                        if (GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).img != null) {
-                            Bitmap img = GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).img;
+                        if (GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).imgString != null) {
+                            Bitmap img = getBitmapFromString(GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).imgString);
                             Bitmap img_resize = resizeImage(img, 200);
                             galleryMapImg.setImageBitmap(img_resize);
                             Projection mapProjection = mapboxMap.getProjection();
@@ -214,5 +216,13 @@ public class GalleryMapFragment extends Fragment {
 
         return Bitmap.createBitmap(bitmap, 0, 0,
                 width, height, matrix, true);
+    }
+    private Bitmap getBitmapFromString(String stringPicture) {
+        /*
+         * This Function converts the String back to Bitmap
+         * */
+        byte[] decodedString = Base64.decode(stringPicture, Base64.DEFAULT);
+        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        return decodedByte;
     }
 }

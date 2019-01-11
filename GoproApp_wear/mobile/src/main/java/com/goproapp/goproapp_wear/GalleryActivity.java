@@ -23,8 +23,20 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,12 +52,18 @@ public class GalleryActivity extends AppCompatActivity
     private MyFirebaseRecordingListener mFirebaseRecordingListener;
     private DatabaseReference databaseRef;
 
+    private String imgDataFile = "imgDataFile";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_gallery);
 
-        LoginActivity.userID="6safsafas";
+//        readLocalData();
+
+        LoginActivity.userID = "foo";
 
         //handle drawer
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -165,7 +183,7 @@ public class GalleryActivity extends AppCompatActivity
                 for (final DataSnapshot rec : dataSnapshot.getChildren()) {
 
                     final ImgData newImgData = new ImgData();
-                    String db_date = rec.child("date").getValue().toString();
+                    String db_date = rec.child("text").getValue().toString();
                     String db_HR = rec.child("heart_rate").getValue().toString();
                     String db_position = rec.child("position").getValue().toString();
                     String db_imUrl = rec.child("picture").getValue().toString();
@@ -185,6 +203,76 @@ public class GalleryActivity extends AppCompatActivity
         public void onCancelled(DatabaseError databaseError) {
             Log.v("err", databaseError.toString());
         }
+    }
+
+    private void readLocalData() {
+        try {
+            FileInputStream fis = this.openFileInput(imgDataFile);
+            InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
+            BufferedReader bufferedReader = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            Log.v("debug", "read file: " + sb.toString());
+            try {
+                JSONArray array = new JSONArray(sb.toString());
+
+                Log.v("debug", "len: " + array.length());
+                for (int i = 0; i < array.length(); i++) {
+
+                    ImgData newImgData = new ImgData();
+                    JSONObject image = array.getJSONObject(i);
+                    Log.v("debug", "img: " + image.toString());
+                    newImgData.bpm = image.getString("bpm");
+                    newImgData.date = image.getString("date");
+                    newImgData.imgString = image.getString("imgString");
+                    newImgData.name = image.getString("name");
+
+                    LatLng latLng = new LatLng();
+                    latLng.setLatitude(Float.parseFloat(image.getJSONObject("latLng").getString("latitude")));
+                    latLng.setLongitude(Float.parseFloat(image.getJSONObject("latLng").getString("longitude")));
+                    newImgData.latLng = latLng;
+                    Log.v("debug", "bpm. " + newImgData.bpm);
+                    Log.v("debug", newImgData.date);
+                    Log.v("debug", newImgData.name);
+                    Log.v("debug", "lat: " + latLng.toString());
+                    imgData.add(newImgData);
+                }
+            } catch (Throwable tx) {
+                Log.v("debug", "parsing error" + sb.toString());
+            }
+
+        } catch (FileNotFoundException e) {
+            Log.e("debug", "file not found");
+        } catch (UnsupportedEncodingException e) {
+
+        } catch (IOException e) {
+        }
+
+
+    }
+
+    class NameList {
+        List<ImgData> list;
+        //getter and setter
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+//        FileOutputStream outputStream;
+//        Gson gson = new Gson();
+//        String json = gson.toJson(imgData);
+//        Log.d("debug","write "+json);
+//        try {
+//            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
+//            outputStream.write(json.getBytes());
+//            outputStream.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 }
 
