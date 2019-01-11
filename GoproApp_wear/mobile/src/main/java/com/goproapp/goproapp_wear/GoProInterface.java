@@ -1,9 +1,22 @@
 package com.goproapp.goproapp_wear;
 
 
-import android.content.Context;
+import android.util.Log;
+
+import java.io.IOException;
+import java.net.URI;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 
 public class GoProInterface {
+
+    private final OkHttpClient client = new OkHttpClient();
 
     static final String MODE_VIDEO = "VIDEO";
     static final String MODE_PHOTO = "PHOTO";
@@ -384,7 +397,26 @@ public class GoProInterface {
     }
 
     public void setFOVBurst(String fov){
-        setFOVPhoto(fov);
+        String url;
+
+        switch (fov){
+            case "Narrow":
+                url = "http://10.5.5.9/gp/gpControl/setting/28/9";
+                break;
+            case "Linear":
+                url = "http://10.5.5.9/gp/gpControl/setting/28/10";
+                break;
+            case "Medium":
+                url = "http://10.5.5.9/gp/gpControl/setting/28/8";
+                break;
+            case "Wide":
+                url = "http://10.5.5.9/gp/gpControl/setting/28/0";
+                break;
+            default:
+                url = "";
+        }
+
+        sendRequest(url);
     }
 
     public void setWB(Integer wb, String mode){
@@ -427,9 +459,26 @@ public class GoProInterface {
     }
 
     private void sendRequest(String url){
-        HttpGetRequest httpGetRequest = new HttpGetRequest();
-        httpGetRequest.execute(url);
+        //HttpGetRequest httpGetRequest = new HttpGetRequest();
+        //httpGetRequest.execute(url);
 
+        final Request startpreview = new Request.Builder()
+                .url(HttpUrl.get(URI.create(url)))
+                .build();
+
+        client.newCall(startpreview).enqueue(new Callback() {
+            @Override public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()){
+                    Log.d("GoPro","Camera not connected");
+                }
+
+
+            }
+        });
     }
 
 }

@@ -13,13 +13,13 @@
         android:layout_height="match_parent">
 
         <!-- Background image for stream -->
-        <ImageView
-            android:id="@+id/imageView2"
+        <SurfaceView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:id="@+id/surface"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@android:color/holo_blue_light" />
+            android:background="@color/colorPrimary"/>
 
         <!-- Mode menu -->
         <ImageButton

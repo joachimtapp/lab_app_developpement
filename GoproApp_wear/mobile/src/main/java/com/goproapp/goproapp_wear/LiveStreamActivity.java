@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
@@ -14,9 +16,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -31,9 +38,28 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
+
+import org.videolan.libvlc.IVLCVout;
+import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaPlayer;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.ArrayList;
 
-public class LiveStreamActivity extends AppCompatActivity {
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Callback {
 
     private DrawerLayout mDrawerLayout;
     private ImageButton mMenuDeployer;
@@ -85,6 +111,17 @@ public class LiveStreamActivity extends AppCompatActivity {
     GoProInterface goProInterface;
     private String MODE;
 
+    public final static String TAG = "MainActivity";
+    private String mFilePath;
+    private SurfaceView mSurface;
+    private SurfaceHolder holder;
+    private LibVLC libvlc;
+    private MediaPlayer mMediaPlayer = null;
+    private int mVideoWidth;
+    private int mVideoHeight;
+    private final OkHttpClient client = new OkHttpClient();
+    Integer count = 0;
+
     private static final int MENU_PHOTO = 0;
     private static final int MENU_VIDEO = 1;
     private static final int MENU_BURST = 2;
@@ -133,6 +170,20 @@ public class LiveStreamActivity extends AppCompatActivity {
                 }
             }
         });
+
+        //utils.loadFFmpeg(getApplicationContext());
+
+        //Stream();
+        mFilePath = "udp://@:8554/gopro";
+        Log.d(TAG, "Playing: " + mFilePath);
+        mSurface = findViewById(R.id.surface);
+        holder = mSurface.getHolder();
+
+        // Set quality to 720p
+        //GoProSet("64", "7");
+
+        //Set bitrate to 4MBps
+        //GoProSet("62", "4000000");
 
         distText = findViewById(R.id.distTrig);
 
@@ -386,6 +437,8 @@ public class LiveStreamActivity extends AppCompatActivity {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
         dh.setUserDrawer(navigationView);
+
+        //createPlayer(mFilePath);
     }
 
     @Override
@@ -998,4 +1051,241 @@ public class LiveStreamActivity extends AppCompatActivity {
         });
 
     }
+
+    void GoProSet(String param, String value){
+        final Request startpreview = new Request.Builder()
+                .url(HttpUrl.get(URI.create("http://10.5.5.9/gp/gpControl/setting/" + param + "/" + value)))
+                .build();
+
+        client.newCall(startpreview).enqueue(new Callback() {
+            @Override public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()){
+                    Log.d("GoPro","Camera not connected");
+                }
+
+
+            }
+        });
+    }
+    void Stream(){
+
+        //Call http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart
+
+        utils.callHTTP(getApplicationContext());
+        try {
+
+            String[] cmd = {"-fflags", "nobuffer", "-f", "mpegts", "-i", "udp://:8554", "-f", "mpegts","udp://127.0.0.1:8555/gopro?pkt_size=64"};
+            //String[] cmd = {"-f", "mpegts", "-i", "udp://:8554", "-f", "mpegts","udp://127.0.0.1:8555/gopro?pkt_size=64"};
+            FFmpeg ffmpeg = FFmpeg.getInstance(getApplicationContext());
+
+            ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
+
+                @Override
+                public void onStart() {
+                    count += 1;
+                    if(count == 7){
+                        count = 0;
+                        new utils.sendAsyncMagicPacket().execute();
+                    }
+                }
+
+                @Override
+                public void onProgress(String message) {
+                    Log.d("FFmpeg",message);
+                    utils.callHTTP(getApplicationContext());
+
+                }
+
+                @Override
+                public void onFailure(String message) {
+                    Toast.makeText(getApplicationContext(),"Stream fail",Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onSuccess(String message) {}
+
+                @Override
+                public void onFinish() {}
+            });
+        } catch (FFmpegCommandAlreadyRunningException e) {
+            // Handle if FFmpeg is already running
+        }
+        //Preview();
+        createPlayer(mFilePath);
+    }
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        setSize(mVideoWidth, mVideoHeight);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        releasePlayer();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releasePlayer();
+    }
+
+
+    /**
+     * Used to set size for SurfaceView
+     *
+     * @param width
+     * @param height
+     */
+
+    private void setSize(int width, int height) {
+        mVideoWidth = width;
+        mVideoHeight = height;
+        if (mVideoWidth * mVideoHeight <= 1)
+            return;
+
+        if (holder == null || mSurface == null)
+            return;
+
+        int w = getWindow().getDecorView().getWidth();
+        int h = getWindow().getDecorView().getHeight();
+        boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+        if (w > h && isPortrait || w < h && !isPortrait) {
+            int i = w;
+            w = h;
+            h = i;
+        }
+
+        float videoAR = (float) mVideoWidth / (float) mVideoHeight;
+        float screenAR = (float) w / (float) h;
+
+        if (screenAR < videoAR)
+            h = (int) (w / videoAR);
+        else
+            w = (int) (h * videoAR);
+
+        holder.setFixedSize(mVideoWidth, mVideoHeight);
+        ViewGroup.LayoutParams lp = mSurface.getLayoutParams();
+        lp.width = w;
+        lp.height = h;
+        mSurface.setLayoutParams(lp);
+        mSurface.invalidate();
+        if (width * height == 0)
+            return;
+
+        // store video size
+        mVideoWidth = width;
+        mVideoHeight = height;
+        setSize(mVideoWidth, mVideoHeight);
+    }
+
+    /**
+     * Creates MediaPlayer and plays video
+     *
+     * @param media
+     */
+    private void createPlayer(String media) {
+        releasePlayer();
+        try {
+            if (media.length() > 0) {
+                Toast toast = Toast.makeText(this, media, Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0,
+                        0);
+                toast.show();
+            }
+
+            // Create LibVLC
+            // TODO: make this more robust, and sync with audio demo
+            ArrayList<String> options = new ArrayList<String>();
+            //options.add("--subsdec-encoding <encoding>");
+            options.add("--aout=opensles");
+            options.add("--audio-time-stretch"); // time stretching
+            options.add("-vvv"); // verbosity
+            libvlc = new LibVLC(this, options);
+            holder = mSurface.getHolder();
+            holder.setKeepScreenOn(true);
+
+            // Creating media player
+            mMediaPlayer = new MediaPlayer(libvlc);
+            mMediaPlayer.setEventListener(mPlayerListener);
+
+            // Seting up video output
+            final IVLCVout vout = mMediaPlayer.getVLCVout();
+            vout.setVideoView(mSurface);
+            //vout.setSubtitlesView(mSurfaceSubtitles);
+            vout.addCallback(this);
+            vout.attachViews();
+
+            Media m = new Media(libvlc, Uri.parse(media));
+            mMediaPlayer.setMedia(m);
+            mMediaPlayer.play();
+        } catch (Exception e) {
+            Toast.makeText(this, "Error in creating player!" + e.getMessage(), Toast
+                    .LENGTH_LONG).show();
+        }
+    }
+
+    private void releasePlayer() {
+        if (libvlc == null)
+            return;
+        mMediaPlayer.stop();
+        final IVLCVout vout = mMediaPlayer.getVLCVout();
+        vout.removeCallback(this);
+        vout.detachViews();
+        holder = null;
+        libvlc.release();
+        libvlc = null;
+
+        mVideoWidth = 0;
+        mVideoHeight = 0;
+    }
+
+    /**
+     * Registering callbacks
+     */
+    private MediaPlayer.EventListener mPlayerListener = new MyPlayerListener(this);
+
+
+
+    @Override
+    public void onSurfacesCreated(IVLCVout vout) {
+
+    }
+
+    @Override
+    public void onSurfacesDestroyed(IVLCVout vout) {
+
+    }
+
+
+    private static class MyPlayerListener implements MediaPlayer.EventListener {
+        private WeakReference<LiveStreamActivity> mOwner;
+
+        public MyPlayerListener(LiveStreamActivity owner) {
+            mOwner = new WeakReference<LiveStreamActivity>(owner);
+        }
+
+        @Override
+        public void onEvent(MediaPlayer.Event event) {
+            LiveStreamActivity player = mOwner.get();
+
+            switch (event.type) {
+                case MediaPlayer.Event.EndReached:
+                    Log.d(TAG, "MediaPlayerEndReached");
+                    player.releasePlayer();
+                    break;
+                case MediaPlayer.Event.Playing:
+                case MediaPlayer.Event.Paused:
+                case MediaPlayer.Event.Stopped:
+                default:
+                    break;
+            }
+        }
+    }
+
 }
