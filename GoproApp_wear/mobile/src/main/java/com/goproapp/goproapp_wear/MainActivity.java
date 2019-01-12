@@ -108,10 +108,8 @@ public class MainActivity extends AppCompatActivity
                             ssid+"Network is not a GoPro", Toast.LENGTH_SHORT).show();
                             maingoprostatu.setText("Please connect to a GoPro");
                 }
-
             }
         }
-
     }
 
     @Override

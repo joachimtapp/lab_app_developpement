@@ -64,7 +64,7 @@ public class GalleryActivity extends AppCompatActivity
     public static List<ImgData> imgData = new ArrayList<ImgData>();
 
     //Firebase
-//    private MyFirebaseRecordingListener mFirebaseRefcordingListener;
+//    private MyFirebaseRecordingListener mFirebaseRecordingListener;
     private DatabaseReference databaseRef;
     private FirebaseDatabase database;
 
@@ -79,7 +79,7 @@ public class GalleryActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_gallery);
-        readLocalData();
+//        readLocalData();
         //initialise firebase
         database = FirebaseDatabase.getInstance();
 
@@ -166,16 +166,20 @@ public class GalleryActivity extends AppCompatActivity
     }
 
     public void Upload(View view) {
+        Log.e("debug","start");
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
 
-        int id=0;
+        int id=1;
         String imgString=imgData.get(id).imgString;
         StorageReference ref = storageReference.child(LoginActivity.userID).child(imgData.get(id).name);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         getBitmapFromString(imgString).compress(Bitmap.CompressFormat.PNG, 0, bos);
 
+        String name;
+        name=imgData.get(id).name.replace(".", "_");
+        databaseRef = FirebaseDatabase.getInstance().getReference().child("users").child(LoginActivity.userID).child("Data").child(name);
 
         ref.putBytes(bos.toByteArray()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -186,6 +190,7 @@ public class GalleryActivity extends AppCompatActivity
                                     @Override
                                     public void onSuccess(final Uri uri) {
                                         imgData.get(id).imgUrl = uri.toString();
+                                        databaseRef.child("picture").setValue(imgData.get(id).imgUrl);
                                     }
                                 });
                     }
@@ -193,16 +198,14 @@ public class GalleryActivity extends AppCompatActivity
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(GalleryActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                       Log.e("debug","image upload fail");
                     }
                 });
-        String name;
-        name=imgData.get(id).name.replace(".", "");
-        databaseRef = database.getReference().child(LoginActivity.userID).child("Data").child(name);
+        databaseRef.child("date").setValue(imgData.get(id).date);
+        String pos=imgData.get(id).latLng.getLatitude()+", "+imgData.get(id).latLng.getLongitude();
+        databaseRef.child("position").setValue(pos);
 
-        databaseRef.child("picture").setValue("test");//imgData.get(id).imgUrl);
     }
-
     //return the fragment for each section
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -229,36 +232,6 @@ public class GalleryActivity extends AppCompatActivity
     @Override
     public void onFragmentInteraction(Uri uri) {
     }
-
-//    //get user stored data
-//    private class MyFirebaseRecordingListener implements ValueEventListener {
-//        @Override
-//        public void onDataChange(DataSnapshot dataSnapshot) {
-//            if (imgData.size() == 0)
-//                for (final DataSnapshot rec : dataSnapshot.getChildren()) {
-//
-//                    final ImgData newImgData = new ImgData();
-//                    String db_date = rec.child("text").getValue().toString();
-//                    String db_HR = rec.child("heart_rate").getValue().toString();
-//                    String db_position = rec.child("position").getValue().toString();
-//                    String db_imUrl = rec.child("picture").getValue().toString();
-//                    ImgData newData = new ImgData();
-//                    newData.date = db_date;
-//                    newData.bpm = db_HR;
-//                    String[] latLng = db_position.split(",");
-//                    double latitude = Double.parseDouble(latLng[0]);
-//                    double longitude = Double.parseDouble(latLng[1]);
-//                    newData.latLng = new LatLng(latitude, longitude);
-//                    newData.imgUrl = db_imUrl;
-//                    imgData.add(newData);
-//                }
-//        }
-//
-//        @Override
-//        public void onCancelled(DatabaseError databaseError) {
-//            Log.v("err", databaseError.toString());
-//        }
-//    }
 
     private void readLocalData() {
         try {
@@ -315,21 +288,21 @@ public class GalleryActivity extends AppCompatActivity
         Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
         return decodedByte;
     }
-    @Override
-    protected void onStop() {
-        super.onStop();
-        FileOutputStream outputStream;
-        Gson gson = new Gson();
-        String json = gson.toJson(imgData);
-        Log.d("debug","write "+json);
-        try {
-            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
-            outputStream.write(json.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        FileOutputStream outputStream;
+//        Gson gson = new Gson();
+//        String json = gson.toJson(imgData);
+//        Log.d("debug","write "+json);
+//        try {
+//            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
+//            outputStream.write(json.getBytes());
+//            outputStream.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
 
 

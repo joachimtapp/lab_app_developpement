@@ -22,6 +22,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
@@ -66,10 +74,13 @@ public class GalleryFragment extends Fragment {
     private List<String> localData = new ArrayList<>();
 
     private List<String> goProData = new ArrayList<>();
+    private List<String> firebaseData = new ArrayList<>();
     private String goProDir;
     public static MapboxMap mMapboxMap;
     private int nPrevSelGridItem = -1; //used highlight selected picture
     private View viewPrev;
+    private MyFirebaseDataListListener mFirebaseDataListListener;
+    private DatabaseReference databaseRef;
 
 
     public GalleryFragment() {
@@ -130,75 +141,7 @@ public class GalleryFragment extends Fragment {
         Mapbox.getInstance(getContext(), getString(R.string.accessToken));
     }
 
-    private class DownloadTask extends AsyncTask<String, Void, Wrapper> {
-        // Before the tasks execution
-        protected void onPreExecute() {
-            // Display the progress dialog on async task start
-        }
 
-        // Do the task in background/non UI thread
-        protected Wrapper doInBackground(String... params) {
-            Wrapper wrap=new Wrapper();
-            URL url = null;
-            try {
-                url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + params[0]);
-//                url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/"+params[0]);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            HttpURLConnection connection = null;
-
-            try {
-                // Initialize a new http url connection
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
-                InputStream inputStream = connection.getInputStream();
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-                Bitmap bmp = BitmapFactory.decodeStream(bufferedInputStream);
-
-                // Return the downloaded bitmap
-                wrap.imgBmp=bmp;
-                wrap.imgName=params[0];
-                return wrap;
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                // Disconnect the http url connection
-                connection.disconnect();
-            }
-            return null;
-        }
-
-        // When all async task done
-        protected void onPostExecute(Wrapper result) {
-            // Hide the progress dialog
-
-            if (result != null) {
-                // Display the downloaded image into ImageView
-                ImgData newImg = new ImgData();
-                newImg.imgString = getStringFromBitmap(result.imgBmp);
-//                newImg.imgBmp = result.imgBmp;
-                newImg.bpm="foo";
-                newImg.name = result.imgName;
-                newImg.latLng = new LatLng(48.769183, 21.661252);
-                if (result.imgName.toLowerCase().contains("jpg")) {
-                GalleryActivity.imgData.add(newImg);
-                    new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
-                } else {
-                    newImg.date = "getDate";
-                    GalleryActivity.imgData.add(newImg);
-                }
-                swipeHint.setAlpha(0.0f);
-                adapter = new ImageAdapter(getContext());
-                gridView.setAdapter(adapter);
-                localData.add(newImg.name);
-            } else {
-                // Notify user that an error occurred while downloading image
-                Toast.makeText(getContext(), "dow err", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -224,16 +167,17 @@ public class GalleryFragment extends Fragment {
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+
                 GetGoProMediaList();
-                mSwipeRefresh.setRefreshing(false);
-                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
-                    swipeHint.setAlpha(0.0f);
-                    adapter = new ImageAdapter(getContext());
-                    gridView.setAdapter(adapter);
-                } else {
-                    swipeHint.setText(getString(R.string.galleryEmpty));
-                    mSwipeRefresh.setRefreshing(false);
-                }
+                GetFirebaseMediaList();
+//                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
+//                    swipeHint.setAlpha(0.0f);
+//                    adapter = new ImageAdapter(getContext());
+//                    gridView.setAdapter(adapter);
+//                } else {
+//                    swipeHint.setText(getString(R.string.galleryEmpty));
+//                    mSwipeRefresh.setRefreshing(false);
+//                }
             }
         });
 
@@ -310,7 +254,75 @@ public class GalleryFragment extends Fragment {
     private void GetGoProMediaList() {
         new SendPostRequest().execute("http://10.5.5.9:8080/gp/gpMediaList", "noname");
     }
+    private class DownloadTask extends AsyncTask<String, Void, Wrapper> {
+        // Before the tasks execution
+        protected void onPreExecute() {
+            // Display the progress dialog on async task start
+        }
 
+        // Do the task in background/non UI thread
+        protected Wrapper doInBackground(String... params) {
+            Wrapper wrap = new Wrapper();
+            URL url = null;
+            try {
+                url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + params[0]);
+//                url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/"+params[0]);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            HttpURLConnection connection = null;
+
+            try {
+                // Initialize a new http url connection
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+                InputStream inputStream = connection.getInputStream();
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+                Bitmap bmp = BitmapFactory.decodeStream(bufferedInputStream);
+
+                // Return the downloaded bitmap
+                wrap.imgBmp = bmp;
+                wrap.imgName = params[0];
+                return wrap;
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                // Disconnect the http url connection
+                connection.disconnect();
+            }
+            return null;
+        }
+
+        // When all async task done
+        protected void onPostExecute(Wrapper result) {
+            // Hide the progress dialog
+
+            if (result != null) {
+                // Display the downloaded image into ImageView
+                ImgData newImg = new ImgData();
+                newImg.imgString = getStringFromBitmap(result.imgBmp);
+//                newImg.imgBmp = result.imgBmp;
+                newImg.bpm = "foo";
+                newImg.name = result.imgName;
+                newImg.latLng = new LatLng(48.769183, 21.661252);
+                if (result.imgName.toLowerCase().contains("jpg")) {
+                    GalleryActivity.imgData.add(newImg);
+                    new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
+                } else {
+                    newImg.date = "getDate";
+                    GalleryActivity.imgData.add(newImg);
+                }
+                swipeHint.setAlpha(0.0f);
+                adapter = new ImageAdapter(getContext());
+                gridView.setAdapter(adapter);
+                localData.add(newImg.name);
+            } else {
+                // Notify user that an error occurred while downloading image
+                Toast.makeText(getContext(), "dow err", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
     private class SendPostRequest extends AsyncTask<String, Void, Wrapper> {
 
@@ -390,12 +402,22 @@ public class GalleryFragment extends Fragment {
                             GalleryActivity.imgData.get(i).date = dateSplit[0];
                         }
                     }
+                    mSwipeRefresh.setRefreshing(false);
                 } catch (Throwable tx2) {
                     Log.v("debug", "isn't the EXIF: \"" + result.text + "\"");
+                    mSwipeRefresh.setRefreshing(false);
 
                 }
             }
         }
+    }
+
+    private void GetFirebaseMediaList() {
+        databaseRef = FirebaseDatabase.getInstance().getReference();
+        mFirebaseDataListListener = new MyFirebaseDataListListener();
+        databaseRef.child("users").child(LoginActivity.userID).child("Data").addValueEventListener
+                (mFirebaseDataListListener);
+        mSwipeRefresh.setRefreshing(false);
     }
 
     private class Wrapper {
@@ -413,6 +435,7 @@ public class GalleryFragment extends Fragment {
             Log.v("Myinfo", "item: " + item);
             new DownloadTask().execute(item);
         }
+        mSwipeRefresh.setRefreshing(false);
     }
 
     @Override
@@ -484,6 +507,76 @@ public class GalleryFragment extends Fragment {
             return imageView;
         }
     }
+
+    private class MyFirebaseDataListListener implements ValueEventListener {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+            for (final DataSnapshot rec : dataSnapshot.getChildren()) {
+                String imgName= rec.getKey().replace("_",".");
+
+                if(!localData.contains(imgName)){
+                    Log.e("Myinfo",imgName+" not in list");
+                    ImgData newImage=new ImgData();
+                    newImage.date=rec.child("date").getValue().toString();
+                    String url=rec.child("picture").getValue().toString();
+                    String[] latLng = rec.child("position").getValue().toString().split(",");
+                    double latitude = Double.parseDouble(latLng[0]);
+                    double longitude = Double.parseDouble(latLng[1]);
+                    newImage.latLng = new LatLng(latitude, longitude);
+                    newImage.name=imgName;
+                    StorageReference mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(url);
+            mStorageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(
+                    new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap newImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            newImage.imgString=getStringFromBitmap(newImg);
+                            GalleryActivity.imgData.add(newImage);
+                            localData.add(imgName);
+                            swipeHint.setAlpha(0.0f);
+                            adapter = new ImageAdapter(getContext());
+                            gridView.setAdapter(adapter);
+                            mSwipeRefresh.setRefreshing(false);
+                        }
+                    });
+                }
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.v("err", databaseError.toString());
+        }
+    }
+//    private class MyFirebaseDataListener implements ValueEventListener {
+//        @Override
+//        public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//            for (final DataSnapshot rec : dataSnapshot.getChildren()) {
+//                final ImgData newImgData = new ImgData();
+//                    String db_date = rec.child("date").getValue().toString();
+//                    String db_position = rec.child("position").getValue().toString();
+//                    String db_imUrl = rec.child("picture").getValue().toString();
+//                    ImgData newData = new ImgData();
+//                    newData.date = db_date;
+//                    newData.bpm = "foo";
+//                    String[] latLng = db_position.split(",");
+//                    double latitude = Double.parseDouble(latLng[0]);
+//                    double longitude = Double.parseDouble(latLng[1]);
+//                    newData.latLng = new LatLng(latitude, longitude);
+//                    newData.imgUrl = db_imUrl;
+//                    imgData.add(newData);
+//            }
+//        }
+//
+//        @Override
+//        public void onCancelled(DatabaseError databaseError) {
+//            Log.v("err", databaseError.toString());
+//        }
+//    }
+
+
 
     private Bitmap getBitmapFromString(String stringPicture) {
         /*
