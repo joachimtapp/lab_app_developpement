@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <com.mapbox.mapboxsdk.maps.MapView
         android:id="@+id/galleryMapView"
         android:layout_width="match_parent"
@@ -30,7 +31,7 @@
         mapbox:layout_constraintEnd_toStartOf="@+id/guideline6"
         mapbox:layout_constraintStart_toStartOf="parent"
         mapbox:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@drawable/sample_1" />
+        tools:srcCompat="@tools:sample/avatars" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline6"
@@ -38,5 +39,16 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         mapbox:layout_constraintGuide_percent="0.38" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/refreshBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:clickable="true"
+        mapbox:layout_constraintBottom_toBottomOf="parent"
+        mapbox:layout_constraintEnd_toEndOf="parent"
+        mapbox:srcCompat="@drawable/ic_sync_black_24dp" />
 
 </android.support.constraint.ConstraintLayout>

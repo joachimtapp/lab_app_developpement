@@ -116,7 +116,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
         //firebase auth
         mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+//        mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     private void attemptLogin() {
@@ -176,7 +176,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private void readUserProfile(String userId) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference profileRef = database.getReference("users");
-        profileRef.child(userId).addValueEventListener(new ValueEventListener() {
+        profileRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String first_name_db = dataSnapshot.child("first_name").getValue(String.class);

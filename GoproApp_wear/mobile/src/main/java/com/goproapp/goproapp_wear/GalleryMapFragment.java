@@ -8,7 +8,9 @@ import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +39,8 @@ public class GalleryMapFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
     private MapView.OnCameraDidChangeListener mCameraListener;
+    private FloatingActionButton refreshBtn;
+    private MapboxMap mMapboxMap;
 
     private List<MarkerViewOptions> markerViews = new ArrayList<MarkerViewOptions>();
 
@@ -105,6 +109,13 @@ public class GalleryMapFragment extends Fragment {
         mapView = (MapView) fragmentView.findViewById(R.id.galleryMapView);
         galleryMapImg = fragmentView.findViewById(R.id.galleryMapImg);
 
+        refreshBtn = fragmentView.findViewById(R.id.refreshBtn);
+        refreshBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RefreshMarker();
+            }
+        });
         //listener required to remove picture preview on move
         mCameraListener = new MapView.OnCameraDidChangeListener() {
             @Override
@@ -116,6 +127,7 @@ public class GalleryMapFragment extends Fragment {
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
+                mMapboxMap=mapboxMap;
                 int cnt = 0;//Keep track of the marker id
                 //add the picture position to the map
                 for (ImgData im : GalleryActivity.imgData) {
@@ -147,8 +159,10 @@ public class GalleryMapFragment extends Fragment {
                     public boolean onMarkerClick(@NonNull Marker marker, @NonNull View view, @NonNull MapboxMap.MarkerViewAdapter adapter) {
                         if (GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).imgString != null) {
                             Bitmap img = getBitmapFromString(GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).imgString);
-                            Bitmap img_resize = resizeImage(img, 200);
-                            galleryMapImg.setImageBitmap(img_resize);
+
+                            Bitmap resizedBitmap = Bitmap.createScaledBitmap(img, 400, 300, false);
+//                            Bitmap img_resize = resizeImage(img, 200);
+                            galleryMapImg.setImageBitmap(resizedBitmap);
                             Projection mapProjection = mapboxMap.getProjection();
                             PointF screenPosition = mapProjection.toScreenLocation(marker.getPosition());
                             galleryMapImg.setX(screenPosition.x);
@@ -162,6 +176,28 @@ public class GalleryMapFragment extends Fragment {
             }
         });
         return fragmentView;
+    }
+
+    private void RefreshMarker() {
+        int cnt = 0;//Keep track of the marker id
+        //add the picture position to the map
+        markerViews.clear();
+        for (ImgData im : GalleryActivity.imgData) {
+            MarkerViewOptions opt = new MarkerViewOptions().position(im.latLng).title(String.valueOf(cnt));
+            markerViews.add(opt);
+            cnt++;
+        }
+        mMapboxMap.addMarkerViews(markerViews);
+
+        //set initial map position
+        CameraPosition camPos = new CameraPosition.Builder()
+                .target(new LatLng(48.769183, 21.661252))// Sets the new camera position
+                .zoom(0) // Sets the zoom
+                .bearing(0) // Rotate the camera
+                .tilt(0) // Set the camera tilt
+                .build(); // Creates a CameraPosition from the builder
+        mMapboxMap.animateCamera(CameraUpdateFactory
+                .newCameraPosition(camPos), 2000);
     }
 
     @Override

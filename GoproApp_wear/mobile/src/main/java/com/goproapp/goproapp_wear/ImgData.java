@@ -9,4 +9,5 @@ public class ImgData {
     protected LatLng latLng;
     protected String imgUrl;
     protected String imgString;
+    protected Boolean online;
 }

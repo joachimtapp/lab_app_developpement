@@ -1,13 +1,26 @@
 package com.goproapp.goproapp_wear;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Base64;
 import android.util.Log;
@@ -19,10 +32,13 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,6 +46,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
@@ -79,8 +96,14 @@ public class GalleryFragment extends Fragment {
     public static MapboxMap mMapboxMap;
     private int nPrevSelGridItem = -1; //used highlight selected picture
     private View viewPrev;
-    private MyFirebaseDataListListener mFirebaseDataListListener;
+    private MyFirebaseDataListener mFirebaseDataListListener;
     private DatabaseReference databaseRef;
+    private List<Integer> imgDataToUpload = new ArrayList<>();
+    private FirebaseStorage storage;
+    private StorageReference storageReference;
+    private View uploadProgressBar;
+    private FloatingActionButton uploadBtn;
+    private LatLng latLngActual;
 
 
     public GalleryFragment() {
@@ -141,8 +164,6 @@ public class GalleryFragment extends Fragment {
         Mapbox.getInstance(getContext(), getString(R.string.accessToken));
     }
 
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -153,6 +174,7 @@ public class GalleryFragment extends Fragment {
         swipeHint = fragmentView.findViewById(R.id.swipeHint);
         mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
         linearLayoutInfo = fragmentView.findViewById(R.id.linearLayoutInfo);
+        uploadProgressBar = fragmentView.findViewById(R.id.uploadProgressBar);
         localData.clear();
         for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
             localData.add(GalleryActivity.imgData.get(i).name);
@@ -163,13 +185,29 @@ public class GalleryFragment extends Fragment {
             adapter = new ImageAdapter(getContext());
             gridView.setAdapter(adapter);
         }
+        uploadBtn = fragmentView.findViewById(R.id.uploadBtn);
+        uploadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (LoginActivity.userID != null)
+                    UploadImage();
+                else
+                    Toast.makeText(getContext(), "Log in for dataBase synchronization", Toast.LENGTH_LONG).show();
+            }
+        });
         mSwipeRefresh = fragmentView.findViewById(R.id.swiperefresh);
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
 
                 GetGoProMediaList();
-                GetFirebaseMediaList();
+                if (LoginActivity.userID != null)
+                    GetFirebaseMediaList();
+                else {
+                    Toast.makeText(getContext(), "Log in for dataBase synchronization", Toast.LENGTH_LONG).show();
+                    mSwipeRefresh.setRefreshing(false);
+                }
+
 //                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
 //                    swipeHint.setAlpha(0.0f);
 //                    adapter = new ImageAdapter(getContext());
@@ -197,7 +235,6 @@ public class GalleryFragment extends Fragment {
                     mMapboxMap.animateCamera(CameraUpdateFactory
                             .newCameraPosition(camPos), 2000);
                 }
-
             }
         });
 
@@ -251,9 +288,135 @@ public class GalleryFragment extends Fragment {
         return fragmentView;
     }
 
+    @SuppressLint("MissingPermission")
+    private void getGPSPosition() {
+        LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+// Define a listener that responds to location updates
+
+        LocationListener locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                // Called when a new location is found by the network location provider.
+                Log.v("Myinfo", "pos: " + String.valueOf(location.getLatitude()) + " " + String.valueOf(location.getLongitude()));
+                latLngActual = new LatLng(location.getLatitude(), location.getLongitude());
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
+            public void onProviderEnabled(String provider) {
+            }
+
+            public void onProviderDisabled(String provider) {
+            }
+        };
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+            uploadProgressBar.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    uploadProgressBar.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            uploadProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+            uploadProgressBar.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    uploadProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            uploadProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public void UploadImage() {
+
+        //initialize list to upload
+        if (imgDataToUpload.isEmpty()) {
+            for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
+                if (!GalleryActivity.imgData.get(i).online)
+                    imgDataToUpload.add(i);
+            }
+            if (imgDataToUpload.isEmpty()) {
+                return;
+            }
+            storage = FirebaseStorage.getInstance();
+            storageReference = storage.getReference();
+        }
+        showProgress(true);
+        uploadBtn.hide();
+
+        int id = imgDataToUpload.get(0);
+        String imgString = GalleryActivity.imgData.get(id).imgString;
+        StorageReference ref = storageReference.child(LoginActivity.userID).child(GalleryActivity.imgData.get(id).name);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        getBitmapFromString(imgString).compress(Bitmap.CompressFormat.PNG, 0, bos);
+
+        String name;
+        name = GalleryActivity.imgData.get(id).name.replace(".", "_");
+        databaseRef = FirebaseDatabase.getInstance().getReference().child("users").child(LoginActivity.userID).child("Data").child(name);
+
+        ref.putBytes(bos.toByteArray()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Task<Uri> downloadUrl = taskSnapshot.getMetadata().getReference()
+                        .getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(final Uri uri) {
+                                GalleryActivity.imgData.get(id).imgUrl = uri.toString();
+                                databaseRef.child("picture").setValue(GalleryActivity.imgData.get(id).imgUrl);
+                                Log.v("Myinfo", "img uploaded: " + id);
+                                imgDataToUpload.remove(0);
+                                GalleryActivity.imgData.get(id).online = true;
+                                swipeHint.setAlpha(0.0f);
+                                adapter = new ImageAdapter(getContext());
+                                gridView.setAdapter(adapter);
+                                if (!imgDataToUpload.isEmpty()) {
+                                    UploadImage();
+                                } else {
+                                    showProgress(false);
+                                    uploadBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cloud_done_black_24dp, null));
+                                    uploadBtn.show();
+                                }
+                            }
+                        });
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("debug", "image upload fail");
+                    }
+                });
+        databaseRef.child("date").setValue(GalleryActivity.imgData.get(id).date);
+        String pos = GalleryActivity.imgData.get(id).latLng.getLatitude() + ", " + GalleryActivity.imgData.get(id).latLng.getLongitude();
+        databaseRef.child("position").setValue(pos);
+
+    }
+
     private void GetGoProMediaList() {
         new SendPostRequest().execute("http://10.5.5.9:8080/gp/gpMediaList", "noname");
+
     }
+
     private class DownloadTask extends AsyncTask<String, Void, Wrapper> {
         // Before the tasks execution
         protected void onPreExecute() {
@@ -305,7 +468,8 @@ public class GalleryFragment extends Fragment {
 //                newImg.imgBmp = result.imgBmp;
                 newImg.bpm = "foo";
                 newImg.name = result.imgName;
-                newImg.latLng = new LatLng(48.769183, 21.661252);
+                newImg.online = false;
+                newImg.latLng = latLngActual;
                 if (result.imgName.toLowerCase().contains("jpg")) {
                     GalleryActivity.imgData.add(newImg);
                     new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
@@ -344,7 +508,6 @@ public class GalleryFragment extends Fragment {
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
 
-
                 int responseCode = conn.getResponseCode();
 
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
@@ -378,6 +541,7 @@ public class GalleryFragment extends Fragment {
             Log.v("debug", "result: " + result.text);
             //recover data names
             try {
+                getGPSPosition();
                 JSONObject obj = new JSONObject(result.text);
                 JSONArray array = obj.getJSONArray("media").getJSONObject(0).getJSONArray("fs");
                 goProDir = obj.getJSONArray("media").getJSONObject(0).getString("d");
@@ -406,7 +570,6 @@ public class GalleryFragment extends Fragment {
                 } catch (Throwable tx2) {
                     Log.v("debug", "isn't the EXIF: \"" + result.text + "\"");
                     mSwipeRefresh.setRefreshing(false);
-
                 }
             }
         }
@@ -414,8 +577,8 @@ public class GalleryFragment extends Fragment {
 
     private void GetFirebaseMediaList() {
         databaseRef = FirebaseDatabase.getInstance().getReference();
-        mFirebaseDataListListener = new MyFirebaseDataListListener();
-        databaseRef.child("users").child(LoginActivity.userID).child("Data").addValueEventListener
+        mFirebaseDataListListener = new MyFirebaseDataListener();
+        databaseRef.child("users").child(LoginActivity.userID).child("Data").addListenerForSingleValueEvent
                 (mFirebaseDataListListener);
         mSwipeRefresh.setRefreshing(false);
     }
@@ -425,7 +588,6 @@ public class GalleryFragment extends Fragment {
         String text;
         String imgName;
     }
-
 
     private void DownloadGoProData() {
         List<String> toGet = new ArrayList(goProData);
@@ -459,6 +621,11 @@ public class GalleryFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
+    static class RecordHolder {
+        ImageView image;
+        ImageView logo;
+    }
+
     private class ImageAdapter extends BaseAdapter {
         private Context mContext;
 
@@ -480,66 +647,65 @@ public class GalleryFragment extends Fragment {
 
         //Download the images and create a new ImageView for each
         public View getView(int position, View convertView, ViewGroup parent) {
+            View row = convertView;
+            RecordHolder holder = null;
             ImageView imageView;
             if (convertView == null) {
-                // if it's not recycled, initialize some attributes
-                imageView = new ImageView(mContext);
-                imageView.setAdjustViewBounds(true);
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                imageView.setPadding(8, 8, 8, 8);
+                LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
+                row = inflater.inflate(R.layout.gallery_image, parent, false);
+                holder = new RecordHolder();
+                holder.image = row.findViewById(R.id.imageView);
+                holder.logo = (ImageView) row.findViewById(R.id.locationView);
+                holder.image.setAdjustViewBounds(true);
+                holder.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                holder.image.setPadding(8, 8, 8, 8);
+                row.setTag(holder);
             } else {
-                imageView = (ImageView) convertView;
+                holder = (RecordHolder) row.getTag();
             }
 
-//            StorageReference mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(GalleryActivity.imgData.get(position).imgUrl);
-//            mStorageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(
-//                    new OnSuccessListener<byte[]>() {
-//                        @Override
-//                        public void onSuccess(byte[] bytes) {
-//                            Bitmap newImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-//                            imageView.setImageBitmap(newImg);
-//                            GalleryActivity.imgData.get(position).img = newImg;
-//                            mSwipeRefresh.setRefreshing(false);
-//                        }
-//                    });
-//            imageView.setImageBitmap(getBitmapFromString(GalleryActivity.imgData.get(position).imgString));
-            imageView.setImageBitmap(getBitmapFromString(GalleryActivity.imgData.get(position).imgString));
-            return imageView;
+            holder.image.setImageBitmap(getBitmapFromString(GalleryActivity.imgData.get(position).imgString));
+            if (GalleryActivity.imgData.get(position).online)
+                holder.logo.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cloud_queue_black_24dp, null));
+            else
+                holder.logo.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cloud_off_black_24dp, null));
+            return row;
         }
     }
 
-    private class MyFirebaseDataListListener implements ValueEventListener {
+    private class MyFirebaseDataListener implements ValueEventListener {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
 
             for (final DataSnapshot rec : dataSnapshot.getChildren()) {
-                String imgName= rec.getKey().replace("_",".");
+                String imgName = rec.getKey().replace("_", ".");
 
-                if(!localData.contains(imgName)){
-                    Log.e("Myinfo",imgName+" not in list");
-                    ImgData newImage=new ImgData();
-                    newImage.date=rec.child("date").getValue().toString();
-                    String url=rec.child("picture").getValue().toString();
+                if (!localData.contains(imgName)) {
+                    Log.e("Myinfo", imgName + " not in list");
+                    ImgData newImage = new ImgData();
+                    newImage.date = rec.child("date").getValue().toString();
+                    String url = rec.child("picture").getValue().toString();
                     String[] latLng = rec.child("position").getValue().toString().split(",");
                     double latitude = Double.parseDouble(latLng[0]);
                     double longitude = Double.parseDouble(latLng[1]);
                     newImage.latLng = new LatLng(latitude, longitude);
-                    newImage.name=imgName;
+                    newImage.name = imgName;
                     StorageReference mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(url);
-            mStorageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(
-                    new OnSuccessListener<byte[]>() {
-                        @Override
-                        public void onSuccess(byte[] bytes) {
-                            Bitmap newImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                            newImage.imgString=getStringFromBitmap(newImg);
-                            GalleryActivity.imgData.add(newImage);
-                            localData.add(imgName);
-                            swipeHint.setAlpha(0.0f);
-                            adapter = new ImageAdapter(getContext());
-                            gridView.setAdapter(adapter);
-                            mSwipeRefresh.setRefreshing(false);
-                        }
-                    });
+                    mStorageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(
+                            new OnSuccessListener<byte[]>() {
+                                @Override
+                                public void onSuccess(byte[] bytes) {
+                                    Bitmap newImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                    newImage.imgString = getStringFromBitmap(newImg);
+                                    newImage.online = false;//TODO set true
+                                    GalleryActivity.imgData.add(newImage);
+                                    localData.add(imgName);
+                                    swipeHint.setAlpha(0.0f);
+                                    adapter = new ImageAdapter(getContext());
+                                    gridView.setAdapter(adapter);
+                                    mSwipeRefresh.setRefreshing(false);
+                                }
+                            });
                 }
             }
         }
@@ -549,34 +715,6 @@ public class GalleryFragment extends Fragment {
             Log.v("err", databaseError.toString());
         }
     }
-//    private class MyFirebaseDataListener implements ValueEventListener {
-//        @Override
-//        public void onDataChange(DataSnapshot dataSnapshot) {
-//
-//            for (final DataSnapshot rec : dataSnapshot.getChildren()) {
-//                final ImgData newImgData = new ImgData();
-//                    String db_date = rec.child("date").getValue().toString();
-//                    String db_position = rec.child("position").getValue().toString();
-//                    String db_imUrl = rec.child("picture").getValue().toString();
-//                    ImgData newData = new ImgData();
-//                    newData.date = db_date;
-//                    newData.bpm = "foo";
-//                    String[] latLng = db_position.split(",");
-//                    double latitude = Double.parseDouble(latLng[0]);
-//                    double longitude = Double.parseDouble(latLng[1]);
-//                    newData.latLng = new LatLng(latitude, longitude);
-//                    newData.imgUrl = db_imUrl;
-//                    imgData.add(newData);
-//            }
-//        }
-//
-//        @Override
-//        public void onCancelled(DatabaseError databaseError) {
-//            Log.v("err", databaseError.toString());
-//        }
-//    }
-
-
 
     private Bitmap getBitmapFromString(String stringPicture) {
         /*

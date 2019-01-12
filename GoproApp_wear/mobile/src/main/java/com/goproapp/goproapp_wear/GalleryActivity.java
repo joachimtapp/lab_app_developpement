@@ -1,11 +1,12 @@
 package com.goproapp.goproapp_wear;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import android.os.Build;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -16,37 +17,22 @@ import android.support.v7.widget.Toolbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -63,14 +49,6 @@ public class GalleryActivity extends AppCompatActivity
     private DrawerLayout mDrawerLayout;
     public static List<ImgData> imgData = new ArrayList<ImgData>();
 
-    //Firebase
-//    private MyFirebaseRecordingListener mFirebaseRecordingListener;
-    private DatabaseReference databaseRef;
-    private FirebaseDatabase database;
-
-    private FirebaseStorage storage;
-    private StorageReference storageReference;
-
     private String imgDataFile = "imgDataFile";
 
 
@@ -78,10 +56,20 @@ public class GalleryActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (checkSelfPermission("android" + ""
+                + ".permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_DENIED ||
+                checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") ==
+                        PackageManager.PERMISSION_DENIED || checkSelfPermission("android" + "" +
+                ".permission.INTERNET") == PackageManager.PERMISSION_DENIED)) {
+            requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION", "android"
+                    + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
+        }
+
+
         setContentView(R.layout.activity_gallery);
 //        readLocalData();
         //initialise firebase
-        database = FirebaseDatabase.getInstance();
+//        database = FirebaseDatabase.getInstance();
 
         //handle drawer
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -127,7 +115,9 @@ public class GalleryActivity extends AppCompatActivity
         //Set user info on the drawer
         DrawerHandler dh = new DrawerHandler();
         dh.setUserDrawer(navigationView);
+
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -163,48 +153,6 @@ public class GalleryActivity extends AppCompatActivity
         super.onPause();
 //        databaseRef.child("users").child(LoginActivity.userID).child("Data").removeEventListener
 //                (mFirebaseRecordingListener);
-    }
-
-    public void Upload(View view) {
-        Log.e("debug","start");
-        storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
-
-        int id=1;
-        String imgString=imgData.get(id).imgString;
-        StorageReference ref = storageReference.child(LoginActivity.userID).child(imgData.get(id).name);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        getBitmapFromString(imgString).compress(Bitmap.CompressFormat.PNG, 0, bos);
-
-        String name;
-        name=imgData.get(id).name.replace(".", "_");
-        databaseRef = FirebaseDatabase.getInstance().getReference().child("users").child(LoginActivity.userID).child("Data").child(name);
-
-        ref.putBytes(bos.toByteArray()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Toast.makeText(GalleryActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
-                        Task<Uri> downloadUrl = taskSnapshot.getMetadata().getReference()
-                                .getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(final Uri uri) {
-                                        imgData.get(id).imgUrl = uri.toString();
-                                        databaseRef.child("picture").setValue(imgData.get(id).imgUrl);
-                                    }
-                                });
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                       Log.e("debug","image upload fail");
-                    }
-                });
-        databaseRef.child("date").setValue(imgData.get(id).date);
-        String pos=imgData.get(id).latLng.getLatitude()+", "+imgData.get(id).latLng.getLongitude();
-        databaseRef.child("position").setValue(pos);
-
     }
     //return the fragment for each section
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -257,6 +205,7 @@ public class GalleryActivity extends AppCompatActivity
                     newImgData.date = image.getString("date");
                     newImgData.imgString = image.getString("imgString");
                     newImgData.name = image.getString("name");
+                    newImgData.online =Boolean.valueOf(image.getString("online"));
 
                     LatLng latLng = new LatLng();
                     latLng.setLatitude(Float.parseFloat(image.getJSONObject("latLng").getString("latitude")));
