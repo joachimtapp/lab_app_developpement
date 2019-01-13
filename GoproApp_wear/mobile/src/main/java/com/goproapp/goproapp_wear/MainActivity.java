@@ -20,12 +20,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
+        public String gopro_ssid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,11 +68,25 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         //launch the diaporama
-        //setMainImage();
+         setMainImageandWelcome();
 
     }
 
-    private void setMainImage() {
+    private void setMainImageandWelcome() {
+        ImageView mainIm = findViewById(R.id.image_mainim);
+        mainIm.setImageResource(R.drawable.sport_1);
+        TextView welcomeTex = findViewById(R.id.text_main_gopro_statu);
+       if (LoginActivity.userID!=null) {
+            if(LoginActivity.active_user!=null) {
+
+                welcomeTex.setText(" Welcome "+LoginActivity.active_user.first_name );
+            }
+
+        }
+        else {
+           welcomeTex.setText("Please log in");
+//            nav_gallery.setEnabled(false);
+        }
 
 
     }
@@ -98,28 +114,34 @@ public class MainActivity extends AppCompatActivity
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             // name of the wifi selected
             String ssid = wifiInfo.getSSID();
+
+            Button buttonCon = findViewById(R.id.button_maincon);
+
             if (!wifiManager.isWifiEnabled()) {
                 // problem if wifimanager not available
                 Toast.makeText(MainActivity.this,
                         "connection problem", Toast.LENGTH_SHORT).show();
             } else {
                 //String name = wifiInfo.getSSID();
-                Toast.makeText(MainActivity.this,
-                        "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
+               //Toast.makeText(MainActivity.this,
+                       // "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
                 TextView maingoprostatu = findViewById(R.id.text_main_gopro_statu);
-                // check if the network correspont to a Gopro -> the 2 first letter of the network ssid are : "ep..."
-                String NetworkIdCheck = ssid.substring(0,3);
-                maingoprostatu.setText("Connected to :"+NetworkIdCheck);
+                // check if the network correspont to a Gopro -> the 2 first letter of the network ssid are : "GP..."
+                String NetworkIdCheck = ssid.substring(1,3);
 
                 if (NetworkIdCheck.contains("GP")){
                     Toast.makeText(MainActivity.this,
                             "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
-                            maingoprostatu.setText("Connected to the Gopro :"+ssid);
+                   buttonCon.setText("Connected");
+                    ImageView goprostat = findViewById(R.id.main_im_cam_statu);
+                    goprostat.setImageResource(R.drawable.ic_linked_camera_black_24dp);
+                    // assign the ssid to the var gopro_ssid
+                    gopro_ssid = ssid;
 
                 } else {
                     Toast.makeText(MainActivity.this,
                             ssid+"Network is not a GoPro", Toast.LENGTH_SHORT).show();
-                            maingoprostatu.setText("Please connect to a GoPro");
+                    maingoprostatu.setText("Please connect to a GoPro");
                 }
             }
         }
