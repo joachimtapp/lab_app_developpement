@@ -5,10 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -18,12 +17,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -38,17 +33,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
-
-import org.videolan.libvlc.IVLCVout;
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
-
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.ArrayList;
 
@@ -59,7 +44,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Callback {
+
+public class LiveStreamActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private ImageButton mMenuDeployer;
@@ -111,16 +97,18 @@ public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Ca
     GoProInterface goProInterface;
     private String MODE;
 
-    public final static String TAG = "MainActivity";
-    private String mFilePath;
-    private SurfaceView mSurface;
-    private SurfaceHolder holder;
-    private LibVLC libvlc;
-    private MediaPlayer mMediaPlayer = null;
-    private int mVideoWidth;
-    private int mVideoHeight;
-    private final OkHttpClient client = new OkHttpClient();
-    Integer count = 0;
+    Handler timerHandler = new Handler();
+    Runnable timerRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+
+            utils.sendAsyncMagicPacket magicPacket = new utils.sendAsyncMagicPacket();
+            magicPacket.execute();
+
+            timerHandler.postDelayed(this, 420000);
+        }
+    };
 
     private static final int MENU_PHOTO = 0;
     private static final int MENU_VIDEO = 1;
@@ -134,6 +122,8 @@ public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Ca
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_stream);
+
+        timerHandler.postDelayed(timerRunnable, 0);
 
         goProCombinations = new GoProCombinations(getResources().getStringArray(R.array.val_FPS), getResources().getStringArray(R.array.val_FOV));
         goProInterface = new GoProInterface();
@@ -157,11 +147,9 @@ public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Ca
                 if(MODE.equals(GoProInterface.MODE_VIDEO)){
                     if(recording){
                         goProInterface.shutterStop();
-                        // TODO : change button to normal button
                         shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_small));
                     } else {
                         goProInterface.shutter();
-                        // TODO : Change button to recording button
                         shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_stop_small));
                     }
                     recording = !recording;
@@ -170,20 +158,6 @@ public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Ca
                 }
             }
         });
-
-        //utils.loadFFmpeg(getApplicationContext());
-
-        //Stream();
-        mFilePath = "udp://@:8554/gopro";
-        Log.d(TAG, "Playing: " + mFilePath);
-        mSurface = findViewById(R.id.surface);
-        holder = mSurface.getHolder();
-
-        // Set quality to 720p
-        //GoProSet("64", "7");
-
-        //Set bitrate to 4MBps
-        //GoProSet("62", "4000000");
 
         distText = findViewById(R.id.distTrig);
 
@@ -209,6 +183,12 @@ public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Ca
 
         // Setup EV adjustment bar on the bottom
         setupEV();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        timerHandler.removeCallbacks(timerRunnable);
     }
 
     private void setupCamera(){
@@ -437,8 +417,6 @@ public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Ca
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
         dh.setUserDrawer(navigationView);
-
-        //createPlayer(mFilePath);
     }
 
     @Override
@@ -1052,239 +1030,479 @@ public class LiveStreamActivity extends AppCompatActivity implements IVLCVout.Ca
 
     }
 
-    void GoProSet(String param, String value){
-        final Request startpreview = new Request.Builder()
-                .url(HttpUrl.get(URI.create("http://10.5.5.9/gp/gpControl/setting/" + param + "/" + value)))
-                .build();
+    private class GoProInterface {
 
-        client.newCall(startpreview).enqueue(new Callback() {
-            @Override public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
+        private OkHttpClient client = new OkHttpClient();
 
-            @Override public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()){
-                    Log.d("GoPro","Camera not connected");
-                }
+        public boolean isAlert = false;
 
+        static final String MODE_VIDEO = "VIDEO";
+        static final String MODE_PHOTO = "PHOTO";
+        static final String MODE_BURST = "BURST";
+        static final String ISO_MODE_LOCK = "LOCK";
+        static final String ISO_MODE_MAX = "MAX";
 
-            }
-        });
-    }
-    void Stream(){
-
-        //Call http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart
-
-        utils.callHTTP(getApplicationContext());
-        try {
-
-            String[] cmd = {"-fflags", "nobuffer", "-f", "mpegts", "-i", "udp://:8554", "-f", "mpegts","udp://127.0.0.1:8555/gopro?pkt_size=64"};
-            //String[] cmd = {"-f", "mpegts", "-i", "udp://:8554", "-f", "mpegts","udp://127.0.0.1:8555/gopro?pkt_size=64"};
-            FFmpeg ffmpeg = FFmpeg.getInstance(getApplicationContext());
-
-            ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
-
-                @Override
-                public void onStart() {
-                    count += 1;
-                    if(count == 7){
-                        count = 0;
-                        new utils.sendAsyncMagicPacket().execute();
-                    }
-                }
-
-                @Override
-                public void onProgress(String message) {
-                    Log.d("FFmpeg",message);
-                    utils.callHTTP(getApplicationContext());
-
-                }
-
-                @Override
-                public void onFailure(String message) {
-                    Toast.makeText(getApplicationContext(),"Stream fail",Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onSuccess(String message) {}
-
-                @Override
-                public void onFinish() {}
-            });
-        } catch (FFmpegCommandAlreadyRunningException e) {
-            // Handle if FFmpeg is already running
-        }
-        //Preview();
-        createPlayer(mFilePath);
-    }
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        setSize(mVideoWidth, mVideoHeight);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        releasePlayer();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        releasePlayer();
-    }
+        public GoProInterface() {
 
 
-    /**
-     * Used to set size for SurfaceView
-     *
-     * @param width
-     * @param height
-     */
+            Log.e("GoPro", "Created new instance of GoProInterface");
 
-    private void setSize(int width, int height) {
-        mVideoWidth = width;
-        mVideoHeight = height;
-        if (mVideoWidth * mVideoHeight <= 1)
-            return;
+            // Activate GPS Tag
+            sendRequest("http://10.5.5.9/gp/gpControl/setting/83/1");
 
-        if (holder == null || mSurface == null)
-            return;
-
-        int w = getWindow().getDecorView().getWidth();
-        int h = getWindow().getDecorView().getHeight();
-        boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-        if (w > h && isPortrait || w < h && !isPortrait) {
-            int i = w;
-            w = h;
-            h = i;
         }
 
-        float videoAR = (float) mVideoWidth / (float) mVideoHeight;
-        float screenAR = (float) w / (float) h;
-
-        if (screenAR < videoAR)
-            h = (int) (w / videoAR);
-        else
-            w = (int) (h * videoAR);
-
-        holder.setFixedSize(mVideoWidth, mVideoHeight);
-        ViewGroup.LayoutParams lp = mSurface.getLayoutParams();
-        lp.width = w;
-        lp.height = h;
-        mSurface.setLayoutParams(lp);
-        mSurface.invalidate();
-        if (width * height == 0)
-            return;
-
-        // store video size
-        mVideoWidth = width;
-        mVideoHeight = height;
-        setSize(mVideoWidth, mVideoHeight);
-    }
-
-    /**
-     * Creates MediaPlayer and plays video
-     *
-     * @param media
-     */
-    private void createPlayer(String media) {
-        releasePlayer();
-        try {
-            if (media.length() > 0) {
-                Toast toast = Toast.makeText(this, media, Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0,
-                        0);
-                toast.show();
-            }
-
-            // Create LibVLC
-            // TODO: make this more robust, and sync with audio demo
-            ArrayList<String> options = new ArrayList<String>();
-            //options.add("--subsdec-encoding <encoding>");
-            options.add("--aout=opensles");
-            options.add("--audio-time-stretch"); // time stretching
-            options.add("-vvv"); // verbosity
-            libvlc = new LibVLC(this, options);
-            holder = mSurface.getHolder();
-            holder.setKeepScreenOn(true);
-
-            // Creating media player
-            mMediaPlayer = new MediaPlayer(libvlc);
-            mMediaPlayer.setEventListener(mPlayerListener);
-
-            // Seting up video output
-            final IVLCVout vout = mMediaPlayer.getVLCVout();
-            vout.setVideoView(mSurface);
-            //vout.setSubtitlesView(mSurfaceSubtitles);
-            vout.addCallback(this);
-            vout.attachViews();
-
-            Media m = new Media(libvlc, Uri.parse(media));
-            mMediaPlayer.setMedia(m);
-            mMediaPlayer.play();
-        } catch (Exception e) {
-            Toast.makeText(this, "Error in creating player!" + e.getMessage(), Toast
-                    .LENGTH_LONG).show();
-        }
-    }
-
-    private void releasePlayer() {
-        if (libvlc == null)
-            return;
-        mMediaPlayer.stop();
-        final IVLCVout vout = mMediaPlayer.getVLCVout();
-        vout.removeCallback(this);
-        vout.detachViews();
-        holder = null;
-        libvlc.release();
-        libvlc = null;
-
-        mVideoWidth = 0;
-        mVideoHeight = 0;
-    }
-
-    /**
-     * Registering callbacks
-     */
-    private MediaPlayer.EventListener mPlayerListener = new MyPlayerListener(this);
-
-
-
-    @Override
-    public void onSurfacesCreated(IVLCVout vout) {
-
-    }
-
-    @Override
-    public void onSurfacesDestroyed(IVLCVout vout) {
-
-    }
-
-
-    private static class MyPlayerListener implements MediaPlayer.EventListener {
-        private WeakReference<LiveStreamActivity> mOwner;
-
-        public MyPlayerListener(LiveStreamActivity owner) {
-            mOwner = new WeakReference<LiveStreamActivity>(owner);
+        public void shutter() {
+            sendRequest("http://10.5.5.9/gp/gpControl/command/shutter?p=1");
         }
 
-        @Override
-        public void onEvent(MediaPlayer.Event event) {
-            LiveStreamActivity player = mOwner.get();
+        public void shutterStop() {
+            sendRequest("http://10.5.5.9/gp/gpControl/command/shutter?p=0");
+        }
 
-            switch (event.type) {
-                case MediaPlayer.Event.EndReached:
-                    Log.d(TAG, "MediaPlayerEndReached");
-                    player.releasePlayer();
+        public void setMode(String mode) {
+            String url;
+
+            switch (mode) {
+                case MODE_VIDEO:
+                    url = "http://10.5.5.9/gp/gpControl/command/sub_mode?mode=0&sub_mode=0";
                     break;
-                case MediaPlayer.Event.Playing:
-                case MediaPlayer.Event.Paused:
-                case MediaPlayer.Event.Stopped:
+                case MODE_PHOTO:
+                    url = "http://10.5.5.9/gp/gpControl/command/sub_mode?mode=1&sub_mode=1";
+                    break;
+                case MODE_BURST:
+                    url = "http://10.5.5.9/gp/gpControl/command/sub_mode?mode=2&sub_mode=0";
+                    break;
                 default:
+                    url = "";
+            }
+
+            sendRequest(url);
+
+        }
+
+        public void setFOVPhoto(String fov) {
+
+            String url;
+
+            switch (fov) {
+                case "Narrow":
+                    url = "http://10.5.5.9/gp/gpControl/setting/17/9";
+                    break;
+                case "Linear":
+                    url = "http://10.5.5.9/gp/gpControl/setting/17/10";
+                    break;
+                case "Medium":
+                    url = "http://10.5.5.9/gp/gpControl/setting/17/8";
+                    break;
+                case "Wide":
+                    url = "http://10.5.5.9/gp/gpControl/setting/17/0";
+                    break;
+                default:
+                    url = "";
+            }
+
+            sendRequest(url);
+
+        }
+
+        public void setProTune(Boolean enable, String mode) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/";
+            switch (mode) {
+                case MODE_PHOTO:
+                    url = url + "21/";
+                    break;
+                case MODE_VIDEO:
+                    url = url + "10/";
+                    break;
+                case MODE_BURST:
+                    url = url + "34/";
                     break;
             }
+
+            if (enable) {
+                url = url + "1";
+            } else {
+                url = url + "0";
+            }
+
+            sendRequest(url);
+
+        }
+
+        public void setWBAuto(String mode) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/";
+            switch (mode) {
+                case MODE_PHOTO:
+                    url = url + "22/";
+                    break;
+                case MODE_VIDEO:
+                    url = url + "11/";
+                    break;
+                case MODE_BURST:
+                    url = url + "35/";
+                    break;
+            }
+            url = url + "0";
+            sendRequest(url);
+        }
+
+        public void setISOMode(String mode) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/74/";
+            switch (mode) {
+                case ISO_MODE_LOCK:
+                    url = url + "1";
+                    break;
+                case ISO_MODE_MAX:
+                    url = url + "0";
+                    break;
+            }
+            sendRequest(url);
+        }
+
+        public void setISO(Integer iso) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/13/";
+            switch (iso) {
+                case 0:
+                    url = url + "2";
+                    break;
+                case 1:
+                    url = url + "4";
+                    break;
+                case 2:
+                    url = url + "1";
+                    break;
+                case 3:
+                    url = url + "3";
+                    break;
+                case 4:
+                    url = url + "0";
+                    break;
+            }
+            sendRequest(url);
+        }
+
+        public void setISOMin(Integer iso_min, String mode) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/";
+
+            switch (mode) {
+                case MODE_PHOTO:
+                    url = url + "75/";
+                    break;
+                case MODE_BURST:
+                    url = url + "76/";
+                    break;
+            }
+            switch (iso_min) {
+                case 0:
+                    url = url + "3";
+                    break;
+                case 1:
+                    url = url + "2";
+                    break;
+                case 2:
+                    url = url + "1";
+                    break;
+                case 3:
+                    url = url + "0";
+                    break;
+                case 4:
+                    url = url + "4";
+                    break;
+                default:
+                    url = url + "4";
+            }
+
+            sendRequest(url);
+        }
+
+        public void setISOMax(Integer iso_max, String mode) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/";
+
+            switch (mode) {
+                case MODE_PHOTO:
+                    url = url + "24/";
+                    break;
+                case MODE_BURST:
+                    url = url + "37/";
+                    break;
+            }
+            switch (iso_max) {
+                case 0:
+                    url = url + "3";
+                    break;
+                case 1:
+                    url = url + "2";
+                    break;
+                case 2:
+                    url = url + "1";
+                    break;
+                case 3:
+                    url = url + "0";
+                    break;
+                case 4:
+                    url = url + "4";
+                    break;
+                default:
+                    url = url + "4";
+            }
+
+            sendRequest(url);
+        }
+
+        public void setShutterAuto() {
+            sendRequest("http://10.5.5.9/gp/gpControl/setting/97/0");
+        }
+
+        public void setShutter(Integer shutter) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/97/";
+            shutter = shutter + 1;
+            url = url + shutter.toString();
+            sendRequest(url);
+        }
+
+        public void setResVideo(String resolution) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/2/";
+            switch (resolution) {
+                case "480p":
+                    url = url + "17";
+                    break;
+                case "720p":
+                    url = url + "12";
+                    break;
+                case "960p":
+                    url = url + "10";
+                    break;
+                case "1080p":
+                    url = url + "9";
+                    break;
+                case "1440p":
+                    url = url + "7";
+                    break;
+                case "2.7K 4:3":
+                    url = url + "6";
+                    break;
+                case "2.7K":
+                    url = url + "4";
+                    break;
+                case "4K":
+                    url = url + "1";
+                    break;
+                default:
+                    url = url + "9";
+                    break;
+            }
+
+            sendRequest(url);
+        }
+
+        public void setFPSVideo(String fps) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/3/";
+
+            switch (fps) {
+                case "24 FPS":
+                    url = url + "9";
+                    break;
+                case "30 FPS":
+                    url = url + "8";
+                    break;
+                case "48 FPS":
+                    url = url + "7";
+                    break;
+                case "60 FPS":
+                    url = url + "5";
+                    break;
+                case "80 FPS":
+                    url = url + "4";
+                    break;
+                case "90 FPS":
+                    url = url + "3";
+                    break;
+                case "100 FPS":
+                    url = url + "2";
+                    break;
+                case "120 FPS":
+                    url = url + "1";
+                    break;
+                case "240 FPS":
+                    url = url + "0";
+                    break;
+                default:
+                    url = url + "5";
+                    break;
+            }
+
+            sendRequest(url);
+        }
+
+        public void setEV(Integer ev, String mode) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/";
+
+            switch (mode) {
+                case MODE_PHOTO:
+                    url = url + "26/";
+                    break;
+                case MODE_VIDEO:
+                    url = url + "15/";
+                    break;
+                case MODE_BURST:
+                    url = url + "39/";
+                    break;
+            }
+            ev = 8 - ev;
+            url = url + ev.toString();
+
+            sendRequest(url);
+        }
+
+        public void setFOVVideo(String fov) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/4/";
+            switch (fov) {
+                case "Narrow":
+                    url = url + "2";
+                    break;
+                case "Linear":
+                    url = url + "4";
+                    break;
+                case "Medium":
+                    url = url + "1";
+                    break;
+                case "Wide":
+                    url = url + "0";
+                    break;
+                case "Super View":
+                    url = url + "3";
+                    break;
+                default:
+                    url = url + "0";
+                    break;
+            }
+
+            sendRequest(url);
+
+        }
+
+        public void setBurstRate(String burstRate) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/29/";
+            switch (burstRate) {
+                case "3/1":
+                    url = url + "0";
+                    break;
+                case "5/1":
+                    url = url + "1";
+                    break;
+                case "10/1":
+                    url = url + "2";
+                    break;
+                case "10/2":
+                    url = url + "3";
+                    break;
+                case "10/3":
+                    url = url + "4";
+                    break;
+                case "30/1":
+                    url = url + "5";
+                    break;
+                case "30/2":
+                    url = url + "6";
+                    break;
+                case "30/3":
+                    url = url + "7";
+                    break;
+                case "30/6":
+                    url = url + "8";
+                    break;
+            }
+
+            sendRequest(url);
+        }
+
+        public void setFOVBurst(String fov) {
+            String url;
+
+            switch (fov) {
+                case "Narrow":
+                    url = "http://10.5.5.9/gp/gpControl/setting/28/9";
+                    break;
+                case "Linear":
+                    url = "http://10.5.5.9/gp/gpControl/setting/28/10";
+                    break;
+                case "Medium":
+                    url = "http://10.5.5.9/gp/gpControl/setting/28/8";
+                    break;
+                case "Wide":
+                    url = "http://10.5.5.9/gp/gpControl/setting/28/0";
+                    break;
+                default:
+                    url = "";
+            }
+
+            sendRequest(url);
+        }
+
+        public void setWB(Integer wb, String mode) {
+            String url = "http://10.5.5.9/gp/gpControl/setting/";
+            switch (mode) {
+                case MODE_VIDEO:
+                    url = url + "11/";
+                    break;
+                case MODE_PHOTO:
+                    url = url + "22/";
+                    break;
+                case MODE_BURST:
+                    url = url + "35/";
+                    break;
+            }
+            switch (wb) {
+                case 0:
+                    url = url + "1";
+                    break;
+                case 1:
+                    url = url + "5";
+                    break;
+                case 2:
+                    url = url + "6";
+                    break;
+                case 3:
+                    url = url + "2";
+                    break;
+                case 4:
+                    url = url + "7";
+                    break;
+                case 5:
+                    url = url + "3";
+                    break;
+                default:
+                    url = url + "1";
+            }
+
+            sendRequest(url);
+        }
+
+        private void sendRequest(String url) {
+
+            Request startpreview = new Request.Builder()
+                    .url(HttpUrl.get(URI.create(url)))
+                    .build();
+
+            client.newCall(startpreview).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    //e.printStackTrace();
+                    if (!isAlert) {
+                        Log.e("GoPro", "Connection failed");
+                    }
+
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (!response.isSuccessful()) {
+                        Log.d("GoPro", "Camera not connected");
+                    }
+
+                }
+            });
         }
     }
 
