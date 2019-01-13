@@ -50,6 +50,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -278,7 +280,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         menus.get(view).setVisibility(View.VISIBLE);
 
         Resources r = getResources();
-        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,52.5F*view, r.getDisplayMetrics());
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,50F*view, r.getDisplayMetrics());
 
         View boxView = findViewById(R.id.selectedMode);
         ObjectAnimator animation = ObjectAnimator.ofFloat(boxView, "translationX", px);
@@ -366,7 +368,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                 ObjectAnimator animation_button;
                 float deg;
                 float px;
-                float dip = 200f;
+                float dip = 230f;
                 Resources r = getResources();
 
                 if(mMenuDeployer.getRotation() == 180F) {
@@ -487,7 +489,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_rate_burst.setAdapter(adapter_rate);
 
         switchProTune_burst.setChecked(false);
-        proTune_burst.setVisibility(View.INVISIBLE);
+        proTune_burst.setVisibility(View.GONE);
 
         setupCallbackBurst();
 
@@ -542,7 +544,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     }
 
                 } else {
-                    proTune_burst.setVisibility(View.INVISIBLE);
+                    proTune_burst.setVisibility(View.GONE);
                 }
                 goProInterface.setProTune(isChecked, MODE);
                 goProInterface.setEV(EV_bar.getProgress(), MODE);
@@ -664,7 +666,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         switchProTune_photo = findViewById(R.id.switchProTune_photo);
 
         switchProTune_photo.setChecked(false);
-        proTune_photo.setVisibility(View.INVISIBLE);
+        proTune_photo.setVisibility(View.GONE);
         goProInterface.setProTune(false, MODE);
 
         setupCallbackPhoto();
@@ -700,7 +702,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     }
 
                 } else {
-                    proTune_photo.setVisibility(View.INVISIBLE);
+                    proTune_photo.setVisibility(View.GONE);
                 }
                 goProInterface.setProTune(isChecked, MODE);
                 goProInterface.setEV(EV_bar.getProgress(), MODE);
@@ -880,7 +882,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         seekBarISO_video.setEnabled(false);
 
         switchProTune_video.setChecked(false);
-        proTune_video.setVisibility(View.INVISIBLE);
+        proTune_video.setVisibility(View.GONE);
         goProInterface.setProTune(switchProTune_video.isChecked(), MODE);
 
         setupCallbackVideo();
@@ -909,7 +911,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                         goProInterface.setISO(seekBarISO_video.getProgress());
                     }
                 } else {
-                    proTune_video.setVisibility(View.INVISIBLE);
+                    proTune_video.setVisibility(View.GONE);
                 }
                 goProInterface.setProTune(isChecked, MODE);
                 goProInterface.setEV(EV_bar.getProgress(), MODE);
@@ -1067,16 +1069,16 @@ public class LiveStreamActivity extends AppCompatActivity {
             Log.e("GoPro", "Created new instance of GoProInterface");
 
             // Activate GPS Tag
-            sendRequest("http://10.5.5.9/gp/gpControl/setting/83/1");
+            sendRequest("http://10.5.5.9/gp/gpControl/setting/83/1", false);
 
         }
 
         public void shutter() {
-            sendRequest("http://10.5.5.9/gp/gpControl/command/shutter?p=1");
+            sendRequest("http://10.5.5.9/gp/gpControl/command/shutter?p=1", true);
         }
 
         public void shutterStop() {
-            sendRequest("http://10.5.5.9/gp/gpControl/command/shutter?p=0");
+            sendRequest("http://10.5.5.9/gp/gpControl/command/shutter?p=0", true);
         }
 
         public void setMode(String mode) {
@@ -1096,7 +1098,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     url = "";
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
 
         }
 
@@ -1121,7 +1123,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     url = "";
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
 
         }
 
@@ -1145,7 +1147,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                 url = url + "0";
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
 
         }
 
@@ -1163,7 +1165,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     break;
             }
             url = url + "0";
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setISOMode(String mode) {
@@ -1176,7 +1178,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     url = url + "0";
                     break;
             }
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setISO(Integer iso) {
@@ -1198,7 +1200,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     url = url + "0";
                     break;
             }
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setISOMin(Integer iso_min, String mode) {
@@ -1232,7 +1234,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     url = url + "4";
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setISOMax(Integer iso_max, String mode) {
@@ -1266,18 +1268,18 @@ public class LiveStreamActivity extends AppCompatActivity {
                     url = url + "4";
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setShutterAuto() {
-            sendRequest("http://10.5.5.9/gp/gpControl/setting/97/0");
+            sendRequest("http://10.5.5.9/gp/gpControl/setting/97/0", false);
         }
 
         public void setShutter(Integer shutter) {
             String url = "http://10.5.5.9/gp/gpControl/setting/97/";
             shutter = shutter + 1;
             url = url + shutter.toString();
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setResVideo(String resolution) {
@@ -1312,7 +1314,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     break;
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setFPSVideo(String fps) {
@@ -1351,7 +1353,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     break;
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setEV(Integer ev, String mode) {
@@ -1371,7 +1373,7 @@ public class LiveStreamActivity extends AppCompatActivity {
             ev = 8 - ev;
             url = url + ev.toString();
 
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setFOVVideo(String fov) {
@@ -1397,7 +1399,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     break;
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
 
         }
 
@@ -1433,7 +1435,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     break;
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setFOVBurst(String fov) {
@@ -1456,7 +1458,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                     url = "";
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
         public void setWB(Integer wb, String mode) {
@@ -1495,10 +1497,10 @@ public class LiveStreamActivity extends AppCompatActivity {
                     url = url + "1";
             }
 
-            sendRequest(url);
+            sendRequest(url, false);
         }
 
-        private void sendRequest(String url) {
+        private void sendRequest(String url, boolean isShutter) {
 
             Request startpreview = new Request.Builder()
                     .url(HttpUrl.get(URI.create(url)))
@@ -1508,10 +1510,6 @@ public class LiveStreamActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     //e.printStackTrace();
-                    if (!isAlert) {
-                        Log.e("GoPro", "Connection failed");
-                    }
-
                 }
 
                 @Override
@@ -1519,22 +1517,38 @@ public class LiveStreamActivity extends AppCompatActivity {
                     if (!response.isSuccessful()) {
                         Log.d("GoPro", "Camera not connected");
                     }
+                    if(isShutter){
 
+                        long delay;
+                        switch (MODE){
+                            case MODE_BURST:
+                                int time = Integer.parseInt(spinner_rate_burst.getSelectedItem().toString().split("/")[1]);
+                                int nbImages = Integer.parseInt(spinner_rate_burst.getSelectedItem().toString().split("/")[0]);
+                                delay = time*1000 + nbImages*400 + 1000;
+                                break;
+                            default:
+                                delay = 2000;
+                        }
+                        // Launch task after some delay to wait for GoPro to be ready again
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                Log.e("Shutter", "Start of attempt to change background");
+                                new SetBackgroundImage().execute("http://10.5.5.9:8080/gp/gpMediaList");
+                            }
+                        }, delay);
+                    }
                 }
             });
         }
     }
 
-
-
     private class SetBackgroundImage extends AsyncTask<String, Void, String> {
 
         protected void onPreExecute() {
-            Log.e("debug", "Bite 2");
         }
 
         protected String doInBackground(String... arg0) {
-            Log.e("debug", "Bite");
 
             try {
 
@@ -1612,8 +1626,11 @@ public class LiveStreamActivity extends AppCompatActivity {
         protected Bitmap doInBackground(String... params) {
             URL url = null;
             try {
-               // url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + params[0]);
-                url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/"+params[0]);
+                if(params[0].contains(".MP4")){
+                    url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + params[0]);
+                } else {
+                    url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/" + params[0]);
+                }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
