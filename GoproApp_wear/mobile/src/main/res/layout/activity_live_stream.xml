@@ -13,10 +13,10 @@
         android:layout_height="match_parent">
 
         <!-- Background image for stream -->
-        <SurfaceView
+        <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/surface"
+            android:id="@+id/backgroundImage"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:background="@color/colorPrimary"/>

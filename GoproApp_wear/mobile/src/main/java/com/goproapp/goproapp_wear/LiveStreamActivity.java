@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
@@ -26,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -33,9 +37,21 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -183,6 +199,9 @@ public class LiveStreamActivity extends AppCompatActivity {
 
         // Setup EV adjustment bar on the bottom
         setupEV();
+
+        new SetBackgroundImage().execute("http://10.5.5.9:8080/gp/gpMediaList");
+
     }
 
     @Override
@@ -1503,6 +1522,133 @@ public class LiveStreamActivity extends AppCompatActivity {
 
                 }
             });
+        }
+    }
+
+
+
+    private class SetBackgroundImage extends AsyncTask<String, Void, String> {
+
+        protected void onPreExecute() {
+            Log.e("debug", "Bite 2");
+        }
+
+        protected String doInBackground(String... arg0) {
+            Log.e("debug", "Bite");
+
+            try {
+
+                Log.e("debug", "Attempting to get datalist");
+
+                URL url = new URL(arg0[0]); // here is your URL path
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000 /* milliseconds */);
+                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(
+                                    conn.getInputStream()));
+                    StringBuffer sb = new StringBuffer("");
+                    String line = "";
+
+                    while ((line = in.readLine()) != null) {
+
+                        sb.append(line);
+                        break;
+                    }
+                    in.close();
+
+                    Log.e("debug", "result: " + sb.toString());
+                    return sb.toString();
+
+                } else {
+                    return "Error";
+                }
+            } catch (Exception e) {
+                return "Error";
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            Log.e("debug", "result: " + result);
+            String lastImageName;
+
+            //recover data names
+            try {
+                JSONObject obj = new JSONObject(result);
+                JSONArray array = obj.getJSONArray("media").getJSONObject(0).getJSONArray("fs");
+                String goProDir = obj.getJSONArray("media").getJSONObject(0).getString("d");
+                JSONObject media = array.getJSONObject(array.length() - 1);
+                Log.e("debug", "dir= " + goProDir + " name= " + media.getString("n"));
+                lastImageName = media.getString("n");
+
+                DownloadTask downloadTask = new DownloadTask();
+                downloadTask.execute(lastImageName);
+
+            } catch (Throwable tx) {//recover pic info
+
+            }
+        }
+
+    }
+
+    private class DownloadTask extends AsyncTask<String, Void, Bitmap> {
+        // Before the tasks execution
+        protected void onPreExecute() {
+            // Display the progress dialog on async task start
+        }
+
+        // Do the task in background/non UI thread
+        protected Bitmap doInBackground(String... params) {
+            URL url = null;
+            try {
+               // url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + params[0]);
+                url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/"+params[0]);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            HttpURLConnection connection = null;
+
+            try {
+                // Initialize a new http url connection
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+                InputStream inputStream = connection.getInputStream();
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+                Bitmap bmp = BitmapFactory.decodeStream(bufferedInputStream);
+
+                return bmp;
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                // Disconnect the http url connection
+                connection.disconnect();
+            }
+            return null;
+        }
+
+        // When all async task done
+        protected void onPostExecute(Bitmap result) {
+            // Hide the progress dialog
+
+            if (result != null) {
+                // Display the downloaded image into ImageView
+                ImageView backgroundImage = findViewById(R.id.backgroundImage);
+                backgroundImage.setImageBitmap(result);
+            } else {
+                // Notify user that an error occurred while downloading image
+            }
         }
     }
 
