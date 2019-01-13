@@ -27,7 +27,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-        public String gopro_ssid;
+        public static String gopro_ssid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

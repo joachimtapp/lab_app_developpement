@@ -13,6 +13,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -21,6 +22,8 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -72,7 +75,7 @@ public class GalleryActivity extends AppCompatActivity
                     public boolean onNavigationItemSelected(MenuItem item) {
                         // Handle navigation view item clicks here.
                         int id = item.getItemId();
-                        if (id != R.id.nav_gallery) {//exclude himself
+                        if (id != R.id.nav_gallery && id != R.id.goProConnect) {//exclude himself
                             DrawerHandler dh = new DrawerHandler();
 
                             Intent intent;
@@ -80,7 +83,8 @@ public class GalleryActivity extends AppCompatActivity
                             GalleryActivity.this.startActivity(intent);
                         }
                         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                        drawer.closeDrawer(GravityCompat.START);
+                        if (id != R.id.goProConnect)
+                            drawer.closeDrawer(GravityCompat.START);
                         return true;
                     }
                 });
@@ -108,6 +112,8 @@ public class GalleryActivity extends AppCompatActivity
         DrawerHandler dh = new DrawerHandler();
         dh.setUserDrawer(navigationView);
 
+        SwitchCompat drawerSwitch = (SwitchCompat) navigationView.getMenu().findItem(R.id.goProConnect).getActionView();
+        dh.addSwitchListener(drawerSwitch,this);
     }
 
 
@@ -146,6 +152,7 @@ public class GalleryActivity extends AppCompatActivity
 //        databaseRef.child("users").child(LoginActivity.userID).child("Data").removeEventListener
 //                (mFirebaseRecordingListener);
     }
+
     //return the fragment for each section
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -197,7 +204,7 @@ public class GalleryActivity extends AppCompatActivity
                     newImgData.date = image.getString("date");
                     newImgData.imgString = image.getString("imgString");
                     newImgData.name = image.getString("name");
-                    newImgData.online =Boolean.valueOf(image.getString("online"));
+                    newImgData.online = Boolean.valueOf(image.getString("online"));
 
                     LatLng latLng = new LatLng();
                     latLng.setLatitude(Float.parseFloat(image.getJSONObject("latLng").getString("latitude")));
@@ -250,7 +257,7 @@ public class GalleryActivity extends AppCompatActivity
         FileOutputStream outputStream;
         Gson gson = new Gson();
         String json = gson.toJson(imgData);
-        Log.d("debug","write "+json);
+        Log.d("debug", "write " + json);
         try {
             outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
             outputStream.write(json.getBytes());
@@ -259,6 +266,7 @@ public class GalleryActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
+
     @Override
     public void onBackPressed() {
         finish();

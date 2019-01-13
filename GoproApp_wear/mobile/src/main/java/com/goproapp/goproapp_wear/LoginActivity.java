@@ -3,9 +3,12 @@ package com.goproapp.goproapp_wear;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v7.app.AppCompatActivity;
@@ -69,7 +72,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     public FirebaseAuth mAuth;
     public static String userID;
     public static User active_user;
+    public static String InternetSSID;
     private DatabaseReference mDatabase;
+
 
     @Override
     public void onStart() {
@@ -180,6 +185,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
             }
         }
+        WifiManager wifiManager = (WifiManager) this.getSystemService (Context.WIFI_SERVICE);
+        WifiInfo info = wifiManager.getConnectionInfo ();
+        InternetSSID  = info.getSSID().replace("\"","");
             userID = user.getUid();
             readUserProfile(userID);
 

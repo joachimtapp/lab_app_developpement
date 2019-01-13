@@ -324,7 +324,6 @@ public class GalleryFragment extends Fragment {
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
-                Log.e("Myinfo", "pos: " + String.valueOf(location.getLatitude()) + " " + String.valueOf(location.getLongitude()));
                 latLngActual = new LatLng(location.getLatitude(), location.getLongitude());
             }
 
