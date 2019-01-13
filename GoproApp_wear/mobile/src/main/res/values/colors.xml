@@ -8,6 +8,7 @@
 
     <color name="unselected">#00000000</color>
     <color name="selected">#d81b60</color>
+    <color name="mode_bg">#80d3d3d3</color>
 
     <color name="spinner_background">#000000</color>
     <color name="spinner_text">#000000</color>
