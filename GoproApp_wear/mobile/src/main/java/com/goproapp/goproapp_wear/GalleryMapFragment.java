@@ -84,10 +84,12 @@ public class GalleryMapFragment extends Fragment {
         mapView.onLowMemory();
     }
 
+
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         mapView.onDestroy();
+
     }
 
     @Override
@@ -160,7 +162,7 @@ public class GalleryMapFragment extends Fragment {
                         if (GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).imgString != null) {
                             Bitmap img = getBitmapFromString(GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).imgString);
 
-                            Bitmap resizedBitmap = Bitmap.createScaledBitmap(img, 400, 300, false);
+                            Bitmap resizedBitmap = Bitmap.createScaledBitmap(img, 320, 240, false);
 //                            Bitmap img_resize = resizeImage(img, 200);
                             galleryMapImg.setImageBitmap(resizedBitmap);
                             Projection mapProjection = mapboxMap.getProjection();
@@ -187,17 +189,19 @@ public class GalleryMapFragment extends Fragment {
             markerViews.add(opt);
             cnt++;
         }
-        mMapboxMap.addMarkerViews(markerViews);
+        if(mMapboxMap!=null) {
+            mMapboxMap.addMarkerViews(markerViews);
 
-        //set initial map position
-        CameraPosition camPos = new CameraPosition.Builder()
-                .target(new LatLng(48.769183, 21.661252))// Sets the new camera position
-                .zoom(0) // Sets the zoom
-                .bearing(0) // Rotate the camera
-                .tilt(0) // Set the camera tilt
-                .build(); // Creates a CameraPosition from the builder
-        mMapboxMap.animateCamera(CameraUpdateFactory
-                .newCameraPosition(camPos), 2000);
+            //set initial map position
+            CameraPosition camPos = new CameraPosition.Builder()
+                    .target(new LatLng(48.769183, 21.661252))// Sets the new camera position
+                    .zoom(0) // Sets the zoom
+                    .bearing(0) // Rotate the camera
+                    .tilt(0) // Set the camera tilt
+                    .build(); // Creates a CameraPosition from the builder
+            mMapboxMap.animateCamera(CameraUpdateFactory
+                    .newCameraPosition(camPos), 2000);
+        }
     }
 
     @Override

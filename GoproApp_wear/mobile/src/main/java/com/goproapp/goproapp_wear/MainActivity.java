@@ -2,8 +2,10 @@ package com.goproapp.goproapp_wear;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -31,6 +33,17 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (checkSelfPermission("android" + ""
+                + ".permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_DENIED ||
+                checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") ==
+                        PackageManager.PERMISSION_DENIED || checkSelfPermission("android" + "" +
+                ".permission.INTERNET") == PackageManager.PERMISSION_DENIED)) {
+            requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION", "android"
+                    + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -98,7 +111,7 @@ public class MainActivity extends AppCompatActivity
                 String NetworkIdCheck = ssid.substring(0,3);
                 maingoprostatu.setText("Connected to :"+NetworkIdCheck);
 
-                if (NetworkIdCheck.equals("GP")){
+                if (NetworkIdCheck.contains("GP")){
                     Toast.makeText(MainActivity.this,
                             "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
                             maingoprostatu.setText("Connected to the Gopro :"+ssid);

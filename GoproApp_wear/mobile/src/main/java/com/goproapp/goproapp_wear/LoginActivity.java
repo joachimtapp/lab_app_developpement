@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -47,8 +48,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -168,9 +171,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private void updateUI(FirebaseUser user) {
+        if(userID!=null) {//clear previous user data
+            FileOutputStream outputStream;
+            try {
+                outputStream = openFileOutput("imgDataFile", this.MODE_PRIVATE);
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
             userID = user.getUid();
-            GalleryActivity.imgData.clear();//clear previous user images
             readUserProfile(userID);
+
     }
 
     private void readUserProfile(String userId) {

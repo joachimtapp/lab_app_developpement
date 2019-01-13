@@ -29,6 +29,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.FileOutputStream;
+
 public class RegisterActivity extends AppCompatActivity {
     private EditText mEmailView;
     private EditText firstnameView;
@@ -162,6 +164,15 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void updateUI(FirebaseUser user) {
+        if(LoginActivity.userID!=null) {//clear previous user data
+            FileOutputStream outputStream;
+            try {
+                outputStream = openFileOutput("imgDataFile", this.MODE_PRIVATE);
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         LoginActivity.userID = user.getUid();
         readUserProfile(LoginActivity.userID);
     }
@@ -169,7 +180,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void readUserProfile(String userID) {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference profileRef = database.getReference("users");
-        profileRef.child(userID).addValueEventListener(new ValueEventListener() {
+        profileRef.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String first_name_db = dataSnapshot.child("first_name").getValue(String.class);

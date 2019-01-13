@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONArray;
@@ -33,6 +34,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -56,18 +58,8 @@ public class GalleryActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (checkSelfPermission("android" + ""
-                + ".permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_DENIED ||
-                checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") ==
-                        PackageManager.PERMISSION_DENIED || checkSelfPermission("android" + "" +
-                ".permission.INTERNET") == PackageManager.PERMISSION_DENIED)) {
-            requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION", "android"
-                    + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
-        }
-
-
         setContentView(R.layout.activity_gallery);
-//        readLocalData();
+        readLocalData();
         //initialise firebase
 //        database = FirebaseDatabase.getInstance();
 
@@ -183,6 +175,7 @@ public class GalleryActivity extends AppCompatActivity
 
     private void readLocalData() {
         try {
+            imgData.clear();
             FileInputStream fis = this.openFileInput(imgDataFile);
             InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
             BufferedReader bufferedReader = new BufferedReader(isr);
@@ -201,7 +194,6 @@ public class GalleryActivity extends AppCompatActivity
                     ImgData newImgData = new ImgData();
                     JSONObject image = array.getJSONObject(i);
                     Log.v("debug", "img: " + image.toString());
-                    newImgData.bpm = image.getString("bpm");
                     newImgData.date = image.getString("date");
                     newImgData.imgString = image.getString("imgString");
                     newImgData.name = image.getString("name");
@@ -211,7 +203,6 @@ public class GalleryActivity extends AppCompatActivity
                     latLng.setLatitude(Float.parseFloat(image.getJSONObject("latLng").getString("latitude")));
                     latLng.setLongitude(Float.parseFloat(image.getJSONObject("latLng").getString("longitude")));
                     newImgData.latLng = latLng;
-                    Log.v("debug", "bpm. " + newImgData.bpm);
                     Log.v("debug", newImgData.date);
                     Log.v("debug", newImgData.name);
                     Log.v("debug", "lat: " + latLng.toString());
@@ -252,6 +243,26 @@ public class GalleryActivity extends AppCompatActivity
 //            e.printStackTrace();
 //        }
 //    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        FileOutputStream outputStream;
+        Gson gson = new Gson();
+        String json = gson.toJson(imgData);
+        Log.d("debug","write "+json);
+        try {
+            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
+            outputStream.write(json.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
 }
 
 

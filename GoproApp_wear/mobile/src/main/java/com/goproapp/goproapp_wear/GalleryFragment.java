@@ -5,7 +5,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -18,7 +20,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -32,7 +33,6 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,6 +70,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -83,7 +84,6 @@ public class GalleryFragment extends Fragment {
     private GridView gridView;
     private TextView dateView;
     private TextView swipeHint;
-    private TextView bpmView;
     private LinearLayout linearLayoutInfo;
     private MapView mapView;
     private Marker marker;
@@ -104,6 +104,7 @@ public class GalleryFragment extends Fragment {
     private View uploadProgressBar;
     private FloatingActionButton uploadBtn;
     private LatLng latLngActual;
+    private View lastSelectedView;
 
 
     public GalleryFragment() {
@@ -142,8 +143,8 @@ public class GalleryFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         mapView.onDestroy();
     }
 
@@ -167,14 +168,15 @@ public class GalleryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        getGPSPosition();
         fragmentView = inflater.inflate(R.layout.fragment_gallery, container, false);
         gridView = fragmentView.findViewById(R.id.galleryThumbnails);
         dateView = fragmentView.findViewById(R.id.galleryDateValue);
-        bpmView = fragmentView.findViewById(R.id.bpmValue);
         swipeHint = fragmentView.findViewById(R.id.swipeHint);
         mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
         linearLayoutInfo = fragmentView.findViewById(R.id.linearLayoutInfo);
         uploadProgressBar = fragmentView.findViewById(R.id.uploadProgressBar);
+        uploadProgressBar.setElevation(7f);
         localData.clear();
         for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
             localData.add(GalleryActivity.imgData.get(i).name);
@@ -199,7 +201,6 @@ public class GalleryFragment extends Fragment {
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-
                 GetGoProMediaList();
                 if (LoginActivity.userID != null)
                     GetFirebaseMediaList();
@@ -238,50 +239,77 @@ public class GalleryFragment extends Fragment {
             }
         });
 
+        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getContext(), "long on: " + String.valueOf(position), Toast.LENGTH_SHORT).show();
+                new AlertDialog.Builder(getContext())
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle("Deleting image")
+                        .setMessage("Are you sure you want to delete?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String name = GalleryActivity.imgData.get(position).name.replace(".", "_");
+                                if (LoginActivity.userID != null)
+                                    FirebaseDatabase.getInstance().getReference().child("users").child(LoginActivity.userID).child("Data").child(name).removeValue();
+                                GalleryActivity.imgData.remove(position);
+                                adapter = new ImageAdapter(getContext());
+                                gridView.setAdapter(adapter);
+                                nPrevSelGridItem = 0;
+                            }
+
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+                return false;
+            }
+        });
+
         //handle image click
+
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                //highlight selected picture
-                try {
-                    if (nPrevSelGridItem != -1) {
-                        viewPrev = (View) gridView.getChildAt(nPrevSelGridItem);
-                        viewPrev.setBackgroundColor(Color.WHITE);
-                    }
-                    nPrevSelGridItem = position;
-                    if (nPrevSelGridItem == position) {
-                        v.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+//highlight selected picture
+                if (lastSelectedView != null)
+                    lastSelectedView.setBackgroundColor(Color.WHITE);
+                v.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                lastSelectedView = v;
+//set picture info
                 dateView.setText(GalleryActivity.imgData.get(position).date);
-                bpmView.setText(GalleryActivity.imgData.get(position).bpm);
                 linearLayoutInfo.setVisibility(viewPrev.VISIBLE);
-                //move marker and create it if necessary
-                if (marker == null) {
-                    CameraPosition camPos = new CameraPosition.Builder()
-                            .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
-                            .zoom(10) // Sets the zoom
-                            .bearing(0) // Rotate the camera
-                            .tilt(0) // Set the camera tilt
-                            .build(); // Creates a CameraPosition from the builder
-                    mMapboxMap.animateCamera(CameraUpdateFactory
-                            .newCameraPosition(camPos), 2000);
-                    marker = mMapboxMap.addMarker(new MarkerOptions().position(GalleryActivity.imgData.get(position).latLng));
 
-                } else {
-                    marker.setPosition(GalleryActivity.imgData.get(position).latLng);
+                if (mMapboxMap != null) {
+                    //move marker and create it if necessary
+                    if (marker == null) {
+                        if (GalleryActivity.imgData.get(position).latLng != null) {
 
-                    // move camera
-                    CameraPosition camPos = new CameraPosition.Builder()
-                            .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
-                            .zoom(mMapboxMap.getCameraPosition().zoom) // Sets the zoom
-                            .bearing(0) // Rotate the camera
-                            .tilt(0) // Set the camera tilt
-                            .build(); // Creates a CameraPosition from the builder
-                    mMapboxMap.animateCamera(CameraUpdateFactory
-                            .newCameraPosition(camPos), 2000);
+                            CameraPosition camPos = new CameraPosition.Builder()
+                                    .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
+                                    .zoom(10) // Sets the zoom
+                                    .bearing(0) // Rotate the camera
+                                    .tilt(0) // Set the camera tilt
+                                    .build(); // Creates a CameraPosition from the builder
+                            mMapboxMap.animateCamera(CameraUpdateFactory
+                                    .newCameraPosition(camPos), 2000);
+                            marker = mMapboxMap.addMarker(new MarkerOptions().position(GalleryActivity.imgData.get(position).latLng));
+                        }
+                    } else {
+                        if (GalleryActivity.imgData.get(position).latLng != null) {
+                            marker.setPosition(GalleryActivity.imgData.get(position).latLng);
+
+                            // move camera
+                            CameraPosition camPos = new CameraPosition.Builder()
+                                    .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
+                                    .zoom(mMapboxMap.getCameraPosition().zoom) // Sets the zoom
+                                    .bearing(0) // Rotate the camera
+                                    .tilt(0) // Set the camera tilt
+                                    .build(); // Creates a CameraPosition from the builder
+                            mMapboxMap.animateCamera(CameraUpdateFactory
+                                    .newCameraPosition(camPos), 2000);
+                        }
+                    }
                 }
             }
         });
@@ -296,7 +324,7 @@ public class GalleryFragment extends Fragment {
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
-                Log.v("Myinfo", "pos: " + String.valueOf(location.getLatitude()) + " " + String.valueOf(location.getLongitude()));
+                Log.e("Myinfo", "pos: " + String.valueOf(location.getLatitude()) + " " + String.valueOf(location.getLongitude()));
                 latLngActual = new LatLng(location.getLatitude(), location.getLongitude());
             }
 
@@ -466,20 +494,24 @@ public class GalleryFragment extends Fragment {
                 ImgData newImg = new ImgData();
                 newImg.imgString = getStringFromBitmap(result.imgBmp);
 //                newImg.imgBmp = result.imgBmp;
-                newImg.bpm = "foo";
                 newImg.name = result.imgName;
                 newImg.online = false;
                 newImg.latLng = latLngActual;
+
                 if (result.imgName.toLowerCase().contains("jpg")) {
                     GalleryActivity.imgData.add(newImg);
+                    //get date metadata for image
                     new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
                 } else {
-                    newImg.date = "getDate";
+                    //set upload time for others since no timestamp available
+                    Calendar now=Calendar.getInstance();
+                    newImg.date = String.valueOf(now.get(Calendar.YEAR))+":"+String.format("%02d",now.get(Calendar.MONTH)+1)+":"+String.valueOf(now.get(Calendar.DATE));
                     GalleryActivity.imgData.add(newImg);
+                    swipeHint.setAlpha(0.0f);
+                    adapter = new ImageAdapter(getContext());
+                    gridView.setAdapter(adapter);
                 }
-                swipeHint.setAlpha(0.0f);
-                adapter = new ImageAdapter(getContext());
-                gridView.setAdapter(adapter);
+
                 localData.add(newImg.name);
             } else {
                 // Notify user that an error occurred while downloading image
@@ -541,7 +573,6 @@ public class GalleryFragment extends Fragment {
             Log.v("debug", "result: " + result.text);
             //recover data names
             try {
-                getGPSPosition();
                 JSONObject obj = new JSONObject(result.text);
                 JSONArray array = obj.getJSONArray("media").getJSONObject(0).getJSONArray("fs");
                 goProDir = obj.getJSONArray("media").getJSONObject(0).getString("d");
@@ -566,6 +597,9 @@ public class GalleryFragment extends Fragment {
                             GalleryActivity.imgData.get(i).date = dateSplit[0];
                         }
                     }
+                    swipeHint.setAlpha(0.0f);
+                    adapter = new ImageAdapter(getContext());
+                    gridView.setAdapter(adapter);
                     mSwipeRefresh.setRefreshing(false);
                 } catch (Throwable tx2) {
                     Log.v("debug", "isn't the EXIF: \"" + result.text + "\"");
@@ -624,6 +658,7 @@ public class GalleryFragment extends Fragment {
     static class RecordHolder {
         ImageView image;
         ImageView logo;
+        ImageView latLng;
     }
 
     private class ImageAdapter extends BaseAdapter {
@@ -656,6 +691,7 @@ public class GalleryFragment extends Fragment {
                 holder = new RecordHolder();
                 holder.image = row.findViewById(R.id.imageView);
                 holder.logo = (ImageView) row.findViewById(R.id.locationView);
+                holder.latLng = (ImageView) row.findViewById(R.id.gpsView);
                 holder.image.setAdjustViewBounds(true);
                 holder.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 holder.image.setPadding(8, 8, 8, 8);
@@ -665,6 +701,8 @@ public class GalleryFragment extends Fragment {
             }
 
             holder.image.setImageBitmap(getBitmapFromString(GalleryActivity.imgData.get(position).imgString));
+            if (GalleryActivity.imgData.get(position).latLng == null)
+                holder.latLng.setAlpha(0.0f);
             if (GalleryActivity.imgData.get(position).online)
                 holder.logo.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cloud_queue_black_24dp, null));
             else
@@ -697,7 +735,7 @@ public class GalleryFragment extends Fragment {
                                 public void onSuccess(byte[] bytes) {
                                     Bitmap newImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                                     newImage.imgString = getStringFromBitmap(newImg);
-                                    newImage.online = false;//TODO set true
+                                    newImage.online = true;
                                     GalleryActivity.imgData.add(newImage);
                                     localData.add(imgName);
                                     swipeHint.setAlpha(0.0f);
