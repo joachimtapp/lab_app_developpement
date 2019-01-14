@@ -1,6 +1,8 @@
 package com.goproapp.goproapp_wear;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -14,6 +16,8 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
@@ -57,9 +61,23 @@ public class DrawerHandler {
 
                 if (isChecked) {
                     try {
+                        if (MainActivity.gopro_ssid.equals("none")) {
+                            new AlertDialog.Builder(context)
+                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                    .setTitle("Quick Switch")
+                                    .setMessage("Please select your goPro to use quick Wifi switch")
+                                    .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(context, MainActivity.class);
+                                            context.startActivity(intent);
 
-                        if (MainActivity.gopro_ssid == null) {
-                            Toast.makeText(context, "Please select your goPro in Home", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    })
+                                    .setNegativeButton("Later", null)
+                                    .show();
+                            drawerSwitch.setChecked(false);
                             return;
                         }
                         WifiManager wifiManager = (WifiManager) context.getApplicationContext()
@@ -79,7 +97,23 @@ public class DrawerHandler {
                     }
                 } else {
                     if (LoginActivity.InternetSSID == null) {
-                        Toast.makeText(context, "Please Log in to use Cloud storage", Toast.LENGTH_SHORT).show();
+                        drawerSwitch.setChecked(true);
+
+                        new AlertDialog.Builder(context)
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .setTitle("Quick Switch")
+                                .setMessage("Please Log in to use quick Wifi switch")
+                                .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Intent intent = new Intent(context, LoginActivity.class);
+                                        context.startActivity(intent);
+
+                                    }
+
+                                })
+                                .setNegativeButton("Later", null)
+                                .show();
                         return;
                     }
 
@@ -90,7 +124,7 @@ public class DrawerHandler {
                         List<WifiConfiguration> wifiConfigurations = wifiManager.getConfiguredNetworks();
 
                         for (WifiConfiguration wifiConfiguration : wifiConfigurations) {
-                            if (wifiConfiguration.SSID.equals("\"" + LoginActivity.InternetSSID + "\"")) {
+                            if (wifiConfiguration.SSID.equals( LoginActivity.InternetSSID )) {
                                 wifiManager.enableNetwork(wifiConfiguration.networkId, true);
                                 Log.e("Myinfo", "connectToWifi: will enable " + wifiConfiguration.SSID);
                                 wifiManager.reconnect();

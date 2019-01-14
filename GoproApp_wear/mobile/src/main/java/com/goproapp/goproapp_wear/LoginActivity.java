@@ -3,12 +3,15 @@ package com.goproapp.goproapp_wear;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v7.app.AppCompatActivity;
@@ -86,6 +89,26 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = wifiManager.getConnectionInfo();
+        String ssid = info.getSSID();
+        if (ssid.equals(MainActivity.gopro_ssid)){
+            new AlertDialog.Builder(this)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("GoPro connection detected")
+                    .setMessage("Please connect to your WiFi\n (this will also enable the quick connection switch)")
+                    .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivity(new Intent(
+                                    Settings.ACTION_WIFI_SETTINGS));
+
+                        }
+                    })
+                    .show();
+        }
+
         // Set up the login form.
         mEmailView = findViewById(R.id.email);
 
@@ -187,7 +210,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
         WifiManager wifiManager = (WifiManager) this.getSystemService (Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo ();
-        InternetSSID  = info.getSSID().replace("\"","");
+        InternetSSID  = info.getSSID();
             userID = user.getUid();
             readUserProfile(userID);
 

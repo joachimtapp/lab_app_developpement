@@ -2,6 +2,7 @@ package com.goproapp.goproapp_wear;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -16,18 +17,21 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-        public static String gopro_ssid;
+    public static String gopro_ssid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +39,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (checkSelfPermission("android" + ""
                 + ".permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_DENIED ||
@@ -62,33 +64,45 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
 
         navigationView.setNavigationItemSelectedListener(this);
+        //read saved gopro ssid
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        String defaultValue = "none";
+        gopro_ssid = sharedPref.getString("goProSSID", defaultValue);
 
         //launch the diaporama
-         setMainImageandWelcome();
-
+        setMainImageandWelcome();
     }
 
     private void setMainImageandWelcome() {
         ImageView mainIm = findViewById(R.id.image_mainim);
         mainIm.setImageResource(R.drawable.sport_1);
         TextView welcomeTex = findViewById(R.id.text_main_gopro_statu);
-       if (LoginActivity.userID!=null) {
-            if(LoginActivity.active_user!=null) {
+        TextView ssidView = findViewById(R.id.SSIDView);
+        LinearLayout ssidLayout = findViewById(R.id.ssidLayout);
+        ImageView goprostat = findViewById(R.id.main_im_cam_statu);
 
-                welcomeTex.setText(" Welcome "+LoginActivity.active_user.first_name );
+        if (!gopro_ssid.equals("none")) {
+            ssidView.setText(gopro_ssid.replace("\"", ""));
+            ssidLayout.setAlpha(1.0f);
+            goprostat.setImageResource(R.drawable.ic_linked_camera_black_24dp);
+        } else {
+            ssidLayout.setAlpha(0.0f);
+            goprostat.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+        }
+        if (LoginActivity.userID != null) {
+            if (LoginActivity.active_user != null) {
+                welcomeTex.setText(" Welcome " + LoginActivity.active_user.first_name);
             }
 
-        }
-        else {
-           welcomeTex.setText("Please log in");
+        } else {
+            welcomeTex.setText("Please log in");
 //            nav_gallery.setEnabled(false);
         }
-
-
     }
 
     // button callbak -> fetch a wifi connection
@@ -123,24 +137,28 @@ public class MainActivity extends AppCompatActivity
                         "connection problem", Toast.LENGTH_SHORT).show();
             } else {
                 //String name = wifiInfo.getSSID();
-               //Toast.makeText(MainActivity.this,
-                       // "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this,
+                // "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
                 TextView maingoprostatu = findViewById(R.id.text_main_gopro_statu);
                 // check if the network correspont to a Gopro -> the 2 first letter of the network ssid are : "GP..."
-                String NetworkIdCheck = ssid.substring(1,3);
+                String NetworkIdCheck = ssid.substring(1, 3);
 
-                if (NetworkIdCheck.contains("GP")){
+                if (NetworkIdCheck.equals("GP")) {
                     Toast.makeText(MainActivity.this,
-                            "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
-                   buttonCon.setText("Connected");
-                    ImageView goprostat = findViewById(R.id.main_im_cam_statu);
-                    goprostat.setImageResource(R.drawable.ic_linked_camera_black_24dp);
+                            "Connect to the GoPro" + ssid, Toast.LENGTH_SHORT).show();
+                    buttonCon.setText("Connected");
+
                     // assign the ssid to the var gopro_ssid
+                    SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putString("goProSSID", ssid);
+                    editor.commit();
                     gopro_ssid = ssid;
+                    setMainImageandWelcome();
 
                 } else {
                     Toast.makeText(MainActivity.this,
-                            ssid+"Network is not a GoPro", Toast.LENGTH_SHORT).show();
+                            ssid + "Network is not a GoPro", Toast.LENGTH_SHORT).show();
                     maingoprostatu.setText("Please connect to a GoPro");
                 }
             }
@@ -154,6 +172,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
         dh.setUserDrawer(navigationView);
+        SwitchCompat drawerSwitch = (SwitchCompat) navigationView.getMenu().findItem(R.id.goProConnect).getActionView();
+        dh.addSwitchListener(drawerSwitch,this);
     }
 
     @Override
@@ -194,7 +214,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        if(id != R.id.nav_home ) {//exclude himself
+        if (id != R.id.nav_home) {//exclude himself
             DrawerHandler dh = new DrawerHandler();
 
             Intent intent;

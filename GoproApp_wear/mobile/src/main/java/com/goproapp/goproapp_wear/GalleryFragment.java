@@ -1,5 +1,6 @@
 package com.goproapp.goproapp_wear;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
@@ -8,6 +9,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -15,11 +17,14 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -191,9 +196,16 @@ public class GalleryFragment extends Fragment {
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (LoginActivity.userID != null)
+                if (LoginActivity.userID != null) {
+                    WifiManager wifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
+                    WifiInfo info = wifiManager.getConnectionInfo();
+                    String ssid = info.getSSID();
+                    if (ssid.equals(MainActivity.gopro_ssid)) {
+                        Toast.makeText(getContext(), "You are currently connected to the GoPro", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     UploadImage();
-                else
+                } else
                     Toast.makeText(getContext(), "Log in for dataBase synchronization", Toast.LENGTH_LONG).show();
             }
         });
@@ -205,18 +217,8 @@ public class GalleryFragment extends Fragment {
                 if (LoginActivity.userID != null)
                     GetFirebaseMediaList();
                 else {
-                    Toast.makeText(getContext(), "Log in for dataBase synchronization", Toast.LENGTH_LONG).show();
                     mSwipeRefresh.setRefreshing(false);
                 }
-
-//                if (GalleryActivity.imgData.size() > 0) {//check if you have images or not
-//                    swipeHint.setAlpha(0.0f);
-//                    adapter = new ImageAdapter(getContext());
-//                    gridView.setAdapter(adapter);
-//                } else {
-//                    swipeHint.setText(getString(R.string.galleryEmpty));
-//                    mSwipeRefresh.setRefreshing(false);
-//                }
             }
         });
 
@@ -316,7 +318,6 @@ public class GalleryFragment extends Fragment {
         return fragmentView;
     }
 
-    @SuppressLint("MissingPermission")
     private void getGPSPosition() {
         LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 // Define a listener that responds to location updates
@@ -336,6 +337,15 @@ public class GalleryFragment extends Fragment {
             public void onProviderDisabled(String provider) {
             }
         };
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION", "android"
+                        + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
+
+            return;
+        }
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 
     }
