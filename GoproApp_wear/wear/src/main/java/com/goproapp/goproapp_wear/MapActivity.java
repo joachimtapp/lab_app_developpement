@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
-import android.widget.Toast;
 
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineListener;
@@ -21,10 +20,14 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
  */
 public class MapActivity extends WearableActivity {
 
+    private final String TAG = this.getClass().getSimpleName();
     private MapView mapView;
     private MapboxMap map;
     private LocationEngine locationEngine;
     private LocationEngineListener locationEngineListener;
+    public Location lausanneLoc = new Location("");//
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +40,17 @@ public class MapActivity extends WearableActivity {
         // This contains the MapView in XML and needs to be called after the account manager
         setContentView(R.layout.activity_map);
 
+
+
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
 
         LocationEngineProvider locationEngineProvider = new LocationEngineProvider(this);
         locationEngine = locationEngineProvider.obtainBestLocationEngineAvailable();
+        //Location : Lausanne
+        lausanneLoc.setLatitude( 46.5196535d);
+        lausanneLoc.setLongitude(6.6322734d);
+
 
         locationEngineListener = new LocationEngineListener() {
             @SuppressLint("MissingPermission")
@@ -70,10 +79,17 @@ public class MapActivity extends WearableActivity {
                 if (lastLocation != null) {
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), 16));
                 }
+                else {
+
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lausanneLoc), 16));
+                    // distance : your location to Lausanne
+                    float distanceInMeters =  lausanneLoc.distanceTo(lastLocation);
+                }
             }
         });
         locationEngine.addLocationEngineListener(locationEngineListener);
         setAmbientEnabled();
+
     }
 
     @Override

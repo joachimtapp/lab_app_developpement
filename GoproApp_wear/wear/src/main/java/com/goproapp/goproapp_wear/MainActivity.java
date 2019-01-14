@@ -13,7 +13,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.mapbox.android.core.location.LocationEngine;
+import com.mapbox.android.core.location.LocationEngineListener;
 
 // Icons made by <a href="https://www.flaticon.com/authors/chanut" title="Chanut">Chanut</a> licensed by <a href="http://creativecommons.org/licenses/by/3.0/"
 
@@ -22,6 +24,8 @@ public class MainActivity extends WearableActivity implements
 
     public static final String STOP_ACTIVITY = "STOP_ACTIVITY";
     private final String TAG = this.getClass().getSimpleName();
+    private LocationEngine locationEngine;
+    private LocationEngineListener locationEngineListener;
 
     private ConstraintLayout mLayout;
 
@@ -30,7 +34,7 @@ public class MainActivity extends WearableActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (checkSelfPermission("android" + ""
                 + ".permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_DENIED ||
                 checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") ==
@@ -57,10 +61,42 @@ public class MainActivity extends WearableActivity implements
         dist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                // start Distance Activity
+                String TAG = "MyActivity";
+                Log.i(TAG, "Start activity distance set");
+                Intent intentdist = new Intent(MainActivity.this, DistanceSet.class);
+                startActivity(intentdist);
+                //
                 Intent intent = new Intent(MainActivity.this, WearService.class);
                 intent.setAction(WearService.ACTION_SEND.DIST.name());
                 intent.putExtra(WearService.DIST_TRIG, 30);
                 startService(intent);
+            }
+        });
+
+        Button map = findViewById(R.id.mapBtn);
+        map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // start Map Activity
+                String TAG = "MyActivity";
+                Log.i(TAG, "Start activity Map");
+                Intent intentmap = new Intent(MainActivity.this, MapActivity.class);
+                startActivity(intentmap);
+
+            }
+        });
+
+        Button capture = findViewById(R.id.trigger_activ);
+        capture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // start capture Activity
+                String TAG = "MyActivity";
+                Log.i(TAG, "Start activity Capture");
+                Intent intentcap = new Intent(MainActivity.this, TriggerActivity.class);
+                startActivity(intentcap);
             }
         });
     }
@@ -86,10 +122,12 @@ public class MainActivity extends WearableActivity implements
     public void onLocationChanged(Location location) {
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
-
+        Log.i(TAG, "Location change");
         TextView textViewLocation = findViewById(R.id.testView);
-        if (textViewLocation != null)
+        if (textViewLocation != null) {
             textViewLocation.setText("Lat: " + latitude + "\nLon: " + longitude);
+
+        }
     }
 
     @Override
@@ -105,9 +143,6 @@ public class MainActivity extends WearableActivity implements
     @Override
     public void onProviderDisabled(String s) {
 
-    }
-
-    public void MapBtnClicked(View view) {
     }
 
 
