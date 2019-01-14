@@ -244,7 +244,6 @@ public class GalleryFragment extends Fragment {
         gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getContext(), "long on: " + String.valueOf(position), Toast.LENGTH_SHORT).show();
                 new AlertDialog.Builder(getContext())
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle("Deleting image")
@@ -465,7 +464,7 @@ public class GalleryFragment extends Fragment {
             Wrapper wrap = new Wrapper();
             URL url = null;
             try {
-                url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + params[0]);
+                url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p="+goProDir+"/" + params[0]);
 //                url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/"+params[0]);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
