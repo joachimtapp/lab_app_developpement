@@ -211,7 +211,7 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
     private PolygonOptions generatePerimeter(LatLng centerCoordinates, double radiusInMeters, int numberOfSides) {
         List<LatLng> positions = new ArrayList<>();
         double distanceX = radiusInMeters / (1000*111.319 * Math.cos(centerCoordinates.getLatitude() * Math.PI / 180));
-        double distanceY = radiusInMeters/ 1000*110.574;
+        double distanceY = radiusInMeters/ (1000*110.574);
 
         double slice = (2 * Math.PI) / numberOfSides;
 
