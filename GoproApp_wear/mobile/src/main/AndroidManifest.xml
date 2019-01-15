@@ -55,7 +55,7 @@
             android:label="@string/title_activity_maps" />
         <activity android:name=".RegisterActivity" />
         <activity
-            android:name=".LiveStreamActivity"
+            android:name=".GoProParametersActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 

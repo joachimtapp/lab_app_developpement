@@ -15,9 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
@@ -41,7 +38,7 @@ public class DrawerHandler {
                 intent = new Intent(context, LoginActivity.class);
                 break;
             case R.id.nav_livestream:
-                intent = new Intent(context, LiveStreamActivity.class);
+                intent = new Intent(context, GoProParametersActivity.class);
                 break;
         }
         return intent;

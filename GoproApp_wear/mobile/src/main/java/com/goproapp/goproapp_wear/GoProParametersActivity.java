@@ -64,7 +64,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 
-public class LiveStreamActivity extends AppCompatActivity {
+public class GoProParametersActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private ImageButton mMenuDeployer;
@@ -140,7 +140,7 @@ public class LiveStreamActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_live_stream);
+        setContentView(R.layout.activity_gopro_parameters);
 
         timerHandler.postDelayed(timerRunnable, 0);
 
@@ -262,7 +262,7 @@ public class LiveStreamActivity extends AppCompatActivity {
                 goProInterface.setMode(GoProInterface.MODE_VIDEO);
                 MODE = GoProInterface.MODE_VIDEO;
                 changeMenu(MENU_POSITION);
-                Intent intent = new Intent(LiveStreamActivity.this, WearService.class);
+                Intent intent = new Intent(GoProParametersActivity.this, WearService.class);
                 intent.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
                 intent.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_mainactivity);
                 startService(intent);
@@ -415,8 +415,8 @@ public class LiveStreamActivity extends AppCompatActivity {
                             DrawerHandler dh = new DrawerHandler();
 
                             Intent intent;
-                            intent = dh.SwitchActivity(id, LiveStreamActivity.this);
-                            LiveStreamActivity.this.startActivity(intent);
+                            intent = dh.SwitchActivity(id, GoProParametersActivity.this);
+                            GoProParametersActivity.this.startActivity(intent);
                         }
                         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                         drawer.closeDrawer(GravityCompat.START);
@@ -741,7 +741,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         seekBarWB_photo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Toast.makeText(LiveStreamActivity.this, "Text", Toast.LENGTH_SHORT).show();
+                Toast.makeText(GoProParametersActivity.this, "Text", Toast.LENGTH_SHORT).show();
                 goProInterface.setWB(progress, MODE);
             }
 
@@ -924,7 +924,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_res_video.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(LiveStreamActivity.this, "New resolution selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(GoProParametersActivity.this, "New resolution selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
                 //TODO : send new parameter to GoPro
                 FPS_spinner_video = goProCombinations.getFPS(spinner_res_video.getSelectedItem().toString());
                 FOV_spinner_video = goProCombinations.getFov(spinner_res_video.getSelectedItem().toString(), spinner_FPS_video.getSelectedItem().toString());
@@ -953,7 +953,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FOV_video.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(LiveStreamActivity.this, "New FOV selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(GoProParametersActivity.this, "New FOV selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
                 //TODO : send new parameters to GoPro
                 goProInterface.setFOVVideo(spinner_FOV_video.getSelectedItem().toString());
             }
@@ -967,7 +967,7 @@ public class LiveStreamActivity extends AppCompatActivity {
         spinner_FPS_video.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(LiveStreamActivity.this, "New FPS rate selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(GoProParametersActivity.this, "New FPS rate selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
                 //TODO : Send data to GoPro.
                 FOV_spinner_video = goProCombinations.getFov(spinner_res_video.getSelectedItem().toString(), spinner_FPS_video.getSelectedItem().toString());
 

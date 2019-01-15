@@ -178,8 +178,8 @@ public class WearService extends WearableListenerService {
                         break;
                     case BuildConfig.W_dist_path:
                         int trig_dist = dataMapItem.getDataMap().getInt(BuildConfig.W_dist_val);
-                        intent = new Intent(LiveStreamActivity.TRIG_DIST_INT);
-                        intent.putExtra(LiveStreamActivity.TRIG_DIST_VAL, trig_dist);
+                        intent = new Intent(GoProParametersActivity.TRIG_DIST_INT);
+                        intent.putExtra(GoProParametersActivity.TRIG_DIST_VAL, trig_dist);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                     default:
                         Log.v(TAG, "Data changed for unhandled path: " + uri);
