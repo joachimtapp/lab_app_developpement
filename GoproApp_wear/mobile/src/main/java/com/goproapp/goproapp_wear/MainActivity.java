@@ -19,7 +19,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,10 +28,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     public static String gopro_ssid;
-
+    ArrayList<Integer> myImageList = new ArrayList<>();
+    int z=0;
+    int nImageDelaySeconds=3;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,12 +82,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setMainImageandWelcome() {
-        ImageView mainIm = findViewById(R.id.image_mainim);
-        mainIm.setImageResource(R.drawable.sport_1);
+
         TextView welcomeTex = findViewById(R.id.text_main_gopro_statu);
         TextView ssidView = findViewById(R.id.SSIDView);
         LinearLayout ssidLayout = findViewById(R.id.ssidLayout);
         ImageView goprostat = findViewById(R.id.main_im_cam_statu);
+
 
         if (!gopro_ssid.equals("none")) {
             ssidView.setText(gopro_ssid.replace("\"", ""));
@@ -103,6 +106,40 @@ public class MainActivity extends AppCompatActivity
             welcomeTex.setText("Please log in");
 //            nav_gallery.setEnabled(false);
         }
+
+        //slideshow
+
+        final ImageView slideSh = findViewById(R.id.image_mainim);
+        myImageList.add(R.drawable.sport_1);
+        myImageList.add(R.drawable.sport_2);
+        myImageList.add(R.drawable.sport_3);
+        slideSh.setImageResource(myImageList.get(0));
+
+        Thread timer = new Thread() {
+            public void run() {
+                try {
+                    sleep(2000);
+
+                    for (z = 0; z < myImageList.size() + 4; z++) {
+                        if (z < myImageList.size()) {
+                            sleep(nImageDelaySeconds*1000);
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    slideSh.setImageResource(myImageList.get(z));
+                                }
+                            });
+                        } else {
+                            z = 0;
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    System.out.println("finally");
+                }
+            }
+        };
+        timer.start();
     }
 
     // button callbak -> fetch a wifi connection
