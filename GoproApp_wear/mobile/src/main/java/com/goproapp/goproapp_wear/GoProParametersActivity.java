@@ -1,13 +1,17 @@
 package com.goproapp.goproapp_wear;
 
 import android.animation.ObjectAnimator;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -142,6 +146,26 @@ public class GoProParametersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gopro_parameters);
+
+        // Check if you are connected to GoPro
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        String ssid = wifiInfo.getSSID();
+        if(!ssid.contains("GP")){
+            new AlertDialog.Builder(this)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("GoPro Connection")
+                    .setMessage("Make sure you are connected to your GoPro")
+                    .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+
+                        }
+                    })
+                    .setNegativeButton("Later", null)
+                    .show();
+        }
 
         timerHandler.postDelayed(timerRunnable, 0);
 
