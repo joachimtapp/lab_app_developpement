@@ -31,6 +31,9 @@ public class DistanceSet extends WearableActivity implements LocationListener {
     public Location goproLocation;
     public Location lastLocation;
     public float distanceInMeters;
+    // variable that decide wether the gopro should be shooting or not
+    // variable to send via an intent to the tablet
+    public boolean triggerCapt;
 
 
     @Override
@@ -74,6 +77,7 @@ public class DistanceSet extends WearableActivity implements LocationListener {
             @Override
             public void onClick(View view) {
                 // create an object location with the location
+                triggerCapt = false;
                 if (lastLocation != null && goproLocation==null) {
                     goproLocation = lastLocation;
                     Toast.makeText(DistanceSet.this,
@@ -113,12 +117,21 @@ public class DistanceSet extends WearableActivity implements LocationListener {
         lastLocation = location;
         double lastLat = location.getLatitude();
         Log.v(TAG, "lat :"+lastLat);
-        // distance to the Gorpro (distanceInMeters)
-        distanceInMeters =  goproLocation.distanceTo(location);
-        // current dist : contain the current distance to the Gopro
-        TextView currentDist=findViewById(R.id.current_dist);
+        if (goproLocation!=null) {
+            // distance to the Gorpro (distanceInMeters)
+            distanceInMeters = goproLocation.distanceTo(location);
+            // current dist : contain the current distance to the Gopro
+            TextView currentDist = findViewById(R.id.current_dist);
 
-        currentDist.setText(distanceInMeters+"m");
+            currentDist.setText(distanceInMeters + "m");
+            // check on the distance to gopro to decide if the gopro shoots or not
+            if(distanceInMeters<=triggerDistance){
+                triggerCapt = true;
+            }
+            else if(distanceInMeters>triggerDistance){
+                triggerCapt = false;
+            }
+        }
 
     }
 

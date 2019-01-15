@@ -5,7 +5,13 @@ import android.support.wearable.activity.WearableActivity;
 import android.view.View;
 import android.widget.ImageButton;
 
+
+
 public class TriggerActivity extends WearableActivity {
+
+    // variable that decide wether the gopro should be shooting or not
+    // variable to send via an intent to the tablet
+    public boolean triggerCapt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,7 +23,11 @@ public class TriggerActivity extends WearableActivity {
             @Override
             public void onClick(View view) {
                 // capture - > intent to capture
+                triggerCapt = true;
+                // send the intent to the tablet here
 
+                //stop the capture here
+                triggerCapt =false;
             }
         });
 
