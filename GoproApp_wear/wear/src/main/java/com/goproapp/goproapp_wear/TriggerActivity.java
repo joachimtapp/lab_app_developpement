@@ -23,13 +23,19 @@ public class TriggerActivity extends WearableActivity {
             @Override
             public void onClick(View view) {
                 // capture - > intent to capture
-                triggerCapt = true;
+                triggerCaptureOn();
                 // send the intent to the tablet here
 
                 //stop the capture here
-                triggerCapt =false;
+                triggerCaptureOff();
             }
         });
 
+    }
+
+    private void triggerCaptureOff() {
+    }
+
+    private void triggerCaptureOn() {
     }
 }
