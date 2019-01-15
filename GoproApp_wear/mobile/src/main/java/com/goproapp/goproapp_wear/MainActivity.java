@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.constraint.Group;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -19,6 +20,8 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,12 +33,21 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.SimpleShowcaseEventListener;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     public static String gopro_ssid;
     ArrayList<Integer> myImageList = new ArrayList<>();
     int z=0;
     int nImageDelaySeconds=3;
+    private Boolean firstTime=true;
+    private NavigationView navigationView;
+    private  DrawerLayout drawer;
+    private Group activityGroup;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,23 +64,25 @@ public class MainActivity extends AppCompatActivity
                     + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
         }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+            @Override
+            public void onDrawerClosed(View view) {
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                if(firstTime)
+                    guidedTour();
+            }
+        };
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
 
 
         navigationView.setNavigationItemSelectedListener(this);
@@ -79,6 +93,34 @@ public class MainActivity extends AppCompatActivity
 
         //launch the diaporama
         setMainImageandWelcome();
+
+        activityGroup=findViewById(R.id.activityGroup);
+
+    }
+
+    private void guidedTour() {
+
+                new ShowcaseView.Builder(MainActivity.this)
+                .setTarget(new ViewTarget(navigationView.getHeaderView(0).findViewById(R.id.logged_name)))
+                .setContentTitle("User")
+                .setContentText("You can see the connected user Here")
+                .setStyle(R.style.CustomShowcaseTheme)
+                .setShowcaseEventListener(new SimpleShowcaseEventListener(){
+
+                    @Override
+                    public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
+                        new ShowcaseView.Builder(MainActivity.this)
+                                .setTarget(new ViewTarget(navigationView.getMenu().findItem(R.id.goProConnect).getActionView()))
+                                .setContentTitle("Quick WiFi switch")
+                                .setContentText("Switch that allow the user to alternate between the GoPro WiFi " +
+                                        "and an internet connected one Quickly.\n This switch can be use after selecting your GoPro " +
+                                        "and logging in.")
+                                .setStyle(R.style.CustomShowcaseTheme)
+                                .build();
+                    }
+                })
+                .build()
+                .show();
     }
 
     private void setMainImageandWelcome() {
@@ -223,27 +265,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     //handle the drawer menu selection
     @SuppressWarnings("StatementWithEmptyBody")

@@ -23,6 +23,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -41,6 +42,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.SimpleShowcaseEventListener;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -110,7 +114,7 @@ public class GalleryFragment extends Fragment {
     private FloatingActionButton uploadBtn;
     private LatLng latLngActual;
     private View lastSelectedView;
-
+    private Boolean firstTime=true;
 
     public GalleryFragment() {
         // Required empty public constructor
@@ -168,6 +172,13 @@ public class GalleryFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(getContext(), getString(R.string.accessToken));
+    }
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated( savedInstanceState);
+        if(firstTime)
+            GuidedTour();
+
     }
 
     @Override
@@ -288,7 +299,7 @@ public class GalleryFragment extends Fragment {
 
                             CameraPosition camPos = new CameraPosition.Builder()
                                     .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
-                                    .zoom(10) // Sets the zoom
+                                    .zoom(15) // Sets the zoom
                                     .bearing(0) // Rotate the camera
                                     .tilt(0) // Set the camera tilt
                                     .build(); // Creates a CameraPosition from the builder
@@ -314,6 +325,7 @@ public class GalleryFragment extends Fragment {
                 }
             }
         });
+
         return fragmentView;
     }
 
@@ -504,7 +516,7 @@ public class GalleryFragment extends Fragment {
 //                newImg.imgBmp = result.imgBmp;
                 newImg.name = result.imgName;
                 newImg.online = false;
-                newImg.latLng = latLngActual;
+
 
                 if (result.imgName.toLowerCase().contains("jpg")) {
                     GalleryActivity.imgData.add(newImg);
@@ -512,6 +524,7 @@ public class GalleryFragment extends Fragment {
                     new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
                 } else {
                     //set upload time for others since no timestamp available
+                    newImg.latLng = latLngActual;
                     Calendar now=Calendar.getInstance();
                     newImg.date = String.valueOf(now.get(Calendar.YEAR))+":"+String.format("%02d",now.get(Calendar.MONTH)+1)+":"+String.valueOf(now.get(Calendar.DATE));
                     GalleryActivity.imgData.add(newImg);
@@ -586,7 +599,7 @@ public class GalleryFragment extends Fragment {
                 goProDir = obj.getJSONArray("media").getJSONObject(0).getString("d");
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject media = array.getJSONObject(i);
-                    Log.v("debug", "dir= " + goProDir + " name= " + media.getString("n"));
+                    Log.v("d1ebug", "dir= " + goProDir + " name= " + media.getString("n"));
                     goProData.add(media.getString("n"));
                 }
                 DownloadGoProData();
@@ -605,12 +618,34 @@ public class GalleryFragment extends Fragment {
                             GalleryActivity.imgData.get(i).date = dateSplit[0];
                         }
                     }
+
                     swipeHint.setAlpha(0.0f);
                     adapter = new ImageAdapter(getContext());
                     gridView.setAdapter(adapter);
                     mSwipeRefresh.setRefreshing(false);
                 } catch (Throwable tx2) {
                     Log.v("debug", "isn't the EXIF: \"" + result.text + "\"");
+                    mSwipeRefresh.setRefreshing(false);
+                }
+                try {
+                    JSONObject obj = new JSONObject(result.text);
+                    String[] latitude = obj.getJSONObject("exif").getString("GPSLatitude").split(", ");
+                    String[] longitude = obj.getJSONObject("exif").getString("GPSLongitude").split(", ");
+
+                    double lat=Double.parseDouble(latitude[0])+ Double.parseDouble(latitude[1]) /60 + Double.parseDouble(latitude[2])/(60*60);
+                    double lng=Double.parseDouble(longitude[0])+ Double.parseDouble(longitude[1]) /60 + Double.parseDouble(longitude[2])/(60*60);
+
+                    LatLng latLng=new LatLng(lat,lng);
+
+                    for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
+                        if (GalleryActivity.imgData.get(i).name == result.imgName) {
+                            GalleryActivity.imgData.get(i).latLng=latLng;
+                        }
+                    }
+                    Log.e("debug","pos: "+latLng.toString());
+
+                }catch (Throwable tx3){
+                    Log.v("debug", "no gps coords: \"" + result.text + "\"");
                     mSwipeRefresh.setRefreshing(false);
                 }
             }
@@ -784,6 +819,42 @@ public class GalleryFragment extends Fragment {
         byte[] b = byteArrayBitmapStream.toByteArray();
         encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
         return encodedImage;
+    }
+    private void GuidedTour() {
+
+        new ShowcaseView.Builder(getActivity())
+                .setTarget(new ViewTarget(R.id.swipeHint, getActivity()))
+                .setContentTitle("Refresh")
+                .setContentText("Swipe down to download images from either the GoPro or the cloud")
+                .setStyle(R.style.CustomShowcaseTheme)
+                .setShowcaseEventListener(new SimpleShowcaseEventListener() {
+
+                    @Override
+                    public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
+                        new ShowcaseView.Builder(getActivity())
+                                .setTarget(new ViewTarget(R.id.galleryThumbnails, getActivity()))
+                                .setContentTitle("Delete")
+                                .setContentText("Maintain an image press to delete it")
+                                .setStyle(R.style.CustomShowcaseTheme)
+                                .setShowcaseEventListener(new SimpleShowcaseEventListener() {
+
+                                    @Override
+                                    public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
+                                        new ShowcaseView.Builder(getActivity())
+                                                .setTarget(new ViewTarget(R.id.uploadBtn, getActivity()))
+                                                .setContentTitle("Upload")
+                                                .setContentText("When you are logged in and connected to internet you can save your pictures online")
+                                                .setStyle(R.style.CustomShowcaseTheme)
+                                                .build();
+                                    }
+                                })
+                                .build();
+                    }
+                })
+                .build()
+                .show();
+
+
     }
 
 }
