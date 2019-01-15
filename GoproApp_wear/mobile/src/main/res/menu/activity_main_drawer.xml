@@ -6,7 +6,8 @@
 
     <group
         android:id="@+id/activityGroup"
-        android:checkableBehavior="single">
+        android:checkableBehavior="single"
+        >
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_home"
@@ -14,6 +15,7 @@
         <item
             android:id="@+id/nav_livestream"
             android:icon="@drawable/ic_menu_camera"
+
             android:title="GoPro Preview" />
         <item
             android:id="@+id/nav_gallery"

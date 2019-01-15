@@ -141,8 +141,8 @@ public class GalleryMapFragment extends Fragment {
 
                 //set initial map position
                 CameraPosition camPos = new CameraPosition.Builder()
-                        .target(new LatLng(48.769183, 21.661252))// Sets the new camera position
-                        .zoom(0) // Sets the zoom
+                        .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
+                        .zoom(10) // Sets the zoom
                         .bearing(0) // Rotate the camera
                         .tilt(0) // Set the camera tilt
                         .build(); // Creates a CameraPosition from the builder
