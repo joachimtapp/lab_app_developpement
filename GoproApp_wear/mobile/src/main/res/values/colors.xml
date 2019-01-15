@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574b</color>
-    <color name="colorAccent">#d81b60</color>
+    <color name="colorPrimary">#252525</color>
+    <color name="colorPrimaryDark">#252525</color>
+    <color name="colorPrimaryLight">#3c4248</color>
+
+    <color name="colorAccent">#0b6ac6</color>
 
     <color name="black_overlay">#66000000</color>
 
+    <color name="drawerBackground">#3c4248</color>
+    <color name="drawerTextColor">#ffffff</color>
+
     <color name="unselected">#00000000</color>
-    <color name="selected">#d81b60</color>
-    <color name="mode_bg">#80d3d3d3</color>
+    <color name="selected">#0b6ac6</color>
+    <color name="mode_bg">#80585858</color>
 
     <color name="spinner_background">#000000</color>
     <color name="spinner_text">#000000</color>

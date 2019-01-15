@@ -3,7 +3,6 @@ package com.goproapp.goproapp_wear;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -12,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -274,7 +272,7 @@ public class GalleryFragment extends Fragment {
                                     int position, long id) {
 //highlight selected picture
                 if (lastSelectedView != null)
-                    lastSelectedView.setBackgroundColor(Color.WHITE);
+                    lastSelectedView.setBackgroundColor(getResources().getColor(R.color.colorPrimaryLight));
                 v.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                 lastSelectedView = v;
 //set picture info

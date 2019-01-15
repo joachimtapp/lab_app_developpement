@@ -30,7 +30,7 @@
             android:elevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:background="@color/colorPrimary"/>
+            android:background="@color/colorPrimaryLight"/>
 
         <!-- Mode menu -->
         <ImageButton
@@ -284,7 +284,9 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
-        app:menu="@menu/activity_main_drawer"/>
+        app:menu="@menu/activity_main_drawer"
+        android:background="@color/drawerBackground"
+        app:itemTextColor="@color/drawerTextColor"/>
 
 
 </android.support.v4.widget.DrawerLayout>

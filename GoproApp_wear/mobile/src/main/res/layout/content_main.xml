@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MainActivity"
-    tools:showIn="@layout/app_bar_main">
+    tools:showIn="@layout/app_bar_main"
+    android:background="@color/colorPrimaryLight">
 
     <ImageView
         android:id="@+id/image_mainim"
@@ -62,7 +63,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:elevation="0dp"
-                android:onClick="onMainConnect"
                 android:text="Select your GoPro"
                 tools:layout_editor_absoluteX="16dp"
                 tools:layout_editor_absoluteY="268dp" />
