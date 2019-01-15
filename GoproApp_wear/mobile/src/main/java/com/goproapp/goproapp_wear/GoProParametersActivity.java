@@ -36,7 +36,6 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -129,6 +128,8 @@ public class GoProParametersActivity extends AppCompatActivity {
         }
     };
 
+    private View whiteView;
+
     private static final int MENU_PHOTO = 0;
     private static final int MENU_VIDEO = 1;
     private static final int MENU_BURST = 2;
@@ -148,19 +149,35 @@ public class GoProParametersActivity extends AppCompatActivity {
         goProInterface = new GoProInterface();
 
         shutterButton = findViewById(R.id.shutterButton);
-        Animation animation_out = new AlphaAnimation(1.0F, 0.5F);
-        Animation animation_in = new AlphaAnimation(0.5F, 1.0F);
-        animation_out.setDuration(100);
+        Animation animation_out = new AlphaAnimation(1.0F, 0.0F);
+        animation_out.setDuration(200);
         animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
-        animation_in.setStartOffset(100);
-        animation_in.setDuration(100);
-        animation_in.setInterpolator(new AccelerateDecelerateInterpolator());
+        animation_out.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                whiteView.setAlpha(0.0F);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        whiteView = findViewById(R.id.whiteBack);
+
 
         shutterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                shutterButton.startAnimation(animation_in);
-                shutterButton.startAnimation(animation_out);
+                whiteView.setAlpha(1.0F);
+                whiteView.startAnimation(animation_out);
+
 
 
                 if(MODE.equals(GoProInterface.MODE_VIDEO)){
@@ -175,6 +192,41 @@ public class GoProParametersActivity extends AppCompatActivity {
                 } else {
                     goProInterface.shutter();
                 }
+            }
+        });
+
+        shutterButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                whiteView.setAlpha(1.0F);
+                whiteView.startAnimation(animation_out);
+
+                String previous_mode = MODE;
+
+                goProInterface.setMode(GoProInterface.MODE_PHOTO);
+                MODE = GoProInterface.MODE_PHOTO;
+                goProInterface.shutter();
+
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Log.e("Shutter", "Start of attempt to change background");
+                        new SetBackgroundImage().execute("http://10.5.5.9:8080/gp/gpMediaList");
+                    }
+                }, 1500);
+
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Log.e("Shutter", "Deleting last image");
+                        goProInterface.deleteLastMedia();
+                    }
+                }, 4000);
+
+                MODE = previous_mode;
+                goProInterface.setMode(previous_mode);
+
+                return true;
             }
         });
 
@@ -232,27 +284,87 @@ public class GoProParametersActivity extends AppCompatActivity {
         buttonPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goProInterface.setMode(GoProInterface.MODE_PHOTO);
                 MODE = GoProInterface.MODE_PHOTO;
+                goProInterface.setMode(MODE);
                 changeMenu(MENU_PHOTO);
+                goProInterface.setFOVPhoto(spinner_FOV_photo.getSelectedItem().toString());
+                goProInterface.setProTune(switchProTune_photo.isChecked(), MODE);
+                if(!switchProTune_photo.isChecked()){
+                    if(switchWB_photo.isChecked()){
+                        goProInterface.setWBAuto(GoProInterface.MODE_PHOTO);
+                    } else {
+                        goProInterface.setWB(seekBarWB_photo.getProgress(), MODE);
+                    }
+
+                    if(switchISO_photo.isChecked()){
+                        goProInterface.setISOMin(0, MODE);
+                        goProInterface.setISOMax(seekBarISO_max_photo.getMax(), MODE);
+                    } else {
+                        goProInterface.setISOMin(seekBarISO_min_photo.getProgress(), MODE);
+                        goProInterface.setISOMax(seekBarISO_max_photo.getProgress(), MODE);
+                    }
+
+                    if(switchShutter_photo.isChecked()){
+                        goProInterface.setShutterAuto();
+                    } else {
+                        goProInterface.setShutter(seekBarShutter_photo.getProgress());
+                    }
+                }
             }
         });
 
         buttonVideo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goProInterface.setMode(GoProInterface.MODE_VIDEO);
                 MODE = GoProInterface.MODE_VIDEO;
+                goProInterface.setMode(MODE);
                 changeMenu(MENU_VIDEO);
+                goProInterface.setResVideo(spinner_res_video.getSelectedItem().toString());
+                goProInterface.setFPSVideo(spinner_FPS_video.getSelectedItem().toString());
+                goProInterface.setFOVVideo(spinner_FOV_video.getSelectedItem().toString());
+                goProInterface.setProTune(switchProTune_video.isChecked(), MODE);
+                if(switchProTune_video.isChecked()){
+                    if(switchWB_video.isChecked()){
+                        goProInterface.setWBAuto(MODE);
+                    } else {
+                        goProInterface.setWB(seekBarWB_video.getProgress(), MODE);
+                    }
+
+                    if(switchISO_video.isChecked()){
+                        goProInterface.setISO(seekBarISO_video.getMax());
+                        goProInterface.setISOMode(GoProInterface.ISO_MODE_MAX);
+                    } else {
+                        goProInterface.setISO(seekBarISO_video.getProgress());
+                        goProInterface.setISOMode(GoProInterface.ISO_MODE_LOCK);
+                    }
+                }
             }
         });
 
         buttonBurst.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goProInterface.setMode(GoProInterface.MODE_BURST);
                 MODE = GoProInterface.MODE_BURST;
+                goProInterface.setMode(MODE);
                 changeMenu(MENU_BURST);
+                goProInterface.setFOVBurst(spinner_FOV_burst.getSelectedItem().toString());
+                goProInterface.setBurstRate(spinner_rate_burst.getSelectedItem().toString());
+                goProInterface.setProTune(switchProTune_burst.isChecked(), MODE);
+                if(switchProTune_burst.isChecked()){
+                    if(switchWB_burst.isChecked()){
+                        goProInterface.setWBAuto(MODE);
+                    } else {
+                        goProInterface.setWB(seekBarWB_burst.getProgress(), MODE);
+                    }
+
+                    if(switchISO_burst.isChecked()){
+                        goProInterface.setISOMin(0, MODE);
+                        goProInterface.setISOMax(seekBarISO_max_burst.getMax(), MODE);
+                    } else {
+                        goProInterface.setISOMin(seekBarISO_min_burst.getProgress(), MODE);
+                        goProInterface.setISOMax(seekBarISO_max_burst.getProgress(), MODE);
+                    }
+                }
             }
         });
 
@@ -741,7 +853,6 @@ public class GoProParametersActivity extends AppCompatActivity {
         seekBarWB_photo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Toast.makeText(GoProParametersActivity.this, "Text", Toast.LENGTH_SHORT).show();
                 goProInterface.setWB(progress, MODE);
             }
 
@@ -1058,8 +1169,6 @@ public class GoProParametersActivity extends AppCompatActivity {
 
         private OkHttpClient client = new OkHttpClient();
 
-        public boolean isAlert = false;
-
         static final String MODE_VIDEO = "VIDEO";
         static final String MODE_PHOTO = "PHOTO";
         static final String MODE_BURST = "BURST";
@@ -1074,6 +1183,10 @@ public class GoProParametersActivity extends AppCompatActivity {
             // Activate GPS Tag
             sendRequest("http://10.5.5.9/gp/gpControl/setting/83/1", false);
 
+        }
+
+        public void deleteLastMedia(){
+            sendRequest("http://10.5.5.9/gp/gpControl/command/storage/delete/last", false);
         }
 
         public void shutter() {
