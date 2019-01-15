@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity
     ArrayList<Integer> myImageList = new ArrayList<>();
     int z=0;
     int nImageDelaySeconds=3;
-    private Boolean firstTime=true;
+    private Boolean firstTime=false;
     private NavigationView navigationView;
     private  DrawerLayout drawer;
     private Group activityGroup;
@@ -106,7 +106,6 @@ public class MainActivity extends AppCompatActivity
                 .setContentText("You can see the connected user Here")
                 .setStyle(R.style.CustomShowcaseTheme)
                 .setShowcaseEventListener(new SimpleShowcaseEventListener(){
-
                     @Override
                     public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
                         new ShowcaseView.Builder(MainActivity.this)

@@ -112,7 +112,7 @@ public class GalleryFragment extends Fragment {
     private FloatingActionButton uploadBtn;
     private LatLng latLngActual;
     private View lastSelectedView;
-    private Boolean firstTime=true;
+    private Boolean firstTime=false;
 
     public GalleryFragment() {
         // Required empty public constructor
