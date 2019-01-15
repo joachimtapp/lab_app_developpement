@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <group
+        android:id="@+id/activityGroup"
+        android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_home"
@@ -15,10 +17,12 @@
             android:title="GoPro Preview" />
         <item
             android:id="@+id/nav_gallery"
+            android:checkable="true"
             android:icon="@drawable/ic_menu_gallery"
             android:title="Gallery" />
         <item
             android:id="@+id/nav_login"
+            android:checkable="true"
             android:icon="@drawable/ic_person"
             android:title="Login" />
 

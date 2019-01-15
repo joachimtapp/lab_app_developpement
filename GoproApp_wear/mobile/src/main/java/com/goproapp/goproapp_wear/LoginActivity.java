@@ -40,6 +40,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -77,7 +80,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     public static User active_user;
     public static String InternetSSID;
     private DatabaseReference mDatabase;
-
+    private boolean firstTime=true;
 
     @Override
     public void onStart() {
@@ -199,7 +202,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private void updateUI(FirebaseUser user) {
-        if(userID!=null) {//clear previous user data
+        if(userID!=null && !userID.equals(user.getUid())) {//clear previous user data
             FileOutputStream outputStream;
             try {
                 outputStream = openFileOutput("imgDataFile", this.MODE_PRIVATE);

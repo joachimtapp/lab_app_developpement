@@ -25,6 +25,8 @@ import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -55,6 +57,7 @@ public class GalleryActivity extends AppCompatActivity
     public static List<ImgData> imgData = new ArrayList<ImgData>();
 
     private String imgDataFile = "imgDataFile";
+
 
 
     @Override
@@ -114,6 +117,7 @@ public class GalleryActivity extends AppCompatActivity
 
         SwitchCompat drawerSwitch = (SwitchCompat) navigationView.getMenu().findItem(R.id.goProConnect).getActionView();
         dh.addSwitchListener(drawerSwitch,this);
+
     }
 
 
@@ -132,6 +136,17 @@ public class GalleryActivity extends AppCompatActivity
     @Override //require do manually restart activity to handle the map during orientation change
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        FileOutputStream outputStream;
+        Gson gson = new Gson();
+        String json = gson.toJson(imgData);
+        Log.d("debug", "write " + json);
+        try {
+            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
+            outputStream.write(json.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Intent intent;
         intent = new Intent(GalleryActivity.this, GalleryActivity.class);
         GalleryActivity.this.startActivity(intent);
@@ -235,21 +250,6 @@ public class GalleryActivity extends AppCompatActivity
         Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
         return decodedByte;
     }
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//        FileOutputStream outputStream;
-//        Gson gson = new Gson();
-//        String json = gson.toJson(imgData);
-//        Log.d("debug","write "+json);
-//        try {
-//            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
-//            outputStream.write(json.getBytes());
-//            outputStream.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     @Override
     protected void onStop() {
@@ -265,11 +265,6 @@ public class GalleryActivity extends AppCompatActivity
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        finish();
     }
 }
 

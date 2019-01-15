@@ -185,9 +185,11 @@ public class GalleryMapFragment extends Fragment {
         //add the picture position to the map
         markerViews.clear();
         for (ImgData im : GalleryActivity.imgData) {
-            MarkerViewOptions opt = new MarkerViewOptions().position(im.latLng).title(String.valueOf(cnt));
-            markerViews.add(opt);
-            cnt++;
+            if(im.latLng!=null) {
+                MarkerViewOptions opt = new MarkerViewOptions().position(im.latLng).title(String.valueOf(cnt));
+                markerViews.add(opt);
+            }
+                cnt++;
         }
         if(mMapboxMap!=null) {
             mMapboxMap.addMarkerViews(markerViews);
