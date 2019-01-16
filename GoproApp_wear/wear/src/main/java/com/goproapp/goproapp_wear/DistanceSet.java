@@ -33,8 +33,8 @@ public class DistanceSet extends WearableActivity {
     public Location lastLocation;
     public static float distanceInMeters;
     // variable that decide wether the gopro should be shooting or not
-    // variable to send via an intent to the tablet
-    public boolean triggerCapt;
+    // handle to not shoot
+    public boolean isInsideTriggerCapt;
 
     //
 
@@ -71,6 +71,7 @@ public class DistanceSet extends WearableActivity {
                     triggerDistance = Integer.parseInt(dist_trig.getText().toString());
                     Toast.makeText(DistanceSet.this,
                             "Trigger distance set to : " + triggerDistance, Toast.LENGTH_SHORT).show();
+
                 }
 
 
@@ -100,10 +101,20 @@ public class DistanceSet extends WearableActivity {
                     // check on the distance to gopro to decide if the gopro shoots or not
                     if (distanceInMeters <= triggerDistance) {
                         // call the method that launch the capture process
-                        triggerCapture();
+
+                        if( isInsideTriggerCapt==true) {
+                            triggerCapture();
+                            triggerCaptureOn();
+                        }
+
+
                     } else if (distanceInMeters > triggerDistance) {
+                        //
+                        isInsideTriggerCapt = true;
                         // call the method that stops the capture process
+
                         triggerCapture();
+                        triggerCaptureOff();
                     }
                 }
 
@@ -127,16 +138,18 @@ public class DistanceSet extends WearableActivity {
             @Override
             public void onClick(View view) {
                 // create an object location with the location
-                triggerCapt = false;
+
                 if (lastLocation != null && goproLocation == null) {
                     goproLocation = lastLocation;
                     Toast.makeText(DistanceSet.this,
                             "Gopro Location set to : Lat " + goproLocation.getLatitude() + " Lon :" + goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                    isInsideTriggerCapt=false;
 
                 } else if (lastLocation != null && goproLocation != null) {
                     goproLocation = lastLocation;
                     Toast.makeText(DistanceSet.this,
                             "Gopro Location changed to : Lat " + goproLocation.getLatitude() + " Lon :" + goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                    isInsideTriggerCapt=false;
                 } else if (lastLocation==null) {
                     Toast.makeText(DistanceSet.this,
                             "Gopro Location not found ", Toast.LENGTH_SHORT).show();
@@ -146,6 +159,12 @@ public class DistanceSet extends WearableActivity {
         });
 
 
+    }
+
+    private void triggerCaptureOff() {
+    }
+
+    private void triggerCaptureOn() {
     }
 
     // method stop capture
