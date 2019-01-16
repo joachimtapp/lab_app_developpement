@@ -35,6 +35,7 @@ public class DistanceSet extends WearableActivity {
     // variable that decide wether the gopro should be shooting or not
     // handle to not shoot
     public boolean isInsideTriggerCapt;
+    public static int circleColor;
 
     //
 
@@ -105,6 +106,7 @@ public class DistanceSet extends WearableActivity {
                         if( isInsideTriggerCapt==true) {
                             triggerCapture();
                             triggerCaptureOn();
+                            circleColor = R.color.red;
                         }
 
 
@@ -112,7 +114,7 @@ public class DistanceSet extends WearableActivity {
                         //
                         isInsideTriggerCapt = true;
                         // call the method that stops the capture process
-
+                        circleColor = R.color.violet;
                         triggerCapture();
                         triggerCaptureOff();
                     }
