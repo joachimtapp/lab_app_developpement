@@ -1,12 +1,8 @@
 package com.goproapp.goproapp_wear;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -19,17 +15,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.CompoundButton;
-import android.widget.Toast;
-
-import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ViewTarget;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
@@ -67,7 +54,6 @@ public class GalleryActivity extends AppCompatActivity
         setContentView(R.layout.activity_gallery);
         readLocalData();
 
-
         //handle drawer
         mDrawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -78,7 +64,7 @@ public class GalleryActivity extends AppCompatActivity
                         // Handle navigation view item clicks here.
                         int id = item.getItemId();
                         if (id != R.id.nav_gallery && id != R.id.goProConnect) {//exclude himself
-                            DrawerHandler dh = new DrawerHandler();
+                            DrawerHandler dh = new DrawerHandler(GalleryActivity.this, navigationView);
 
                             Intent intent;
                             intent = dh.SwitchActivity(id, GalleryActivity.this);
@@ -111,8 +97,8 @@ public class GalleryActivity extends AppCompatActivity
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
         //Set user info on the drawer
-        DrawerHandler dh = new DrawerHandler();
-        dh.setUserDrawer(navigationView);
+        DrawerHandler dh = new DrawerHandler(this, navigationView);
+        dh.setUserDrawer();
 
         SwitchCompat drawerSwitch = (SwitchCompat) navigationView.getMenu().findItem(R.id.goProConnect).getActionView();
         dh.addSwitchListener(drawerSwitch,this);
@@ -140,7 +126,7 @@ public class GalleryActivity extends AppCompatActivity
         String json = gson.toJson(imgData);
         Log.d("debug", "write " + json);
         try {
-            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
+            outputStream = openFileOutput(imgDataFile, MODE_PRIVATE);
             outputStream.write(json.getBytes());
             outputStream.close();
         } catch (Exception e) {
@@ -199,16 +185,16 @@ public class GalleryActivity extends AppCompatActivity
             while ((line = bufferedReader.readLine()) != null) {
                 sb.append(line).append("\n");
             }
-            Log.e("debug", "read file: " + sb.toString());
+            Log.v("debug", "read file: " + sb.toString());
             try {
                 JSONArray array = new JSONArray(sb.toString());
 
-                Log.e("debug", "len: " + array.length());
+                Log.v("debug", "len: " + array.length());
                 for (int i = 0; i < array.length(); i++) {
 
                     ImgData newImgData = new ImgData();
                     JSONObject image = array.getJSONObject(i);
-                    Log.e("debug", "img: " + image.toString());
+                    Log.v("debug", "img: " + image.toString());
                     newImgData.date = image.getString("date");
                     newImgData.imgString = image.getString("imgString");
                     newImgData.name = image.getString("name");
@@ -218,15 +204,15 @@ public class GalleryActivity extends AppCompatActivity
                         latLng.setLatitude(Float.parseFloat(image.getJSONObject("latLng").getString("latitude")));
                         latLng.setLongitude(Float.parseFloat(image.getJSONObject("latLng").getString("longitude")));
                         newImgData.latLng = latLng;
-                        Log.e("debug", "lat: " + latLng.toString());
+                        Log.v("debug", "lat: " + latLng.toString());
                     }
                     catch (Throwable tx){
                         Log.e("debug", "image don't have gps position");
 
                     }
-                    Log.e("debug", newImgData.date);
-                    Log.e("debug", newImgData.name);
-                    Log.e("debug", newImgData.online.toString());
+                    Log.v("debug", newImgData.date);
+                    Log.v("debug", newImgData.name);
+                    Log.v("debug", newImgData.online.toString());
 
                     imgData.add(newImgData);
                 }
@@ -236,19 +222,10 @@ public class GalleryActivity extends AppCompatActivity
 
         } catch (FileNotFoundException e) {
             Log.e("debug", "file not found");
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException ignored) {
 
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
-    }
-
-    private Bitmap getBitmapFromString(String stringPicture) {
-        /*
-         * This Function converts the String back to Bitmap
-         * */
-        byte[] decodedString = Base64.decode(stringPicture, Base64.DEFAULT);
-        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-        return decodedByte;
     }
 
     @Override
@@ -259,9 +236,9 @@ public class GalleryActivity extends AppCompatActivity
 
         String json = gson.toJson(imgData);
 
-        Log.e("debug", "write " + json);
+        Log.v("debug", "write " + json);
         try {
-            outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
+            outputStream = openFileOutput(imgDataFile, MODE_PRIVATE);
             outputStream.write(json.getBytes());
             outputStream.close();
         } catch (Exception e) {

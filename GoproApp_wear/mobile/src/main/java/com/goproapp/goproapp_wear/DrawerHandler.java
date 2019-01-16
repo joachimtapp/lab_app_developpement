@@ -21,7 +21,23 @@ import java.util.List;
 
 public class DrawerHandler {
 
-    public DrawerHandler() {
+    NavigationView navigationView;
+
+    public DrawerHandler(Context context, NavigationView navigationView) {
+        String classname = context.getClass().getSimpleName();
+        this.navigationView = navigationView;
+        Menu menuNav = navigationView.getMenu();
+        switch (classname){
+            case "MainActivity":
+                menuNav.getItem(0).setChecked(true);
+                break;
+            case "GoProParametersActivity":
+                menuNav.getItem(1).setChecked(true);
+                break;
+            case "GalleryActivity":
+                menuNav.getItem(2).setChecked(true);
+                break;
+        }
     }
 
     public Intent SwitchActivity(int id, Context context) {
@@ -68,9 +84,7 @@ public class DrawerHandler {
                                         public void onClick(DialogInterface dialog, int which) {
                                             Intent intent = new Intent(context, MainActivity.class);
                                             context.startActivity(intent);
-
                                         }
-
                                     })
                                     .setNegativeButton("Later", null)
                                     .show();
@@ -83,10 +97,8 @@ public class DrawerHandler {
                         for (WifiConfiguration wifiConfiguration : wifiConfigurations) {
                             if (wifiConfiguration.SSID.equals(MainActivity.gopro_ssid)) {
                                 wifiManager.enableNetwork(wifiConfiguration.networkId, true);
-                                Log.e("Myinfo", "connectToWifi: will enable " + wifiConfiguration.SSID);
+                                Log.v("Myinfo", "connectToWifi: will enable " + wifiConfiguration.SSID);
                                 wifiManager.reconnect();
-
-
                             }
                         }
                     } catch (NullPointerException | IllegalStateException e) {
@@ -105,9 +117,7 @@ public class DrawerHandler {
                                     public void onClick(DialogInterface dialog, int which) {
                                         Intent intent = new Intent(context, LoginActivity.class);
                                         context.startActivity(intent);
-
                                     }
-
                                 })
                                 .setNegativeButton("Later", null)
                                 .show();
@@ -123,7 +133,7 @@ public class DrawerHandler {
                         for (WifiConfiguration wifiConfiguration : wifiConfigurations) {
                             if (wifiConfiguration.SSID.equals( LoginActivity.InternetSSID )) {
                                 wifiManager.enableNetwork(wifiConfiguration.networkId, true);
-                                Log.e("Myinfo", "connectToWifi: will enable " + wifiConfiguration.SSID);
+                                Log.v("Myinfo", "connectToWifi: will enable " + wifiConfiguration.SSID);
                                 wifiManager.reconnect();
 
 
@@ -137,7 +147,7 @@ public class DrawerHandler {
         });
     }
 
-    public void setUserDrawer(NavigationView navigationView) {
+    public void setUserDrawer() {
 
         View hView = navigationView.getHeaderView(0);
         TextView nav_email = (TextView) hView.findViewById(R.id.logged_email);
@@ -149,10 +159,8 @@ public class DrawerHandler {
                 nav_email.setText(LoginActivity.active_user.email);
                 nav_name.setText(LoginActivity.active_user.first_name + " " + LoginActivity.active_user.last_name);
             }
-            nav_gallery.setEnabled(true);
         } else {
             nav_name.setText("Please log in");
-//            nav_gallery.setEnabled(false);
         }
 
     }

@@ -10,33 +10,24 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.constraint.Group;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 
 import com.github.amlcurran.showcaseview.ShowcaseView;
@@ -153,11 +144,9 @@ public class MainActivity extends AppCompatActivity
 
         } else {
             welcomeTex.setText("Please log in");
-//            nav_gallery.setEnabled(false);
         }
 
         //slideshow
-
         final ImageView slideSh = findViewById(R.id.image_mainim);
         myImageList.add(R.drawable.sport_1);
         myImageList.add(R.drawable.sport_2);
@@ -200,8 +189,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                } finally {
-                    System.out.println("finally");
                 }
             }
         };
@@ -211,14 +198,7 @@ public class MainActivity extends AppCompatActivity
     // button callbak -> fetch a wifi connection
     public void onMainConnect(View view) {
         // start the wifi settings of the device
-        selectWifiNetwork();
-
-    }
-
-    private void selectWifiNetwork() {
-        // fetch wifi
-        startActivityForResult(new Intent(
-                Settings.ACTION_WIFI_SETTINGS), 0);
+        startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
     }
 
     @Override
@@ -227,9 +207,7 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 0) {
             // Wifimanager get the wifi networks selected
             WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-            // info of the wifi network selected
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-            // name of the wifi selected
             String ssid = wifiInfo.getSSID();
 
             Button buttonCon = findViewById(R.id.button_maincon);
@@ -239,14 +217,9 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(MainActivity.this,
                         "connection problem", Toast.LENGTH_SHORT).show();
             } else {
-                //String name = wifiInfo.getSSID();
-                //Toast.makeText(MainActivity.this,
-                // "Connect to the GoPro"+ssid, Toast.LENGTH_SHORT).show();
                 TextView maingoprostatu = findViewById(R.id.text_main_gopro_statu);
-                // check if the network correspont to a Gopro -> the 2 first letter of the network ssid are : "GP..."
-                String NetworkIdCheck = ssid.substring(1, 3);
 
-                if (NetworkIdCheck.equals("GP")) {
+                if (ssid.contains("GP")) {
                     Toast.makeText(MainActivity.this,
                             "Connect to the GoPro" + ssid, Toast.LENGTH_SHORT).show();
                     buttonCon.setText("Connected");
@@ -255,7 +228,7 @@ public class MainActivity extends AppCompatActivity
                     SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.putString("goProSSID", ssid);
-                    editor.commit();
+                    editor.apply();
                     gopro_ssid = ssid;
                     setMainImageandWelcome();
 
@@ -271,10 +244,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        DrawerHandler dh = new DrawerHandler();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        DrawerHandler dh = new DrawerHandler(this, navigationView);
 
-        dh.setUserDrawer(navigationView);
+        dh.setUserDrawer();
         SwitchCompat drawerSwitch = (SwitchCompat) navigationView.getMenu().findItem(R.id.goProConnect).getActionView();
         dh.addSwitchListener(drawerSwitch,this);
     }
@@ -289,15 +262,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
     //handle the drawer menu selection
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if (id != R.id.nav_home) {//exclude himself
-            DrawerHandler dh = new DrawerHandler();
+            DrawerHandler dh = new DrawerHandler(this, navigationView);
 
             Intent intent;
             intent = dh.SwitchActivity(id, MainActivity.this);
