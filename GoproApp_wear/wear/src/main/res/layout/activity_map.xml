@@ -17,7 +17,7 @@
         mapbox:mapbox_cameraTargetLat="46.550579"
         mapbox:mapbox_cameraTargetLng="6.550397"
         mapbox:mapbox_cameraZoom="11"
-        mapbox:mapbox_styleUrl="@string/mapbox_style_outdoors"
+        mapbox:mapbox_styleUrl="mapbox://styles/goproapp/cjqy0x2la0dq32rn1v1wmbatb"
         mapbox:mapbox_uiZoomControls="false" />
 
 </FrameLayout>

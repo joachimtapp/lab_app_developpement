@@ -9,9 +9,13 @@ import android.support.wearable.activity.WearableActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +41,15 @@ public class DistanceSet extends WearableActivity {
     public boolean triggerCapt;
 
     //
+    @Override
+    public void onEnterAmbient(Bundle ambientDetails) {
+        super.onEnterAmbient(ambientDetails);
+    }
+
+    @Override
+    public void onExitAmbient() {
+        super.onExitAmbient();
+    }
 
 
     @Override
@@ -44,15 +57,40 @@ public class DistanceSet extends WearableActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_distance_set);
-
+        setAmbientEnabled();
         // Location manager
 
+
+
+
+
+
+
         // setDist button : set distance trigger and location of the Gopro
-        Button setDist = findViewById(R.id.setdist_button);
+        ImageButton setDist = findViewById(R.id.setdist_button);
 
         // EditText trigger distance
         // trigger distance
         EditText dist_trig = (EditText) findViewById(R.id.disttrig_edit);
+
+
+        dist_trig.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    /* Write your logic here that will be executed when user taps next button */
+                    triggerDistance = Integer.parseInt(dist_trig.getText().toString());
+                    Toast.makeText(DistanceSet.this, "Trigger distance set to : " + triggerDistance, Toast.LENGTH_SHORT).show();
+                    InputMethodManager imm = (InputMethodManager)getSystemService(DistanceSet.this.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    dist_trig.setSelected(false);
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+
 
         dist_trig.addTextChangedListener(new TextWatcher() {
 
@@ -68,9 +106,8 @@ public class DistanceSet extends WearableActivity {
                                       int before, int count) {
                 // set the Distance trigger location
                 if(dist_trig.getText().toString().length()>0) {
-                    triggerDistance = Integer.parseInt(dist_trig.getText().toString());
-                    Toast.makeText(DistanceSet.this,
-                            "Trigger distance set to : " + triggerDistance, Toast.LENGTH_SHORT).show();
+
+//
                 }
 
 
