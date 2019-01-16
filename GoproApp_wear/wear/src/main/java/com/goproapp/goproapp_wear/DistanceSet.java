@@ -1,10 +1,13 @@
 package com.goproapp.goproapp_wear;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +35,7 @@ public class DistanceSet extends WearableActivity {
     // variable that decide wether the gopro should be shooting or not
     // variable to send via an intent to the tablet
     public boolean triggerCapt;
+
     //
 
 
@@ -46,6 +50,33 @@ public class DistanceSet extends WearableActivity {
         // setDist button : set distance trigger and location of the Gopro
         Button setDist = findViewById(R.id.setdist_button);
 
+        // EditText trigger distance
+        // trigger distance
+        EditText dist_trig = (EditText) findViewById(R.id.disttrig_edit);
+
+        dist_trig.addTextChangedListener(new TextWatcher() {
+
+            public void afterTextChanged(Editable s) {
+
+            }
+
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                // set the Distance trigger location
+                if(dist_trig.getText().toString().length()>0) {
+                    triggerDistance = Integer.parseInt(dist_trig.getText().toString());
+                    Toast.makeText(DistanceSet.this,
+                            "Trigger distance set to : " + triggerDistance, Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+        });
+
 
         locationEngineListener = new LocationEngineListener() {
             @SuppressLint("MissingPermission")
@@ -59,13 +90,7 @@ public class DistanceSet extends WearableActivity {
                 lastLocation = location;
                 double lastLat = location.getLatitude();
                 Log.v(TAG, "lat :" + lastLat);
-                // trigger distance
-                EditText dist_trig = (EditText) findViewById(R.id.disttrig_edit);
-                if (dist_trig.getText().length() > 0) {
-                    triggerDistance = Integer.valueOf(dist_trig.getText().toString());
-                    Toast.makeText(DistanceSet.this,
-                            "Trigger distance set to : "+triggerDistance, Toast.LENGTH_SHORT).show();
-                }
+
                 if (goproLocation != null) {
                     // distance to the Gorpro (distanceInMeters)
                     distanceInMeters = goproLocation.distanceTo(location);
@@ -75,10 +100,10 @@ public class DistanceSet extends WearableActivity {
                     // check on the distance to gopro to decide if the gopro shoots or not
                     if (distanceInMeters <= triggerDistance) {
                         // call the method that launch the capture process
-                        triggerCaptureOn();
+                        triggerCapture();
                     } else if (distanceInMeters > triggerDistance) {
                         // call the method that stops the capture process
-                        triggerCaptureOff();
+                        triggerCapture();
                     }
                 }
 
@@ -124,13 +149,9 @@ public class DistanceSet extends WearableActivity {
     }
 
     // method stop capture
-    private void triggerCaptureOff() {
-
+    private void triggerCapture() {
+        Intent intent = new Intent(this, WearService.class);
+        intent.setAction(WearService.ACTION_SEND.SHUTTER.name());
+        startService(intent);
     }
-    // method start capture
-    private void triggerCaptureOn() {
-
-    }
-
-
 }

@@ -153,6 +153,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     public static final String TRIG_DIST_INT = "TRIG_DIST";
     public static final String TRIG_DIST_VAL = "TRIG_DIST_VAL";
+    public static final String SHUTTER_REQUEST = "SHUTTER_REQUEST";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,53 +166,38 @@ public class GoProParametersActivity extends AppCompatActivity {
         goProInterface = new GoProInterface();
 
         shutterButton = findViewById(R.id.shutterButton);
-        Animation animation_out = new AlphaAnimation(1.0F, 0.0F);
-        animation_out.setDuration(200);
-        animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
-        animation_out.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                whiteView.setAlpha(0.0F);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-
-        whiteView = findViewById(R.id.whiteBack);
-
-
         shutterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                whiteView.setAlpha(1.0F);
-                whiteView.startAnimation(animation_out);
-
-
-                if (MODE.equals(GoProInterface.MODE_VIDEO)) {
-                    if (recording) {
-                        goProInterface.shutterStop();
-                        shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_small));
-                    } else {
-                        goProInterface.shutter();
-                        shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_stop_small));
-                    }
-                    recording = !recording;
-                } else {
-                    goProInterface.shutter();
-                }
+                shutterCallback();
             }
         });
 
         shutterButton.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+
+                Animation animation_out = new AlphaAnimation(1.0F, 0.0F);
+                animation_out.setDuration(200);
+                animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
+                animation_out.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        whiteView.setAlpha(0.0F);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                whiteView = findViewById(R.id.whiteBack);
                 whiteView.setAlpha(1.0F);
                 whiteView.startAnimation(animation_out);
 
@@ -253,6 +239,13 @@ public class GoProParametersActivity extends AppCompatActivity {
                 distText.setText(distVal.toString());
             }
         }, new IntentFilter(TRIG_DIST_INT));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                shutterCallback();
+            }
+        }, new IntentFilter(SHUTTER_REQUEST));
 
         // Setup camera
         setupCamera();
@@ -298,6 +291,47 @@ public class GoProParametersActivity extends AppCompatActivity {
     }
 
 
+    }
+
+    private void shutterCallback(){
+
+        Animation animation_out = new AlphaAnimation(1.0F, 0.0F);
+        animation_out.setDuration(200);
+        animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
+        animation_out.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                whiteView.setAlpha(0.0F);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        whiteView = findViewById(R.id.whiteBack);
+        whiteView.setAlpha(1.0F);
+        whiteView.startAnimation(animation_out);
+
+
+        if (MODE.equals(GoProInterface.MODE_VIDEO)) {
+            if (recording) {
+                goProInterface.shutterStop();
+                shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_small));
+            } else {
+                goProInterface.shutter();
+                shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_stop_small));
+            }
+            recording = !recording;
+        } else {
+            goProInterface.shutter();
+        }
     }
 
     private void GuidedTour() {

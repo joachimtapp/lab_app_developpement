@@ -32,12 +32,11 @@ allprojects {
                 example_path_text   : "/TEXT",
                 example_path_datamap: "/DATAMAP",
                 mainactivity        : "MainActivity",
-                a_key               : "a_value",
-                some_other_key      : "some_other_value",
-                profile_path        : "/PROFILE",
-                profile_key         : "profile_key",
+                goproparam          : "GoProParametersActivity",
                 dist_path           : "/DIST",
                 dist_val            : "dist_val",
+                shutter_path        : "/SHUTTER",
+                shutter_val         : "shutter_val",
         ]
     }
 }
