@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -31,7 +30,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.io.FileOutputStream;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -64,10 +62,7 @@ public class RegisterActivity extends AppCompatActivity {
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    return true;
-                }
-                return false;
+                return id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL;
             }
         });
         Button mEmailRegisterButton = (Button) findViewById(R.id.reg_valid_button);
