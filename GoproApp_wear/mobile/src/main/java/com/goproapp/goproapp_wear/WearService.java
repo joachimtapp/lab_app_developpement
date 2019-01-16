@@ -17,6 +17,7 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
+
 import java.util.List;
 
 public class WearService extends WearableListenerService {
@@ -115,11 +116,6 @@ public class WearService extends WearableListenerService {
                 + " : \"" + data
                 + "\", from node " + messageEvent.getSourceNodeId());
 
-        if (path.equals(BuildConfig.W_path_start_activity)
-                && data.equals(BuildConfig.W_mainactivity)) {
-            startActivity(new Intent(this, MainActivity.class));
-        }
-
         switch (path) {
             case BuildConfig.W_path_start_activity:
                 Log.v(TAG, "Message asked to open Activity");
@@ -142,6 +138,14 @@ public class WearService extends WearableListenerService {
                 break;
             case BuildConfig.W_shutter_path:
                 Intent intent = new Intent(GoProParametersActivity.SHUTTER_REQUEST);
+                switch (data){
+                    case BuildConfig.W_shutter_on:
+                        intent.putExtra(GoProParametersActivity.SHUTTER_TYPE, GoProParametersActivity.SHUTTER_ON);
+                        break;
+                    case BuildConfig.W_shutter_off:
+                        intent.putExtra(GoProParametersActivity.SHUTTER_TYPE, GoProParametersActivity.SHUTTER_OFF);
+                        break;
+                }
                 LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                 break;
             case BuildConfig.W_path_acknowledge:

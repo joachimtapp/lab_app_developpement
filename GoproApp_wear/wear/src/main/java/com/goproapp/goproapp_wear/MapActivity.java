@@ -102,18 +102,12 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
                     .snippet("Current location")
             );
             if(DistanceSet.triggerDistance >0){
-                if (DistanceSet.distanceInMeters<=DistanceSet.triggerDistance) {
+
                     mapboxMap.addPolygon(generatePerimeter(
                             new LatLng(DistanceSet.goproLocation.getLatitude(), DistanceSet.goproLocation.getLongitude()),
                             DistanceSet.triggerDistance,
-                            64,R.color.red));
-                }
-                else {
-                    mapboxMap.addPolygon(generatePerimeter(
-                            new LatLng(DistanceSet.goproLocation.getLatitude(), DistanceSet.goproLocation.getLongitude()),
-                            DistanceSet.triggerDistance,
-                            64,R.color.violet));
-                }
+                            64,DistanceSet.circleColor));
+
             }
         }
 

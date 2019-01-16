@@ -15,7 +15,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -39,19 +38,11 @@ public class DistanceSet extends WearableActivity {
     public Location lastLocation;
     public static float distanceInMeters;
     // variable that decide wether the gopro should be shooting or not
-    // variable to send via an intent to the tablet
-    public boolean triggerCapt;
+    // handle to not shoot
+    public boolean isInsideTriggerCapt;
+    public static int circleColor;
 
-    //
-    @Override
-    public void onEnterAmbient(Bundle ambientDetails) {
-        super.onEnterAmbient(ambientDetails);
-    }
-
-    @Override
-    public void onExitAmbient() {
-        super.onExitAmbient();
-    }
+    private boolean isRecording = false;
 
 
     @Override
@@ -63,13 +54,18 @@ public class DistanceSet extends WearableActivity {
         setContentView(R.layout.activity_distance_set);
         setAmbientEnabled();
 
+
+
+
+
+
+
         // setDist button : set distance trigger and location of the Gopro
         ImageButton setDist = findViewById(R.id.setdist_button);
 
         // EditText trigger distance
         // trigger distance
         EditText dist_trig = (EditText) findViewById(R.id.disttrig_edit);
-
 
         dist_trig.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -78,6 +74,12 @@ public class DistanceSet extends WearableActivity {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     /* Write your logic here that will be executed when user taps next button */
                     triggerDistance = Integer.parseInt(dist_trig.getText().toString());
+
+                    Intent intent = new Intent(DistanceSet.this, WearService.class);
+                    intent.setAction(WearService.ACTION_SEND.DIST.name());
+                    intent.putExtra(WearService.DIST_TRIG, triggerDistance);
+                    startService(intent);
+
                     Toast.makeText(DistanceSet.this, "Trigger distance set to : " + triggerDistance, Toast.LENGTH_SHORT).show();
                     InputMethodManager imm = (InputMethodManager)getSystemService(DistanceSet.this.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
@@ -110,10 +112,23 @@ public class DistanceSet extends WearableActivity {
                     // check on the distance to gopro to decide if the gopro shoots or not
                     if (distanceInMeters <= triggerDistance) {
                         // call the method that launch the capture process
-                        triggerCapture();
+
+                        if(isInsideTriggerCapt) {
+                            if(!isRecording){
+                                triggerCaptureOn();
+                                isRecording = true;
+                            }
+                            circleColor = R.color.red;
+                        }
                     } else if (distanceInMeters > triggerDistance) {
+                        //
+                        isInsideTriggerCapt = true;
                         // call the method that stops the capture process
-                        triggerCapture();
+                        circleColor = R.color.violet;
+                        if(isRecording) {
+                            triggerCaptureOff();
+                            isRecording = false;
+                        }
                     }
                 }
             }
@@ -127,20 +142,25 @@ public class DistanceSet extends WearableActivity {
         locationEngine.activate();
 
 
+
+
+
         setDist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // create an object location with the location
-                triggerCapt = false;
+
                 if (lastLocation != null && goproLocation == null) {
                     goproLocation = lastLocation;
                     Toast.makeText(DistanceSet.this,
                             "Gopro Location set to : Lat " + goproLocation.getLatitude() + " Lon :" + goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                    isInsideTriggerCapt=false;
 
                 } else if (lastLocation != null && goproLocation != null) {
                     goproLocation = lastLocation;
                     Toast.makeText(DistanceSet.this,
                             "Gopro Location changed to : Lat " + goproLocation.getLatitude() + " Lon :" + goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                    isInsideTriggerCapt=false;
                 } else if (lastLocation==null) {
                     Toast.makeText(DistanceSet.this,
                             "Gopro Location not found ", Toast.LENGTH_SHORT).show();
@@ -149,10 +169,27 @@ public class DistanceSet extends WearableActivity {
         });
     }
 
-    // method stop capture
-    private void triggerCapture() {
+    @Override
+    public void onEnterAmbient(Bundle ambientDetails) {
+        super.onEnterAmbient(ambientDetails);
+    }
+
+    @Override
+    public void onExitAmbient() {
+        super.onExitAmbient();
+    }
+
+    private void triggerCaptureOff() {
         Intent intent = new Intent(this, WearService.class);
         intent.setAction(WearService.ACTION_SEND.SHUTTER.name());
+        intent.putExtra(WearService.SHUTTER_TYPE, BuildConfig.W_shutter_off);
+        startService(intent);
+    }
+
+    private void triggerCaptureOn() {
+        Intent intent = new Intent(this, WearService.class);
+        intent.setAction(WearService.ACTION_SEND.SHUTTER.name());
+        intent.putExtra(WearService.SHUTTER_TYPE, BuildConfig.W_shutter_on);
         startService(intent);
     }
 }
