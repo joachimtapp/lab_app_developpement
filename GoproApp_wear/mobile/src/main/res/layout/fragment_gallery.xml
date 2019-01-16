@@ -82,10 +82,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/linearLayoutInfo"
         app:layout_constraintTop_toTopOf="@+id/guideline4"
-        mapbox:mapbox_cameraTargetLat="40.73581"
-        mapbox:mapbox_cameraTargetLng="-73.99155"
+        mapbox:mapbox_cameraTargetLat="46.526732"
+        mapbox:mapbox_cameraTargetLng="6.611953"
         mapbox:mapbox_cameraZoom="11"
-        mapbox:mapbox_styleUrl="mapbox://styles/goproapp/cjqy3p9d81f0o2rk7f50kfqrc" />
+        mapbox:mapbox_styleUrl="mapbox://styles/goproapp/cjqy3p9d81f0o2rk7f50kfqrc"
+        />
 
 
     <LinearLayout
