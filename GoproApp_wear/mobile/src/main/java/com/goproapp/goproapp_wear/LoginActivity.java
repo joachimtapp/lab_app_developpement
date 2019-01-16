@@ -64,7 +64,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     public static String userID;
     public static User active_user;
     public static String InternetSSID;
-    private DatabaseReference mDatabase;
     private String userMail;
     private String userPwd;
 
@@ -79,6 +78,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        //Check if still connected to the GoPro wifi
         WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo();
         String ssid = info.getSSID();
@@ -205,6 +205,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         InternetSSID = info.getSSID();
         userID = user.getUid();
         readUserProfile(userID);
+        //Save user for faster login
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("userMail", mEmailView.getText().toString());

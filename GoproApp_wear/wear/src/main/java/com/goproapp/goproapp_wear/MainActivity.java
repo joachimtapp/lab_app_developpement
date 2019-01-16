@@ -19,15 +19,7 @@ import com.mapbox.android.core.location.LocationEngineListener;
 
 // Icons made by <a href="https://www.flaticon.com/authors/chanut" title="Chanut">Chanut</a> licensed by <a href="http://creativecommons.org/licenses/by/3.0/"
 
-public class MainActivity extends WearableActivity implements
-        LocationListener {
-
-    public static final String STOP_ACTIVITY = "STOP_ACTIVITY";
-    private final String TAG = this.getClass().getSimpleName();
-    private LocationEngine locationEngine;
-    private LocationEngineListener locationEngineListener;
-
-    private ConstraintLayout mLayout;
+public class MainActivity extends WearableActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +34,6 @@ public class MainActivity extends WearableActivity implements
                 ".permission.INTERNET") == PackageManager.PERMISSION_DENIED)) {
             requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION", "android"
                     + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
-        }
-        // Acquire a reference to the system Location Manager
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context
-                .LOCATION_SERVICE);
-        if (locationManager != null) {
-            try {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
-                        this);
-            } catch (Exception e) {
-                Log.w(TAG, "Could not request location updates");
-            }
         }
         // Enables Always-on
         setAmbientEnabled();
@@ -114,34 +95,6 @@ public class MainActivity extends WearableActivity implements
     }
 
     private void updateDisplay() {
-
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-        double longitude = location.getLongitude();
-        double latitude = location.getLatitude();
-        Log.i(TAG, "Location change");
-        TextView textViewLocation = findViewById(R.id.testView);
-        if (textViewLocation != null) {
-            textViewLocation.setText("Lat: " + latitude + "\nLon: " + longitude);
-
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
 
     }
 

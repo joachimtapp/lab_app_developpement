@@ -177,8 +177,6 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
         }
     }
 
-
-
     @Override
     public void onResume() {
         super.onResume();
@@ -250,6 +248,4 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
                 .fillColor(color)
                 .alpha(0.4f);
     }
-
-
 }

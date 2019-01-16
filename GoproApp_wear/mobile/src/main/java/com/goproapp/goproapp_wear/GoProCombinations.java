@@ -1,7 +1,5 @@
 package com.goproapp.goproapp_wear;
 
-import android.database.DatabaseErrorHandler;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 

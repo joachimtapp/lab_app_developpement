@@ -2,8 +2,10 @@ package com.goproapp.goproapp_wear;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.text.Editable;
@@ -56,15 +58,10 @@ public class DistanceSet extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
         setContentView(R.layout.activity_distance_set);
         setAmbientEnabled();
-        // Location manager
-
-
-
-
-
-
 
         // setDist button : set distance trigger and location of the Gopro
         ImageButton setDist = findViewById(R.id.setdist_button);
@@ -90,30 +87,6 @@ public class DistanceSet extends WearableActivity {
                 return handled;
             }
         });
-
-
-        dist_trig.addTextChangedListener(new TextWatcher() {
-
-            public void afterTextChanged(Editable s) {
-
-            }
-
-            public void beforeTextChanged(CharSequence s, int start,
-                                          int count, int after) {
-            }
-
-            public void onTextChanged(CharSequence s, int start,
-                                      int before, int count) {
-                // set the Distance trigger location
-                if(dist_trig.getText().toString().length()>0) {
-
-//
-                }
-
-
-            }
-        });
-
 
         locationEngineListener = new LocationEngineListener() {
             @SuppressLint("MissingPermission")
@@ -143,11 +116,8 @@ public class DistanceSet extends WearableActivity {
                         triggerCapture();
                     }
                 }
-
             }
         };
-
-
 
         LocationEngineProvider locationEngineProvider = new LocationEngineProvider(this);
         locationEngine = locationEngineProvider.obtainBestLocationEngineAvailable();
@@ -155,9 +125,6 @@ public class DistanceSet extends WearableActivity {
         locationEngine.setFastestInterval(1000);
         locationEngine.addLocationEngineListener(locationEngineListener);
         locationEngine.activate();
-
-
-
 
 
         setDist.setOnClickListener(new View.OnClickListener() {
@@ -178,11 +145,8 @@ public class DistanceSet extends WearableActivity {
                     Toast.makeText(DistanceSet.this,
                             "Gopro Location not found ", Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
-
-
     }
 
     // method stop capture

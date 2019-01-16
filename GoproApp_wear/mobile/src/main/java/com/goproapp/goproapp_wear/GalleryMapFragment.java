@@ -10,14 +10,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
-
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
@@ -37,7 +34,6 @@ public class GalleryMapFragment extends Fragment {
     private MapView mapView;
     private ImageView galleryMapImg;
 
-    private OnFragmentInteractionListener mListener;
     private MapView.OnCameraDidChangeListener mCameraListener;
     private FloatingActionButton refreshBtn;
     private MapboxMap mMapboxMap;
@@ -108,7 +104,7 @@ public class GalleryMapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View fragmentView = inflater.inflate(R.layout.fragment_gallery_map, container, false);
-        mapView = (MapView) fragmentView.findViewById(R.id.galleryMapView);
+        mapView = fragmentView.findViewById(R.id.galleryMapView);
         galleryMapImg = fragmentView.findViewById(R.id.galleryMapImg);
 
         refreshBtn = fragmentView.findViewById(R.id.refreshBtn);
@@ -169,7 +165,6 @@ public class GalleryMapFragment extends Fragment {
                             Bitmap img = getBitmapFromString(GalleryActivity.imgData.get(Integer.parseInt(marker.getTitle())).imgString);
 
                             Bitmap resizedBitmap = Bitmap.createScaledBitmap(img, 320, 240, false);
-//                            Bitmap img_resize = resizeImage(img, 200);
                             galleryMapImg.setImageBitmap(resizedBitmap);
                             Projection mapProjection = mapboxMap.getProjection();
                             PointF screenPosition = mapProjection.toScreenLocation(marker.getPosition());
@@ -188,7 +183,6 @@ public class GalleryMapFragment extends Fragment {
 
     private void RefreshMarker() {
         int cnt = 0;//Keep track of the marker id
-        //add the picture position to the map
         markerViews.clear();
         for (ImgData im : GalleryActivity.imgData) {
             if(im.latLng!=null) {
@@ -200,15 +194,17 @@ public class GalleryMapFragment extends Fragment {
         if(mMapboxMap!=null) {
             mMapboxMap.addMarkerViews(markerViews);
 
-            //set initial map position
-            CameraPosition camPos = new CameraPosition.Builder()
-                    .target(markerViews.get(0).getPosition())// Sets the new camera position
-                    .zoom(10) // Sets the zoom
-                    .bearing(0) // Rotate the camera
-                    .tilt(0) // Set the camera tilt
-                    .build(); // Creates a CameraPosition from the builder
-            mMapboxMap.animateCamera(CameraUpdateFactory
-                    .newCameraPosition(camPos), 2000);
+            if(markerViews.size()>0) {
+                //set initial map position
+                CameraPosition camPos = new CameraPosition.Builder()
+                        .target(markerViews.get(0).getPosition())// Sets the new camera position
+                        .zoom(10) // Sets the zoom
+                        .bearing(0) // Rotate the camera
+                        .tilt(0) // Set the camera tilt
+                        .build(); // Creates a CameraPosition from the builder
+                mMapboxMap.animateCamera(CameraUpdateFactory
+                        .newCameraPosition(camPos), 2000);
+            }
         }
     }
 
@@ -216,7 +212,6 @@ public class GalleryMapFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -226,7 +221,6 @@ public class GalleryMapFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
 
@@ -235,36 +229,6 @@ public class GalleryMapFragment extends Fragment {
     }
 
 
-    private Bitmap resizeImage(Bitmap bitmap, int newSize) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-
-        // Image smaller, return it as is!
-        if (width <= newSize && height <= newSize) return bitmap;
-
-        int newWidth;
-        int newHeight;
-
-        if (width > height) {
-            newWidth = newSize;
-            newHeight = (newSize * height) / width;
-        } else if (width < height) {
-            newHeight = newSize;
-            newWidth = (newSize * width) / height;
-        } else {
-            newHeight = newSize;
-            newWidth = newSize;
-        }
-
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
-
-        return Bitmap.createBitmap(bitmap, 0, 0,
-                width, height, matrix, true);
-    }
     private Bitmap getBitmapFromString(String stringPicture) {
         /*
          * This Function converts the String back to Bitmap

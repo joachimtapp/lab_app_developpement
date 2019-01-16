@@ -101,7 +101,6 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="title_activity_maps">Map</string>
     <string name="action_register">Register</string>
-    <!--pk.eyJ1IjoiZ29wcm9hcHAiLCJhIjoiY2pwamxsZjJtMDd4dzNxcHF5OTh6Y2wzeCJ9.4pbFJ5Iqk1a2PIiEPyhzPg-->
     <string name="accessToken">pk.eyJ1IjoiZ29wcm9hcHAiLCJhIjoiY2pwamxsZjJtMDd4dzNxcHF5OTh6Y2wzeCJ9.4pbFJ5Iqk1a2PIiEPyhzPg</string>
     <string name="galleryEmpty">Your gallery is empty</string>
     <string name="loginFail">Log in failed</string>
@@ -113,4 +112,5 @@
     <string name="delete_text">Maintain an image press to delete it</string>
     <string name="upload_title">Upload</string>
     <string name="upload_text">When you are logged in and connected to internet you can save your pictures online</string>
+
 </resources>
