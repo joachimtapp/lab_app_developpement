@@ -1,6 +1,7 @@
 package com.goproapp.goproapp_wear;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -99,10 +100,10 @@ public class DistanceSet extends WearableActivity {
                     // check on the distance to gopro to decide if the gopro shoots or not
                     if (distanceInMeters <= triggerDistance) {
                         // call the method that launch the capture process
-                        triggerCaptureOn();
+                        triggerCapture();
                     } else if (distanceInMeters > triggerDistance) {
                         // call the method that stops the capture process
-                        triggerCaptureOff();
+                        triggerCapture();
                     }
                 }
 
@@ -148,13 +149,9 @@ public class DistanceSet extends WearableActivity {
     }
 
     // method stop capture
-    private void triggerCaptureOff() {
-
+    private void triggerCapture() {
+        Intent intent = new Intent(this, WearService.class);
+        intent.setAction(WearService.ACTION_SEND.SHUTTER.name());
+        startService(intent);
     }
-    // method start capture
-    private void triggerCaptureOn() {
-
-    }
-
-
 }

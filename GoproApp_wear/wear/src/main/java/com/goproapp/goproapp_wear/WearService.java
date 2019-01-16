@@ -57,21 +57,9 @@ public class WearService extends WearableListenerService {
                 if (message == null) message = "";
                 sendMessage(message, intent.getStringExtra(PATH));
                 break;
-            case EXAMPLE_DATAMAP:
-                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_example_path_datamap);
-                putDataMapRequest.getDataMap().putInt(BuildConfig.W_a_key, intent.getIntExtra(DATAMAP_INT, -1));
-                putDataMapRequest.getDataMap().putIntegerArrayList(BuildConfig.W_some_other_key, intent.getIntegerArrayListExtra(DATAMAP_INT_ARRAYLIST));
-                sendPutDataMapRequest(putDataMapRequest);
+            case SHUTTER:
+                sendMessage("Trig", BuildConfig.W_shutter_path);
                 break;
-            case EXAMPLE_ASSET:
-                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_example_path_asset);
-                putDataMapRequest.getDataMap().putAsset(BuildConfig.W_some_other_key, (Asset) intent.getParcelableExtra(IMAGE));
-                sendPutDataMapRequest(putDataMapRequest);
-                break;
-            case PROFILE_SEND:
-
-                break;
-
             case DIST:
                 putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_dist_path);
                 putDataMapRequest.getDataMap().putInt(BuildConfig.W_dist_val, intent.getIntExtra(DIST_TRIG, -1));
@@ -95,52 +83,12 @@ public class WearService extends WearableListenerService {
     public static final String PROFILE = "PROFILE";
     public static final String DIST_TRIG = "DIST_TRIG";
 
-    public static Asset createAssetFromBitmap(Bitmap bitmap) {
-        bitmap = resizeImage(bitmap, 390);
-
-        if (bitmap != null) {
-            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-            return Asset.createFromBytes(byteStream.toByteArray());
-        }
-        return null;
-    }
 
     @Override
     public void onCreate() {
         super.onCreate();
     }
 
-    private static Bitmap resizeImage(Bitmap bitmap, int newSize) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-
-        // Image smaller, return it as is!
-        if (width <= newSize && height <= newSize) return bitmap;
-
-        int newWidth;
-        int newHeight;
-
-        if (width > height) {
-            newWidth = newSize;
-            newHeight = (newSize * height) / width;
-        } else if (width < height) {
-            newHeight = newSize;
-            newWidth = (newSize * width) / height;
-        } else {
-            newHeight = newSize;
-            newWidth = newSize;
-        }
-
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
-
-        return Bitmap.createBitmap(bitmap, 0, 0,
-                width, height, matrix, true);
-    }
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
@@ -166,21 +114,11 @@ public class WearService extends WearableListenerService {
                 assert uri.getPath() != null;
                 switch (uri.getPath()) {
                     case BuildConfig.W_example_path_asset:
-                        // Extract the data behind the key you know contains data
-                        Asset asset = dataMapItem.getDataMap().getAsset(BuildConfig.W_some_other_key);
-                        intent = new Intent("REPLACE_THIS_WITH_A_STRING_OF_ACTION_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY");
-                        bitmapFromAsset(asset, intent, "REPLACE_THIS_WITH_A_STRING_OF_IMAGE_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY");
-                        break;
-                    case BuildConfig.W_example_path_datamap:
-                        // Extract the data behind the key you know contains data
-                        int integer = dataMapItem.getDataMap().getInt(BuildConfig.W_a_key);
-                        ArrayList<Integer> arraylist = dataMapItem.getDataMap().getIntegerArrayList(BuildConfig.W_some_other_key);
-                        for (Integer i : arraylist)
-                            Log.i(TAG, "Got integer " + i + " from array list");
-                        intent = new Intent("REPLACE_THIS_WITH_A_STRING_OF_ANOTHER_ACTION_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY");
+
+                        /*intent = new Intent("REPLACE_THIS_WITH_A_STRING_OF_ANOTHER_ACTION_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY");
                         intent.putExtra("REPLACE_THIS_WITH_A_STRING_OF_INTEGER_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY", integer);
                         intent.putExtra("REPLACE_THIS_WITH_A_STRING_OF_ARRAYLIST_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY", arraylist);
-                        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);*/
                         break;
                     default:
                         Log.v(TAG, "Data changed for unhandled path: " + uri);
@@ -230,16 +168,6 @@ public class WearService extends WearableListenerService {
             case BuildConfig.W_path_acknowledge:
                 Log.v(TAG, "Received acknowledgment");
                 break;
-            case BuildConfig.W_example_path_text:
-                Log.v(TAG, "Message contained text. Return a datamap for demo purpose");
-                ArrayList<Integer> arrayList = new ArrayList<>();
-                Collections.addAll(arrayList, 5, 7, 9, 10);
-
-                PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_example_path_datamap);
-                putDataMapRequest.getDataMap().putInt(BuildConfig.W_a_key, 42);
-                putDataMapRequest.getDataMap().putIntegerArrayList(BuildConfig.W_some_other_key, arrayList);
-                sendPutDataMapRequest(putDataMapRequest);
-                break;
             default:
                 Log.w(TAG, "Received a message for unknown path " + path + " : " + new String(messageEvent.getData()));
         }
@@ -252,7 +180,7 @@ public class WearService extends WearableListenerService {
                 .addOnSuccessListener(new OnSuccessListener<Integer>() {
                     @Override
                     public void onSuccess(Integer integer) {
-                        Log.v(TAG, "Sent message to " + nodeId + ". Result = " + integer);
+                        Log.e(TAG, "Sent message to " + nodeId + ". Result = " + integer);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -303,38 +231,8 @@ public class WearService extends WearableListenerService {
                 });
     }
 
-    private void bitmapFromAsset(Asset asset, final Intent intent, final String extraName) {
-        // Reads an asset from the Wear API and parse it as an image
-        if (asset == null) {
-            throw new IllegalArgumentException("Asset must be non-null");
-        }
-
-        // Convert asset and convert it back to an image
-        Wearable.getDataClient(this).getFdForAsset(asset)
-                .addOnCompleteListener(new OnCompleteListener<DataClient.GetFdForAssetResponse>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DataClient.GetFdForAssetResponse> runnable) {
-                        Log.v(TAG, "Got bitmap from asset");
-                        InputStream assetInputStream = runnable.getResult().getInputStream();
-                        Bitmap bmp = BitmapFactory.decodeStream(assetInputStream);
-
-                        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                        bmp.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-                        byte[] bytes = byteStream.toByteArray();
-                        intent.putExtra(extraName, bytes);
-                        LocalBroadcastManager.getInstance(WearService.this).sendBroadcast(intent);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception runnable) {
-                        Log.e(TAG, "Failed to get bitmap from asset");
-                    }
-                });
-    }
-
     // Constants
     public enum ACTION_SEND {
-        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, PROFILE_SEND, DIST
+        STARTACTIVITY, MESSAGE, SHUTTER, DIST
     }
 }
