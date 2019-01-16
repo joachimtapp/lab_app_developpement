@@ -54,6 +54,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
@@ -70,6 +71,7 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -243,7 +245,7 @@ public class GalleryFragment extends Fragment {
                 if (GalleryActivity.imgData.size() > 0) {
                     //set initial map position
                     CameraPosition camPos = new CameraPosition.Builder()
-                            .target(new LatLng(48.769183, 21.661252))// Sets the new camera position
+                            .target(new LatLng(46.526732, 6.611953))// Sets the new camera position
                             .zoom(0) // Sets the zoom
                             .bearing(0) // Rotate the camera
                             .tilt(0) // Set the camera tilt
@@ -448,8 +450,10 @@ public class GalleryFragment extends Fragment {
                     }
                 });
         databaseRef.child("date").setValue(GalleryActivity.imgData.get(id).date);
-        String pos = GalleryActivity.imgData.get(id).latLng.getLatitude() + ", " + GalleryActivity.imgData.get(id).latLng.getLongitude();
-        databaseRef.child("position").setValue(pos);
+        if(GalleryActivity.imgData.get(id).latLng!=null) {
+            String pos = GalleryActivity.imgData.get(id).latLng.getLatitude() + ", " + GalleryActivity.imgData.get(id).latLng.getLongitude();
+            databaseRef.child("position").setValue(pos);
+        }
 
     }
 
@@ -616,7 +620,7 @@ public class GalleryFragment extends Fragment {
                             GalleryActivity.imgData.get(i).latLng = latLng;
                         }
                     }
-                    Log.e("debug", "pos: " + latLng.toString());
+                    Log.v("debug", "pos: " + latLng.toString());
                 } catch (Throwable tx3) {
                     Log.v("debug", "no gps coords: \"" + result.text + "\"");
                 }
@@ -638,7 +642,7 @@ public class GalleryFragment extends Fragment {
         List<String> toGet = new ArrayList(goProData);
         toGet.removeAll(localData);
         for (String item : toGet) {
-            Log.v("Myinfo", "item: " + item);
+            Log.e("Myinfo", "item: " + item);
             new DownloadTask().execute(item);
         }
         mSwipeRefresh.setRefreshing(false);
@@ -734,10 +738,12 @@ public class GalleryFragment extends Fragment {
                     ImgData newImage = new ImgData();
                     newImage.date = rec.child("date").getValue().toString();
                     String url = rec.child("picture").getValue().toString();
-                    String[] latLng = rec.child("position").getValue().toString().split(",");
-                    double latitude = Double.parseDouble(latLng[0]);
-                    double longitude = Double.parseDouble(latLng[1]);
-                    newImage.latLng = new LatLng(latitude, longitude);
+                    if(rec.child("position").getValue()!=null) {
+                        String[] latLng = rec.child("position").getValue().toString().split(",");
+                        double latitude = Double.parseDouble(latLng[0]);
+                        double longitude = Double.parseDouble(latLng[1]);
+                        newImage.latLng = new LatLng(latitude, longitude);
+                    }
                     newImage.name = imgName;
                     StorageReference mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(url);
                     mStorageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(

@@ -135,8 +135,10 @@ public class GalleryMapFragment extends Fragment {
                 int cnt = 0;//Keep track of the marker id
                 //add the picture position to the map
                 for (ImgData im : GalleryActivity.imgData) {
-                    MarkerViewOptions opt = new MarkerViewOptions().position(im.latLng).title(String.valueOf(cnt));
-                    markerViews.add(opt);
+                    if(im.latLng!=null) {
+                        MarkerViewOptions opt = new MarkerViewOptions().position(im.latLng).title(String.valueOf(cnt));
+                        markerViews.add(opt);
+                    }
                     cnt++;
                 }
                 mapboxMap.addMarkerViews(markerViews);
@@ -144,7 +146,7 @@ public class GalleryMapFragment extends Fragment {
                 //set initial map position
                 if(GalleryActivity.imgData.size()>0) {
                     CameraPosition camPos = new CameraPosition.Builder()
-                            .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
+                            .target(new LatLng(46.526732, 6.611953))// Sets the new camera position
                             .zoom(10) // Sets the zoom
                             .bearing(0) // Rotate the camera
                             .tilt(0) // Set the camera tilt
@@ -200,8 +202,8 @@ public class GalleryMapFragment extends Fragment {
 
             //set initial map position
             CameraPosition camPos = new CameraPosition.Builder()
-                    .target(new LatLng(48.769183, 21.661252))// Sets the new camera position
-                    .zoom(0) // Sets the zoom
+                    .target(markerViews.get(0).getPosition())// Sets the new camera position
+                    .zoom(10) // Sets the zoom
                     .bearing(0) // Rotate the camera
                     .tilt(0) // Set the camera tilt
                     .build(); // Creates a CameraPosition from the builder

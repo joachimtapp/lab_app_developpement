@@ -66,8 +66,7 @@ public class GalleryActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_gallery);
         readLocalData();
-        //initialise firebase
-//        database = FirebaseDatabase.getInstance();
+
 
         //handle drawer
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -155,17 +154,11 @@ public class GalleryActivity extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
-//        databaseRef = FirebaseDatabase.getInstance().getReference();
-//        mFirebaseRecordingListener = new MyFirebaseRecordingListener();
-//        databaseRef.child("users").child(LoginActivity.userID).child("Data").addValueEventListener
-//                (mFirebaseRecordingListener);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        databaseRef.child("users").child(LoginActivity.userID).child("Data").removeEventListener
-//                (mFirebaseRecordingListener);
     }
 
     //return the fragment for each section
@@ -206,32 +199,39 @@ public class GalleryActivity extends AppCompatActivity
             while ((line = bufferedReader.readLine()) != null) {
                 sb.append(line).append("\n");
             }
-            Log.v("debug", "read file: " + sb.toString());
+            Log.e("debug", "read file: " + sb.toString());
             try {
                 JSONArray array = new JSONArray(sb.toString());
 
-                Log.v("debug", "len: " + array.length());
+                Log.e("debug", "len: " + array.length());
                 for (int i = 0; i < array.length(); i++) {
 
                     ImgData newImgData = new ImgData();
                     JSONObject image = array.getJSONObject(i);
-                    Log.v("debug", "img: " + image.toString());
+                    Log.e("debug", "img: " + image.toString());
                     newImgData.date = image.getString("date");
                     newImgData.imgString = image.getString("imgString");
                     newImgData.name = image.getString("name");
                     newImgData.online = Boolean.valueOf(image.getString("online"));
+                    try {
+                        LatLng latLng = new LatLng();
+                        latLng.setLatitude(Float.parseFloat(image.getJSONObject("latLng").getString("latitude")));
+                        latLng.setLongitude(Float.parseFloat(image.getJSONObject("latLng").getString("longitude")));
+                        newImgData.latLng = latLng;
+                        Log.e("debug", "lat: " + latLng.toString());
+                    }
+                    catch (Throwable tx){
+                        Log.e("debug", "image don't have gps position");
 
-                    LatLng latLng = new LatLng();
-                    latLng.setLatitude(Float.parseFloat(image.getJSONObject("latLng").getString("latitude")));
-                    latLng.setLongitude(Float.parseFloat(image.getJSONObject("latLng").getString("longitude")));
-                    newImgData.latLng = latLng;
-                    Log.v("debug", newImgData.date);
-                    Log.v("debug", newImgData.name);
-                    Log.v("debug", "lat: " + latLng.toString());
+                    }
+                    Log.e("debug", newImgData.date);
+                    Log.e("debug", newImgData.name);
+                    Log.e("debug", newImgData.online.toString());
+
                     imgData.add(newImgData);
                 }
             } catch (Throwable tx) {
-                Log.v("debug", "parsing error" + sb.toString());
+                Log.e("debug", "parsing error" + sb.toString());
             }
 
         } catch (FileNotFoundException e) {
@@ -256,8 +256,10 @@ public class GalleryActivity extends AppCompatActivity
         super.onStop();
         FileOutputStream outputStream;
         Gson gson = new Gson();
+
         String json = gson.toJson(imgData);
-        Log.d("debug", "write " + json);
+
+        Log.e("debug", "write " + json);
         try {
             outputStream = openFileOutput(imgDataFile, this.MODE_PRIVATE);
             outputStream.write(json.getBytes());
