@@ -68,10 +68,7 @@ public class MainActivity extends WearableActivity implements
                 Intent intentdist = new Intent(MainActivity.this, DistanceSet.class);
                 startActivity(intentdist);
                 //
-                Intent intent = new Intent(MainActivity.this, WearService.class);
-                intent.setAction(WearService.ACTION_SEND.DIST.name());
-                intent.putExtra(WearService.DIST_TRIG, 30);
-                startService(intent);
+
             }
         });
 

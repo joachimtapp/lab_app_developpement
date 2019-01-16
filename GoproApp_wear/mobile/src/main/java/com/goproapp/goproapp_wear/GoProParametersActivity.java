@@ -152,6 +152,9 @@ public class GoProParametersActivity extends AppCompatActivity {
     public static final String TRIG_DIST_INT = "TRIG_DIST";
     public static final String TRIG_DIST_VAL = "TRIG_DIST_VAL";
     public static final String SHUTTER_REQUEST = "SHUTTER_REQUEST";
+    public static final String SHUTTER_TYPE = "SHUTTER_TYPE";
+    public static final String SHUTTER_ON = "SHUTTER_ON";
+    public static final String SHUTTER_OFF = "SHUTTER_OFF";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -232,7 +235,15 @@ public class GoProParametersActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                shutterCallback();
+                String shutter = intent.getStringExtra(SHUTTER_TYPE);
+                switch (shutter){
+                    case SHUTTER_ON:
+                        goProInterface.shutter();
+                        break;
+                    case SHUTTER_OFF:
+                        goProInterface.shutterStop();
+                        break;
+                }
             }
         }, new IntentFilter(SHUTTER_REQUEST));
 

@@ -36,7 +36,8 @@ allprojects {
                 dist_path           : "/DIST",
                 dist_val            : "dist_val",
                 shutter_path        : "/SHUTTER",
-                shutter_val         : "shutter_val",
+                shutter_on          : "shutter_on",
+                shutter_off         : "shutter_off",
         ]
     }
 }

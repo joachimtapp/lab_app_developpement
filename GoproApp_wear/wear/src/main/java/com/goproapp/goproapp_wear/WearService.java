@@ -1,20 +1,14 @@
 package com.goproapp.goproapp_wear;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
@@ -26,10 +20,6 @@ import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class WearService extends WearableListenerService {
@@ -58,7 +48,8 @@ public class WearService extends WearableListenerService {
                 sendMessage(message, intent.getStringExtra(PATH));
                 break;
             case SHUTTER:
-                sendMessage("Trig", BuildConfig.W_shutter_path);
+                String type = intent.getStringExtra(SHUTTER_TYPE);
+                sendMessage(type, BuildConfig.W_shutter_path);
                 break;
             case DIST:
                 putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_dist_path);
@@ -76,12 +67,9 @@ public class WearService extends WearableListenerService {
     public static final String ACTIVITY_TO_START = "ACTIVITY_TO_START";
 
     public static final String MESSAGE = "MESSAGE";
-    public static final String DATAMAP_INT = "DATAMAP_INT";
-    public static final String DATAMAP_INT_ARRAYLIST = "DATAMAP_INT_ARRAYLIST";
-    public static final String IMAGE = "IMAGE";
     public static final String PATH = "PATH";
-    public static final String PROFILE = "PROFILE";
     public static final String DIST_TRIG = "DIST_TRIG";
+    public static final String SHUTTER_TYPE = "SHUTTER_TYPE";
 
 
     @Override
@@ -109,17 +97,9 @@ public class WearService extends WearableListenerService {
                         + "\tPath: " + uri
                         + "\tDatamap: " + dataMapItem.getDataMap() + "\n");
 
-                Intent intent;
-
                 assert uri.getPath() != null;
                 switch (uri.getPath()) {
-                    case BuildConfig.W_example_path_asset:
 
-                        /*intent = new Intent("REPLACE_THIS_WITH_A_STRING_OF_ANOTHER_ACTION_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY");
-                        intent.putExtra("REPLACE_THIS_WITH_A_STRING_OF_INTEGER_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY", integer);
-                        intent.putExtra("REPLACE_THIS_WITH_A_STRING_OF_ARRAYLIST_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY", arraylist);
-                        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);*/
-                        break;
                     default:
                         Log.v(TAG, "Data changed for unhandled path: " + uri);
                         break;
