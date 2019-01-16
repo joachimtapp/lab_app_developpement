@@ -55,10 +55,10 @@ public class DistanceSet extends WearableActivity {
         setAmbientEnabled();
 
 
-
-
-
-
+        Intent intent = new Intent(this, WearService.class);
+        intent.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
+        intent.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_goproparam);
+        startService(intent);
 
         // setDist button : set distance trigger and location of the Gopro
         ImageButton setDist = findViewById(R.id.setdist_button);
@@ -140,9 +140,6 @@ public class DistanceSet extends WearableActivity {
         locationEngine.setFastestInterval(1000);
         locationEngine.addLocationEngineListener(locationEngineListener);
         locationEngine.activate();
-
-
-
 
 
         setDist.setOnClickListener(new View.OnClickListener() {
