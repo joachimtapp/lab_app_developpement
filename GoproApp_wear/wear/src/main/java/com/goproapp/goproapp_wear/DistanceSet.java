@@ -34,6 +34,7 @@ public class DistanceSet extends WearableActivity {
     // variable that decide wether the gopro should be shooting or not
     // variable to send via an intent to the tablet
     public boolean triggerCapt;
+
     //
 
 
