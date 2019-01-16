@@ -130,6 +130,8 @@ public class GalleryMapFragment extends Fragment {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 mMapboxMap=mapboxMap;
+                mapboxMap.getUiSettings().setAttributionEnabled(false);
+                mapboxMap.getUiSettings().setLogoEnabled(false);
                 int cnt = 0;//Keep track of the marker id
                 //add the picture position to the map
                 for (ImgData im : GalleryActivity.imgData) {
@@ -140,14 +142,16 @@ public class GalleryMapFragment extends Fragment {
                 mapboxMap.addMarkerViews(markerViews);
 
                 //set initial map position
-                CameraPosition camPos = new CameraPosition.Builder()
-                        .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
-                        .zoom(10) // Sets the zoom
-                        .bearing(0) // Rotate the camera
-                        .tilt(0) // Set the camera tilt
-                        .build(); // Creates a CameraPosition from the builder
-                mapboxMap.animateCamera(CameraUpdateFactory
-                        .newCameraPosition(camPos), 2000);
+                if(GalleryActivity.imgData.size()>0) {
+                    CameraPosition camPos = new CameraPosition.Builder()
+                            .target(GalleryActivity.imgData.get(0).latLng)// Sets the new camera position
+                            .zoom(10) // Sets the zoom
+                            .bearing(0) // Rotate the camera
+                            .tilt(0) // Set the camera tilt
+                            .build(); // Creates a CameraPosition from the builder
+                    mapboxMap.animateCamera(CameraUpdateFactory
+                            .newCameraPosition(camPos), 2000);
+                }
 
                 mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
                     @Override

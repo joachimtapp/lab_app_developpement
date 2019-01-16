@@ -238,6 +238,8 @@ public class GalleryFragment extends Fragment {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 mMapboxMap = mapboxMap;
+                mapboxMap.getUiSettings().setAttributionEnabled(false);
+                mapboxMap.getUiSettings().setLogoEnabled(false);
                 if (GalleryActivity.imgData.size() > 0) {
                     //set initial map position
                     CameraPosition camPos = new CameraPosition.Builder()
@@ -819,11 +821,10 @@ public class GalleryFragment extends Fragment {
                                 .build();
                     }
                 })
-                .build()
-                .show();
+                .build();
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("galleryFirst", false);
-        editor.commit();
+        editor.apply();
     }
 }
