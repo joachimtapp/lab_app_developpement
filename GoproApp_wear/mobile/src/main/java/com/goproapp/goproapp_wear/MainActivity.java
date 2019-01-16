@@ -25,6 +25,12 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -42,7 +48,7 @@ public class MainActivity extends AppCompatActivity
     public static String gopro_ssid;
     ArrayList<Integer> myImageList = new ArrayList<>();
     int z=0;
-    int nImageDelaySeconds=3;
+    int nImageDelaySeconds=5;
     private Boolean firstTime;
     private NavigationView navigationView;
     private  DrawerLayout drawer;
@@ -158,17 +164,34 @@ public class MainActivity extends AppCompatActivity
         myImageList.add(R.drawable.sport_3);
         slideSh.setImageResource(myImageList.get(0));
 
+        Animation fadeIn = new AlphaAnimation(0, 1);
+        fadeIn.setInterpolator(new AccelerateDecelerateInterpolator()); //add this
+        fadeIn.setDuration(1000);
+
+        Animation fadeOut = new AlphaAnimation(1, 0);
+        fadeOut.setInterpolator(new AccelerateDecelerateInterpolator()); //and this
+        fadeOut.setStartOffset((nImageDelaySeconds-1)*1000);
+        fadeOut.setDuration(1000);
+
+        AnimationSet animation = new AnimationSet(false); //change to false
+        animation.addAnimation(fadeIn);
+        animation.addAnimation(fadeOut);
+
+
+
         Thread timer = new Thread() {
             public void run() {
                 try {
-                    sleep(2000);
-
                     for (z = 0; z < myImageList.size() + 4; z++) {
                         if (z < myImageList.size()) {
+
                             sleep(nImageDelaySeconds*1000);
+
                             runOnUiThread(new Runnable() {
                                 public void run() {
+
                                     slideSh.setImageResource(myImageList.get(z));
+                                    slideSh.startAnimation(animation);
                                 }
                             });
                         } else {

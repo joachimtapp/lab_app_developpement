@@ -171,7 +171,6 @@ public class GoProParametersActivity extends AppCompatActivity {
         animation_out.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-
             }
 
             @Override
