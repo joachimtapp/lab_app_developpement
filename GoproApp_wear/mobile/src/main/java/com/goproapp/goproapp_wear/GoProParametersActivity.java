@@ -17,9 +17,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.provider.Settings;
-import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -177,7 +175,7 @@ public class GoProParametersActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
 
-                Animation animation_out = new AlphaAnimation(1.0F, 0.0F);
+                Animation animation_out = new AlphaAnimation(0.5F, 0.0F);
                 animation_out.setDuration(200);
                 animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
                 animation_out.setAnimationListener(new Animation.AnimationListener() {
@@ -198,7 +196,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                 });
 
                 whiteView = findViewById(R.id.whiteBack);
-                whiteView.setAlpha(1.0F);
+                whiteView.setAlpha(0.5F);
                 whiteView.startAnimation(animation_out);
 
                 String previous_mode = MODE;
@@ -210,15 +208,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                 new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        Log.e("Shutter", "Start of attempt to change background");
-                        new SetBackgroundImage().execute("http://10.5.5.9:8080/gp/gpMediaList");
-                    }
-                }, 1500);
-
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        Log.e("Shutter", "Deleting last image");
+                        Log.v("Shutter", "Deleting last image");
                         goProInterface.deleteLastMedia();
                     }
                 }, 4000);
@@ -231,7 +221,6 @@ public class GoProParametersActivity extends AppCompatActivity {
         });
 
         distText = findViewById(R.id.distTrig);
-
         LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -295,7 +284,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     private void shutterCallback(){
 
-        Animation animation_out = new AlphaAnimation(1.0F, 0.0F);
+        Animation animation_out = new AlphaAnimation(0.5F, 0.0F);
         animation_out.setDuration(200);
         animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
         animation_out.setAnimationListener(new Animation.AnimationListener() {
@@ -316,7 +305,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         });
 
         whiteView = findViewById(R.id.whiteBack);
-        whiteView.setAlpha(1.0F);
+        whiteView.setAlpha(0.5F);
         whiteView.startAnimation(animation_out);
 
 
@@ -408,7 +397,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("parametersFirst", false);
-        editor.commit();
+        editor.apply();
 
     }
 
@@ -570,7 +559,6 @@ public class GoProParametersActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 EV_text.setText("EV : " + (progress - 4.) / 2);
-                //TODO : Send new parameter to GoPro
                 goProInterface.setEV(progress, MODE);
             }
 
@@ -676,7 +664,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                         // Handle navigation view item clicks here.
                         int id = item.getItemId();
                         if (id != R.id.nav_livestream) {//exclude himself
-                            DrawerHandler dh = new DrawerHandler();
+                            DrawerHandler dh = new DrawerHandler(GoProParametersActivity.this, navigationView);
 
                             Intent intent;
                             intent = dh.SwitchActivity(id, GoProParametersActivity.this);
@@ -699,10 +687,10 @@ public class GoProParametersActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        DrawerHandler dh = new DrawerHandler();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        DrawerHandler dh = new DrawerHandler(this, navigationView);
 
-        dh.setUserDrawer(navigationView);
+        dh.setUserDrawer();
         SwitchCompat drawerSwitch = (SwitchCompat) navigationView.getMenu().findItem(R.id.goProConnect).getActionView();
         dh.addSwitchListener(drawerSwitch, this);
     }
@@ -979,7 +967,6 @@ public class GoProParametersActivity extends AppCompatActivity {
         spinner_FOV_photo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //TODO send data to GoPro
                 goProInterface.setFOVPhoto(spinner_FOV_photo.getSelectedItem().toString());
             }
 
@@ -1187,8 +1174,6 @@ public class GoProParametersActivity extends AppCompatActivity {
         spinner_res_video.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(GoProParametersActivity.this, "New resolution selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
-                //TODO : send new parameter to GoPro
                 FPS_spinner_video = goProCombinations.getFPS(spinner_res_video.getSelectedItem().toString());
                 FOV_spinner_video = goProCombinations.getFov(spinner_res_video.getSelectedItem().toString(), spinner_FPS_video.getSelectedItem().toString());
 
@@ -1216,8 +1201,6 @@ public class GoProParametersActivity extends AppCompatActivity {
         spinner_FOV_video.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(GoProParametersActivity.this, "New FOV selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
-                //TODO : send new parameters to GoPro
                 goProInterface.setFOVVideo(spinner_FOV_video.getSelectedItem().toString());
             }
 
@@ -1230,8 +1213,6 @@ public class GoProParametersActivity extends AppCompatActivity {
         spinner_FPS_video.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(GoProParametersActivity.this, "New FPS rate selected : " + parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
-                //TODO : Send data to GoPro.
                 FOV_spinner_video = goProCombinations.getFov(spinner_res_video.getSelectedItem().toString(), spinner_FPS_video.getSelectedItem().toString());
 
                 ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(parent.getContext(), R.layout.spinner_item, FOV_spinner_video);
@@ -1314,7 +1295,6 @@ public class GoProParametersActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
     private class GoProInterface {
@@ -1329,12 +1309,8 @@ public class GoProParametersActivity extends AppCompatActivity {
 
         public GoProInterface() {
 
-
-            Log.e("GoPro", "Created new instance of GoProInterface");
-
             // Activate GPS Tag
             sendRequest("http://10.5.5.9/gp/gpControl/setting/83/1", false);
-
         }
 
         public void deleteLastMedia() {
@@ -1365,9 +1341,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                 default:
                     url = "";
             }
-
             sendRequest(url, false);
-
         }
 
         public void setFOVPhoto(String fov) {
@@ -1390,9 +1364,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                 default:
                     url = "";
             }
-
             sendRequest(url, false);
-
         }
 
         public void setProTune(Boolean enable, String mode) {
@@ -1414,9 +1386,7 @@ public class GoProParametersActivity extends AppCompatActivity {
             } else {
                 url = url + "0";
             }
-
             sendRequest(url, false);
-
         }
 
         public void setWBAuto(String mode) {
@@ -1501,7 +1471,6 @@ public class GoProParametersActivity extends AppCompatActivity {
                 default:
                     url = url + "4";
             }
-
             sendRequest(url, false);
         }
 
@@ -1535,7 +1504,6 @@ public class GoProParametersActivity extends AppCompatActivity {
                 default:
                     url = url + "4";
             }
-
             sendRequest(url, false);
         }
 
@@ -1581,7 +1549,6 @@ public class GoProParametersActivity extends AppCompatActivity {
                     url = url + "9";
                     break;
             }
-
             sendRequest(url, false);
         }
 
@@ -1620,7 +1587,6 @@ public class GoProParametersActivity extends AppCompatActivity {
                     url = url + "5";
                     break;
             }
-
             sendRequest(url, false);
         }
 
@@ -1666,9 +1632,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                     url = url + "0";
                     break;
             }
-
             sendRequest(url, false);
-
         }
 
         public void setBurstRate(String burstRate) {
@@ -1702,13 +1666,11 @@ public class GoProParametersActivity extends AppCompatActivity {
                     url = url + "8";
                     break;
             }
-
             sendRequest(url, false);
         }
 
         public void setFOVBurst(String fov) {
             String url;
-
             switch (fov) {
                 case "Narrow":
                     url = "http://10.5.5.9/gp/gpControl/setting/28/9";
@@ -1725,7 +1687,6 @@ public class GoProParametersActivity extends AppCompatActivity {
                 default:
                     url = "";
             }
-
             sendRequest(url, false);
         }
 
@@ -1764,7 +1725,6 @@ public class GoProParametersActivity extends AppCompatActivity {
                 default:
                     url = url + "1";
             }
-
             sendRequest(url, false);
         }
 
@@ -1813,6 +1773,8 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     private class SetBackgroundImage extends AsyncTask<String, Void, String> {
 
+        String ERROR = "ERROR";
+
         protected void onPreExecute() {
         }
 
@@ -1842,20 +1804,17 @@ public class GoProParametersActivity extends AppCompatActivity {
                     String line = "";
 
                     while ((line = in.readLine()) != null) {
-
                         sb.append(line);
                         break;
                     }
                     in.close();
-
-                    Log.e("debug", "result: " + sb.toString());
                     return sb.toString();
 
                 } else {
-                    return "Error";
+                    return ERROR;
                 }
             } catch (Exception e) {
-                return "Error";
+                return ERROR;
             }
         }
 
@@ -1863,22 +1822,38 @@ public class GoProParametersActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
 
             Log.e("debug", "result: " + result);
-            String lastImageName;
+            if(!result.equals(ERROR)) {
+                String lastImageName;
 
-            //recover data names
-            try {
-                JSONObject obj = new JSONObject(result);
-                JSONArray array = obj.getJSONArray("media").getJSONObject(0).getJSONArray("fs");
-                String goProDir = obj.getJSONArray("media").getJSONObject(0).getString("d");
-                JSONObject media = array.getJSONObject(array.length() - 1);
-                Log.e("debug", "dir= " + goProDir + " name= " + media.getString("n"));
-                lastImageName = media.getString("n");
+                //recover data names
+                try {
+                    JSONObject obj = new JSONObject(result);
+                    JSONArray array = obj.getJSONArray("media").getJSONObject(0).getJSONArray("fs");
+                    String goProDir = obj.getJSONArray("media").getJSONObject(0).getString("d");
+                    JSONObject media = array.getJSONObject(array.length() - 1);
+                    Log.v("debug", "dir= " + goProDir + " name= " + media.getString("n"));
+                    lastImageName = media.getString("n");
 
-                DownloadTask downloadTask = new DownloadTask();
-                downloadTask.execute(lastImageName);
+                    // Download last image
+                    DownloadTask downloadTask = new DownloadTask();
+                    downloadTask.execute(lastImageName);
 
-            } catch (Throwable tx) {//recover pic info
+                } catch (Throwable ignored) {
 
+                }
+            } else {
+                new AlertDialog.Builder(GoProParametersActivity.this)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle("GoPro Connection")
+                        .setMessage("Make sure you are connected to your GoPro")
+                        .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                            }
+                        })
+                        .setNegativeButton("Later", null)
+                        .show();
             }
         }
 
@@ -1887,7 +1862,6 @@ public class GoProParametersActivity extends AppCompatActivity {
     private class DownloadTask extends AsyncTask<String, Void, Bitmap> {
         // Before the tasks execution
         protected void onPreExecute() {
-            // Display the progress dialog on async task start
         }
 
         // Do the task in background/non UI thread
@@ -1910,9 +1884,8 @@ public class GoProParametersActivity extends AppCompatActivity {
                 connection.connect();
                 InputStream inputStream = connection.getInputStream();
                 BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-                Bitmap bmp = BitmapFactory.decodeStream(bufferedInputStream);
 
-                return bmp;
+                return BitmapFactory.decodeStream(bufferedInputStream);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1923,18 +1896,13 @@ public class GoProParametersActivity extends AppCompatActivity {
             return null;
         }
 
-        // When all async task done
         protected void onPostExecute(Bitmap result) {
-            // Hide the progress dialog
 
             if (result != null) {
                 // Display the downloaded image into ImageView
                 ImageView backgroundImage = findViewById(R.id.backgroundImage);
                 backgroundImage.setImageBitmap(result);
-            } else {
-                // Notify user that an error occurred while downloading image
             }
         }
     }
-
 }
