@@ -11,12 +11,15 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -27,6 +30,7 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -45,6 +49,7 @@ import android.widget.TextView;
 
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.SimpleShowcaseEventListener;
+import com.github.amlcurran.showcaseview.targets.Target;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import org.json.JSONArray;
@@ -124,7 +129,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     GoProInterface goProInterface;
     private String MODE;
-    private Boolean firstTime=true;
+    private Boolean firstTime = true;
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
@@ -153,25 +158,6 @@ public class GoProParametersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gopro_parameters);
-
-        // Check if you are connected to GoPro
-        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        String ssid = wifiInfo.getSSID();
-        /*if(!ssid.contains("GP")){
-            new AlertDialog.Builder(this)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setTitle("GoPro Connection")
-                    .setMessage("Make sure you are connected to your GoPro")
-                    .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                        }
-                    })
-                    .setNegativeButton("Later", null)
-                    .show();
-        }*/
 
         timerHandler.postDelayed(timerRunnable, 0);
 
@@ -209,9 +195,8 @@ public class GoProParametersActivity extends AppCompatActivity {
                 whiteView.startAnimation(animation_out);
 
 
-
-                if(MODE.equals(GoProInterface.MODE_VIDEO)){
-                    if(recording){
+                if (MODE.equals(GoProInterface.MODE_VIDEO)) {
+                    if (recording) {
                         goProInterface.shutterStop();
                         shutterButton.setImageDrawable(getDrawable(R.drawable.shutter_small));
                     } else {
@@ -288,13 +273,51 @@ public class GoProParametersActivity extends AppCompatActivity {
         new SetBackgroundImage().execute("http://10.5.5.9:8080/gp/gpMediaList");
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         firstTime = sharedPref.getBoolean("parametersFirst", true);
-        if(firstTime)
-            GuidedTour();
+        if (firstTime) {
+        GuidedTour();
+
+
+        } else {
+        // Check if you are connected to GoPro
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        String ssid = wifiInfo.getSSID();
+        if (!ssid.contains("GP")) {
+            new AlertDialog.Builder(this)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("GoPro Connection")
+                    .setMessage("Make sure you are connected to your GoPro")
+                    .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                        }
+                    })
+                    .setNegativeButton("Later", null)
+                    .show();
+        }
+    }
+
+
     }
 
     private void GuidedTour() {
+        //wait for the view to be created
+
         new ShowcaseView.Builder(this)
-                .setTarget(new ViewTarget(findViewById(R.id.modeSelectLayout)))
+                //View not already initialize which force us to set a screen focus point by hand
+                .setTarget(new Target() {
+                    @Override
+                    public Point getPoint() {
+                        Display display = getWindowManager().getDefaultDisplay();
+                        Point size = new Point();
+                        display.getSize(size);
+                        Point point = new Point();
+                        Resources r = getResources();
+                        point.set(size.x / 2, (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, r.getDisplayMetrics())));
+                        return point;
+                    }
+                })
                 .setContentTitle("Mode selection")
                 .setContentText("The different capture modes can be set here")
                 .setStyle(R.style.CustomShowcaseTheme)
@@ -317,6 +340,30 @@ public class GoProParametersActivity extends AppCompatActivity {
                                                 .setContentText("A simple press will take a picture/ start a recording.\n" +
                                                         "A preview can be obtain by maintaining the shutter button.  ")
                                                 .setStyle(R.style.CustomShowcaseTheme)
+                                                .setShowcaseEventListener(new SimpleShowcaseEventListener() {
+                                                    @Override
+                                                    public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
+                                                        super.onShowcaseViewDidHide(showcaseView);
+                                                        // Check if you are connected to GoPro
+                                                        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                                                        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                                                        String ssid = wifiInfo.getSSID();
+                                                        if (!ssid.contains("GP")) {
+                                                            new AlertDialog.Builder(GoProParametersActivity.this)
+                                                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                                                    .setTitle("GoPro Connection")
+                                                                    .setMessage("Make sure you are connected to your GoPro")
+                                                                    .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
+                                                                        @Override
+                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                                                                        }
+                                                                    })
+                                                                    .setNegativeButton("Later", null)
+                                                                    .show();
+                                                        }
+                                                    }
+                                                })
                                                 .build();
                                     }
                                 })
@@ -328,29 +375,29 @@ public class GoProParametersActivity extends AppCompatActivity {
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("parametersFirst", false);
-        editor.apply();
+        editor.commit();
+
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
         timerHandler.removeCallbacks(timerRunnable);
     }
 
-    private void setupCamera(){
+    private void setupCamera() {
 
         goProInterface.setMode(GoProInterface.MODE_PHOTO);
 
     }
 
-    private void setupModeMenu(){
+    private void setupModeMenu() {
         ImageButton buttonPhoto = findViewById(R.id.modePhoto);
         ImageButton buttonVideo = findViewById(R.id.modeVideo);
         ImageButton buttonBurst = findViewById(R.id.modeBurst);
         ImageButton buttonPosition = findViewById(R.id.modePosition);
 
         MODE = GoProInterface.MODE_PHOTO;
-
 
 
         buttonPhoto.setOnClickListener(new View.OnClickListener() {
@@ -361,14 +408,14 @@ public class GoProParametersActivity extends AppCompatActivity {
                 changeMenu(MENU_PHOTO);
                 goProInterface.setFOVPhoto(spinner_FOV_photo.getSelectedItem().toString());
                 goProInterface.setProTune(switchProTune_photo.isChecked(), MODE);
-                if(!switchProTune_photo.isChecked()){
-                    if(switchWB_photo.isChecked()){
+                if (!switchProTune_photo.isChecked()) {
+                    if (switchWB_photo.isChecked()) {
                         goProInterface.setWBAuto(GoProInterface.MODE_PHOTO);
                     } else {
                         goProInterface.setWB(seekBarWB_photo.getProgress(), MODE);
                     }
 
-                    if(switchISO_photo.isChecked()){
+                    if (switchISO_photo.isChecked()) {
                         goProInterface.setISOMin(0, MODE);
                         goProInterface.setISOMax(seekBarISO_max_photo.getMax(), MODE);
                     } else {
@@ -376,7 +423,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                         goProInterface.setISOMax(seekBarISO_max_photo.getProgress(), MODE);
                     }
 
-                    if(switchShutter_photo.isChecked()){
+                    if (switchShutter_photo.isChecked()) {
                         goProInterface.setShutterAuto();
                     } else {
                         goProInterface.setShutter(seekBarShutter_photo.getProgress());
@@ -395,14 +442,14 @@ public class GoProParametersActivity extends AppCompatActivity {
                 goProInterface.setFPSVideo(spinner_FPS_video.getSelectedItem().toString());
                 goProInterface.setFOVVideo(spinner_FOV_video.getSelectedItem().toString());
                 goProInterface.setProTune(switchProTune_video.isChecked(), MODE);
-                if(switchProTune_video.isChecked()){
-                    if(switchWB_video.isChecked()){
+                if (switchProTune_video.isChecked()) {
+                    if (switchWB_video.isChecked()) {
                         goProInterface.setWBAuto(MODE);
                     } else {
                         goProInterface.setWB(seekBarWB_video.getProgress(), MODE);
                     }
 
-                    if(switchISO_video.isChecked()){
+                    if (switchISO_video.isChecked()) {
                         goProInterface.setISO(seekBarISO_video.getMax());
                         goProInterface.setISOMode(GoProInterface.ISO_MODE_MAX);
                     } else {
@@ -422,14 +469,14 @@ public class GoProParametersActivity extends AppCompatActivity {
                 goProInterface.setFOVBurst(spinner_FOV_burst.getSelectedItem().toString());
                 goProInterface.setBurstRate(spinner_rate_burst.getSelectedItem().toString());
                 goProInterface.setProTune(switchProTune_burst.isChecked(), MODE);
-                if(switchProTune_burst.isChecked()){
-                    if(switchWB_burst.isChecked()){
+                if (switchProTune_burst.isChecked()) {
+                    if (switchWB_burst.isChecked()) {
                         goProInterface.setWBAuto(MODE);
                     } else {
                         goProInterface.setWB(seekBarWB_burst.getProgress(), MODE);
                     }
 
-                    if(switchISO_burst.isChecked()){
+                    if (switchISO_burst.isChecked()) {
                         goProInterface.setISOMin(0, MODE);
                         goProInterface.setISOMax(seekBarISO_max_burst.getMax(), MODE);
                     } else {
@@ -455,9 +502,9 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     }
 
-    private void changeMenu(int view){
+    private void changeMenu(int view) {
         // Set all invisible
-        for (int i = 0; i < menus.size(); i++){
+        for (int i = 0; i < menus.size(); i++) {
             menus.get(i).setVisibility(View.INVISIBLE);
         }
 
@@ -465,7 +512,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         menus.get(view).setVisibility(View.VISIBLE);
 
         Resources r = getResources();
-        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,50F*view, r.getDisplayMetrics());
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50F * view, r.getDisplayMetrics());
 
         View boxView = findViewById(R.id.selectedMode);
         ObjectAnimator animation = ObjectAnimator.ofFloat(boxView, "translationX", px);
@@ -474,7 +521,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         animation.start();
     }
 
-    private void setupEV(){
+    private void setupEV() {
         EV_bar = findViewById(R.id.EV_bar);
         TextView EV_text = findViewById(R.id.EV_val);
 
@@ -483,13 +530,13 @@ public class GoProParametersActivity extends AppCompatActivity {
         goProInterface.setEV(EV_bar.getProgress(), MODE);
 
         // Set text of TextView
-        EV_text.setText("EV : " + (EV_bar.getProgress() - 4.)/2);
+        EV_text.setText("EV : " + (EV_bar.getProgress() - 4.) / 2);
 
         // Set callback for SeekBar
         EV_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                EV_text.setText("EV : " + (progress - 4.)/2);
+                EV_text.setText("EV : " + (progress - 4.) / 2);
                 //TODO : Send new parameter to GoPro
                 goProInterface.setEV(progress, MODE);
             }
@@ -512,7 +559,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
                 View view = findViewById(R.id.EV_view);
                 ObjectAnimator animator;
-                if(down_EV){
+                if (down_EV) {
                     animator = ObjectAnimator.ofFloat(view, "translationY", 60);
                 } else {
                     animator = ObjectAnimator.ofFloat(view, "translationY", 0);
@@ -525,7 +572,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         });
     }
 
-    private void setupSideMenu(){
+    private void setupSideMenu() {
 
         View menuPhoto = findViewById(R.id.menu_photo);
         View menuVideo = findViewById(R.id.menu_video);
@@ -556,12 +603,12 @@ public class GoProParametersActivity extends AppCompatActivity {
                 float dip = 230f;
                 Resources r = getResources();
 
-                if(mMenuDeployer.getRotation() == 180F) {
+                if (mMenuDeployer.getRotation() == 180F) {
                     deg = 0F;
                     px = 0;
                 } else {
                     deg = 180F;
-                    px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,dip,r.getDisplayMetrics());
+                    px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, r.getDisplayMetrics());
                 }
 
                 animation_button = ObjectAnimator.ofFloat(mMenuDeployer, "rotation", deg);
@@ -624,7 +671,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
         dh.setUserDrawer(navigationView);
         SwitchCompat drawerSwitch = (SwitchCompat) navigationView.getMenu().findItem(R.id.goProConnect).getActionView();
-        dh.addSwitchListener(drawerSwitch,this);
+        dh.addSwitchListener(drawerSwitch, this);
     }
 
     @Override
@@ -651,7 +698,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void burstMenuSetup(){
+    private void burstMenuSetup() {
         spinner_FOV_burst = findViewById(R.id.spinner_FOV_burst);
         spinner_rate_burst = findViewById(R.id.spinner_rate_burst);
         switchProTune_burst = findViewById(R.id.switchProTune_burst);
@@ -682,7 +729,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     }
 
-    private void setupCallbackBurst(){
+    private void setupCallbackBurst() {
 
         spinner_rate_burst.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -711,18 +758,18 @@ public class GoProParametersActivity extends AppCompatActivity {
         switchProTune_burst.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     proTune_burst.setVisibility(View.VISIBLE);
 
                     // ProTune callbacks
 
-                    if(switchWB_burst.isChecked()){
+                    if (switchWB_burst.isChecked()) {
                         goProInterface.setWBAuto(MODE);
                     } else {
                         goProInterface.setWB(seekBarWB_burst.getProgress(), MODE);
                     }
 
-                    if(switchISO_burst.isChecked()){
+                    if (switchISO_burst.isChecked()) {
                         goProInterface.setISOMin(0, MODE);
                         goProInterface.setISOMax(4, MODE);
                     } else {
@@ -741,7 +788,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         switchWB_burst.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     seekBarWB_burst.setEnabled(false);
                     goProInterface.setWBAuto(MODE);
                 } else {
@@ -754,7 +801,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         switchISO_burst.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     seekBarISO_min_burst.setEnabled(false);
                     seekBarISO_max_burst.setEnabled(false);
                     goProInterface.setISOMin(0, MODE);
@@ -788,7 +835,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         seekBarISO_min_burst.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(progress > seekBarISO_max_burst.getProgress()){
+                if (progress > seekBarISO_max_burst.getProgress()) {
                     seekBarISO_max_burst.setProgress(progress);
                 }
                 goProInterface.setISOMin(progress, MODE);
@@ -808,7 +855,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         seekBarISO_max_burst.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(progress < seekBarISO_min_burst.getProgress()){
+                if (progress < seekBarISO_min_burst.getProgress()) {
                     seekBarISO_min_burst.setProgress(progress);
                 }
                 goProInterface.setISOMax(progress, MODE);
@@ -828,7 +875,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     }
 
-    private void photoMenuSetup(){
+    private void photoMenuSetup() {
         spinner_FOV_photo = findViewById(R.id.spinner_FOV_photo);
         switchWB_photo = findViewById(R.id.switchWB_photo);
         switchISO_photo = findViewById(R.id.switchISO_photo);
@@ -859,22 +906,22 @@ public class GoProParametersActivity extends AppCompatActivity {
         setupCallbackPhoto();
     }
 
-    private void setupCallbackPhoto(){
+    private void setupCallbackPhoto() {
 
         switchProTune_photo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     proTune_photo.setVisibility(View.VISIBLE);
 
                     // Call all ProTune callbacks
-                    if(switchWB_photo.isChecked()){
+                    if (switchWB_photo.isChecked()) {
                         goProInterface.setWBAuto(MODE);
                     } else {
                         goProInterface.setWB(seekBarWB_photo.getProgress(), MODE);
                     }
 
-                    if(switchISO_photo.isChecked()){
+                    if (switchISO_photo.isChecked()) {
                         goProInterface.setISOMin(0, MODE);
                         goProInterface.setISOMax(4, MODE);
                     } else {
@@ -882,7 +929,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                         goProInterface.setISOMax(seekBarISO_max_photo.getProgress(), MODE);
                     }
 
-                    if(switchShutter_photo.isChecked()){
+                    if (switchShutter_photo.isChecked()) {
                         goProInterface.setShutterAuto();
                     } else {
                         goProInterface.setShutter(seekBarShutter_photo.getProgress());
@@ -912,7 +959,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         switchWB_photo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     seekBarWB_photo.setEnabled(false);
                     goProInterface.setWBAuto(MODE);
                 } else {
@@ -942,7 +989,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         switchISO_photo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     seekBarISO_min_photo.setEnabled(false);
                     seekBarISO_max_photo.setEnabled(false);
                     goProInterface.setISOMin(0, MODE);
@@ -959,7 +1006,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         switchShutter_photo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
+                if (isChecked) {
                     seekBarShutter_photo.setEnabled(false);
                     goProInterface.setShutterAuto();
                 } else {
@@ -989,7 +1036,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         seekBarISO_max_photo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(progress < seekBarISO_min_photo.getProgress()){
+                if (progress < seekBarISO_min_photo.getProgress()) {
                     seekBarISO_min_photo.setProgress(progress);
                 }
                 goProInterface.setISOMax(progress, MODE);
@@ -1009,7 +1056,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         seekBarISO_min_photo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(progress > seekBarISO_max_photo.getProgress()){
+                if (progress > seekBarISO_max_photo.getProgress()) {
                     seekBarISO_max_photo.setProgress(progress);
                 }
                 goProInterface.setISOMin(progress, MODE);
@@ -1027,7 +1074,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         });
     }
 
-    private void videoMenuSetup(){
+    private void videoMenuSetup() {
 
         // Add items to spinner of menu
         spinner_res_video = findViewById(R.id.spinner_res_video);
@@ -1075,23 +1122,23 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     }
 
-    private void setupCallbackVideo(){
+    private void setupCallbackVideo() {
 
         switchProTune_video.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
+                if (isChecked) {
                     proTune_video.setVisibility(View.VISIBLE);
 
                     // Callbacks of ProTune
 
-                    if(switchWB_video.isChecked()){
+                    if (switchWB_video.isChecked()) {
                         goProInterface.setWBAuto(MODE);
                     } else {
                         goProInterface.setWB(seekBarWB_video.getProgress(), MODE);
                     }
 
-                    if(switchISO_video.isChecked()){
+                    if (switchISO_video.isChecked()) {
                         goProInterface.setISO(2);
                     } else {
                         goProInterface.setISO(seekBarISO_video.getProgress());
@@ -1114,7 +1161,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
 
                 ArrayAdapter<String> adapter_FOV = new ArrayAdapter<>(parent.getContext(), R.layout.spinner_item, FOV_spinner_video);
-                ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(parent.getContext(),  R.layout.spinner_item, FPS_spinner_video);
+                ArrayAdapter<String> adapter_FPS = new ArrayAdapter<>(parent.getContext(), R.layout.spinner_item, FPS_spinner_video);
 
                 adapter_FOV.setDropDownViewResource(R.layout.spinner_dropdown);
                 adapter_FPS.setDropDownViewResource(R.layout.spinner_dropdown);
@@ -1174,7 +1221,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     seekBarWB_video.setEnabled(false);
                     goProInterface.setWBAuto(MODE);
                     goProInterface.setISOMode(GoProInterface.ISO_MODE_MAX);
@@ -1206,7 +1253,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         switchISO_video.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     seekBarISO_video.setEnabled(false);
                     goProInterface.setISO(2);
                     goProInterface.setISOMode(GoProInterface.ISO_MODE_MAX);
@@ -1257,7 +1304,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
         }
 
-        public void deleteLastMedia(){
+        public void deleteLastMedia() {
             sendRequest("http://10.5.5.9/gp/gpControl/command/storage/delete/last", false);
         }
 
@@ -1705,14 +1752,14 @@ public class GoProParametersActivity extends AppCompatActivity {
                     if (!response.isSuccessful()) {
                         Log.d("GoPro", "Camera not connected");
                     }
-                    if(isShutter){
+                    if (isShutter) {
 
                         long delay;
-                        switch (MODE){
+                        switch (MODE) {
                             case MODE_BURST:
                                 int time = Integer.parseInt(spinner_rate_burst.getSelectedItem().toString().split("/")[1]);
                                 int nbImages = Integer.parseInt(spinner_rate_burst.getSelectedItem().toString().split("/")[0]);
-                                delay = time*1000 + nbImages*400 + 1000;
+                                delay = time * 1000 + nbImages * 400 + 1000;
                                 break;
                             default:
                                 delay = 2000;
@@ -1814,7 +1861,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         protected Bitmap doInBackground(String... params) {
             URL url = null;
             try {
-                if(params[0].contains(".MP4")){
+                if (params[0].contains(".MP4")) {
                     url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=100GOPRO/" + params[0]);
                 } else {
                     url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/" + params[0]);

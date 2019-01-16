@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onDrawerOpened(View drawerView) {
+                SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
+                firstTime = sharedPref.getBoolean("mainFirst", true);
                 if(firstTime)
                     guidedTour();
             }
@@ -87,10 +89,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         //read saved gopro ssid
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        String defaultValue = "none";
-        gopro_ssid = sharedPref.getString("goProSSID", defaultValue);
-
-        firstTime = sharedPref.getBoolean("mainFirst", true);
+        gopro_ssid = sharedPref.getString("goProSSID", "none");
 
         //launch the diaporama
         setMainImageandWelcome();
@@ -98,7 +97,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void guidedTour() {
-
                 new ShowcaseView.Builder(MainActivity.this)
                 .setTarget(new ViewTarget(navigationView.getHeaderView(0).findViewById(R.id.logged_name)))
                 .setContentTitle("User")
@@ -110,8 +108,8 @@ public class MainActivity extends AppCompatActivity
                         new ShowcaseView.Builder(MainActivity.this)
                                 .setTarget(new ViewTarget(navigationView.getMenu().findItem(R.id.goProConnect).getActionView()))
                                 .setContentTitle("Quick WiFi switch")
-                                .setContentText("Switch that allow the user to alternate between the GoPro WiFi " +
-                                        "and an internet connected one Quickly.\n This switch can be use after selecting your GoPro " +
+                                .setContentText("Switch that allows you to alternate between the GoPro WiFi " +
+                                        "and your usual one quickly.\n This switch can be used after selecting your GoPro " +
                                         "and logging in.")
                                 .setStyle(R.style.CustomShowcaseTheme)
                                 .build();
@@ -123,7 +121,7 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("mainFirst", false);
-        editor.commit();
+        editor.apply();
     }
 
     private void setMainImageandWelcome() {
