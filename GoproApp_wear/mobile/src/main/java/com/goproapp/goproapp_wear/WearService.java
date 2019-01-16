@@ -121,9 +121,6 @@ public class WearService extends WearableListenerService {
                 Log.v(TAG, "Message asked to open Activity");
                 Intent startIntent = null;
                 switch (data) {
-                    case BuildConfig.W_mainactivity:
-                        startIntent = new Intent(this, MainActivity.class);
-                        break;
                     case BuildConfig.W_goproparam:
                         startIntent = new Intent(this, GoProParametersActivity.class);
                         break;
@@ -144,6 +141,9 @@ public class WearService extends WearableListenerService {
                         break;
                     case BuildConfig.W_shutter_off:
                         intent.putExtra(GoProParametersActivity.SHUTTER_TYPE, GoProParametersActivity.SHUTTER_OFF);
+                        break;
+                    case BuildConfig.W_shutter_arbitrary:
+                        intent.putExtra(GoProParametersActivity.SHUTTER_TYPE, GoProParametersActivity.SHUTTER_ARBITRARY);
                         break;
                 }
                 LocalBroadcastManager.getInstance(this).sendBroadcast(intent);

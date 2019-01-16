@@ -2,14 +2,9 @@ package com.goproapp.goproapp_wear;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -27,9 +22,6 @@ import com.mapbox.android.core.location.LocationEngineProvider;
 
 public class DistanceSet extends WearableActivity {
 
-    private LocationManager locationManager;
-    private final static int DISTANCE_UPDATES = 1;
-    private final static int TIME_UPDATES = 5;
     private LocationEngine locationEngine;
     private LocationEngineListener locationEngineListener;
     private final String TAG = this.getClass().getSimpleName();
@@ -53,12 +45,6 @@ public class DistanceSet extends WearableActivity {
 
         setContentView(R.layout.activity_distance_set);
         setAmbientEnabled();
-
-
-        Intent intent = new Intent(this, WearService.class);
-        intent.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
-        intent.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_goproparam);
-        startService(intent);
 
         // setDist button : set distance trigger and location of the Gopro
         ImageButton setDist = findViewById(R.id.setdist_button);

@@ -155,6 +155,7 @@ public class GoProParametersActivity extends AppCompatActivity {
     public static final String SHUTTER_TYPE = "SHUTTER_TYPE";
     public static final String SHUTTER_ON = "SHUTTER_ON";
     public static final String SHUTTER_OFF = "SHUTTER_OFF";
+    public static final String SHUTTER_ARBITRARY = "SHUTTER_ARBITRARY";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -263,36 +264,17 @@ public class GoProParametersActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 String shutter = intent.getStringExtra(SHUTTER_TYPE);
 
-                Animation animation_out = new AlphaAnimation(0.5F, 0.0F);
-                animation_out.setDuration(200);
-                animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
-                animation_out.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        whiteView.setAlpha(0.0F);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                });
-
-                whiteView = findViewById(R.id.whiteBack);
-                whiteView.setAlpha(0.5F);
-                whiteView.startAnimation(animation_out);
-
                 switch (shutter){
                     case SHUTTER_ON:
+                        animateShutter();
                         goProInterface.shutter();
                         break;
                     case SHUTTER_OFF:
+                        animateShutter();
                         goProInterface.shutterStop();
+                        break;
+                    case SHUTTER_ARBITRARY:
+                        shutterCallback();
                         break;
                 }
             }
@@ -340,8 +322,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         }
     }
 
-    private void shutterCallback(){
-
+    private void animateShutter(){
         Animation animation_out = new AlphaAnimation(0.5F, 0.0F);
         animation_out.setDuration(200);
         animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -365,7 +346,11 @@ public class GoProParametersActivity extends AppCompatActivity {
         whiteView = findViewById(R.id.whiteBack);
         whiteView.setAlpha(0.5F);
         whiteView.startAnimation(animation_out);
+    }
 
+    private void shutterCallback(){
+
+        animateShutter();
 
         if (MODE.equals(GoProInterface.MODE_VIDEO)) {
             if (recording) {
@@ -575,7 +560,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                 changeMenu(MENU_POSITION);
                 Intent intent = new Intent(GoProParametersActivity.this, WearService.class);
                 intent.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
-                intent.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_mainactivity);
+                intent.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_distanceActivity);
                 startService(intent);
             }
         });
@@ -1832,6 +1817,7 @@ public class GoProParametersActivity extends AppCompatActivity {
     private class SetBackgroundImage extends AsyncTask<String, Void, String> {
 
         String ERROR = "ERROR";
+        String NOCONN = "NOCONN";
 
         protected void onPreExecute() {
         }
@@ -1869,7 +1855,7 @@ public class GoProParametersActivity extends AppCompatActivity {
                     return sb.toString();
 
                 } else {
-                    return ERROR;
+                    return NOCONN;
                 }
             } catch (Exception e) {
                 return ERROR;

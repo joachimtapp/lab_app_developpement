@@ -31,13 +31,14 @@ allprojects {
                 example_path_asset  : "/ ASSET ",
                 example_path_text   : "/TEXT",
                 example_path_datamap: "/DATAMAP",
-                mainactivity        : "MainActivity",
+                distanceActivity    : "DistanceSet",
                 goproparam          : "GoProParametersActivity",
                 dist_path           : "/DIST",
                 dist_val            : "dist_val",
                 shutter_path        : "/SHUTTER",
                 shutter_on          : "shutter_on",
                 shutter_off         : "shutter_off",
+                shutter_arbitrary   : "shutter_arbitrary"
         ]
     }
 }

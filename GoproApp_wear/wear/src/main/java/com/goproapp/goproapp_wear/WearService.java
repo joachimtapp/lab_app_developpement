@@ -123,18 +123,13 @@ public class WearService extends WearableListenerService {
                 + " : \"" + data
                 + "\", from node " + messageEvent.getSourceNodeId());
 
-        if (path.equals(BuildConfig.W_path_start_activity)
-                && data.equals(BuildConfig.W_mainactivity)) {
-            startActivity(new Intent(this, MainActivity.class));
-        }
-
         switch (path) {
             case BuildConfig.W_path_start_activity:
                 Log.v(TAG, "Message asked to open Activity");
                 Intent startIntent = null;
                 switch (data) {
-                    case BuildConfig.W_mainactivity:
-                        startIntent = new Intent(this, MainActivity.class);
+                    case BuildConfig.W_distanceActivity:
+                        startIntent = new Intent(this, DistanceSet.class);
                         break;
                 }
 

@@ -17,6 +17,7 @@ public class TriggerActivity extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trigger);
+        setAmbientEnabled();
 
         Intent intent = new Intent(this, WearService.class);
         intent.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
@@ -38,6 +39,17 @@ public class TriggerActivity extends WearableActivity {
     private void triggerCapture() {
         Intent intent = new Intent(this, WearService.class);
         intent.setAction(WearService.ACTION_SEND.SHUTTER.name());
+        intent.putExtra(WearService.SHUTTER_TYPE, BuildConfig.W_shutter_arbitrary);
         startService(intent);
+    }
+
+    @Override
+    public void onEnterAmbient(Bundle ambientDetails) {
+        super.onEnterAmbient(ambientDetails);
+    }
+
+    @Override
+    public void onExitAmbient() {
+        super.onExitAmbient();
     }
 }
