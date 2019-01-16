@@ -145,5 +145,4 @@ public class MainActivity extends WearableActivity implements
 
     }
 
-
 }

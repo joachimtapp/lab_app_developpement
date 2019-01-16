@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineListener;
-import com.mapbox.mapboxsdk.geometry.LatLng;
 
 public class DistanceSet extends WearableActivity implements LocationListener {
     private LocationManager locationManager;
@@ -27,13 +26,15 @@ public class DistanceSet extends WearableActivity implements LocationListener {
     private LocationEngine locationEngine;
     private LocationEngineListener locationEngineListener;
     private final String TAG = this.getClass().getSimpleName();
-    public int triggerDistance;
-    public Location goproLocation;
+    public static int triggerDistance;
+    public static Location goproLocation;
     public Location lastLocation;
     public float distanceInMeters;
     // variable that decide wether the gopro should be shooting or not
     // variable to send via an intent to the tablet
     public boolean triggerCapt;
+    //
+
 
 
     @Override
@@ -66,8 +67,7 @@ public class DistanceSet extends WearableActivity implements LocationListener {
         }
 
 
-        // recover the trigger distance set by the user
-        EditText dist_trig = findViewById(R.id.disttrig_edit);
+
 
         // setDist button : set distance trigger and location of the Gopro
         Button setDist = findViewById(R.id.setdist_button);
@@ -90,22 +90,14 @@ public class DistanceSet extends WearableActivity implements LocationListener {
                     Toast.makeText(DistanceSet.this,
                             "Gopro Location changed to : Lat "+goproLocation.getLatitude()+" Lon :"+goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
                 }
-                // trigger distance
-                if (dist_trig != null && goproLocation!=null){
 
-                    triggerDistance = Integer.valueOf(dist_trig.getText().toString());
-                    Toast.makeText(DistanceSet.this,
-                            "Trigger distance set to : "+triggerDistance +" m", Toast.LENGTH_SHORT).show();
-                    // Latlng object for a marker of the gopro in the map activity
-                    //
-                    LatLng goproMarker = new LatLng(goproLocation.getLatitude(),goproLocation.getLongitude());
-
-                    // intent -> marker with the Gopro location to the map activity
-
-            }
 
             }
         });
+
+
+
+
 
 
     }
@@ -117,21 +109,36 @@ public class DistanceSet extends WearableActivity implements LocationListener {
         lastLocation = location;
         double lastLat = location.getLatitude();
         Log.v(TAG, "lat :"+lastLat);
+        // trigger distance
+        EditText dist_trig = (EditText) findViewById(R.id.disttrig_edit);
+        if(dist_trig.getText().length()>0) {
+            triggerDistance = Integer.valueOf(dist_trig.getText().toString());
+
+        }
         if (goproLocation!=null) {
             // distance to the Gorpro (distanceInMeters)
             distanceInMeters = goproLocation.distanceTo(location);
             // current dist : contain the current distance to the Gopro
             TextView currentDist = findViewById(R.id.current_dist);
-
-            currentDist.setText(distanceInMeters + "m");
+            currentDist.setText(Float.toString(distanceInMeters));
             // check on the distance to gopro to decide if the gopro shoots or not
             if(distanceInMeters<=triggerDistance){
-                triggerCapt = true;
+                // call the method that launch the capture process
+                triggerCaptureOn();
             }
             else if(distanceInMeters>triggerDistance){
-                triggerCapt = false;
+                // call the method that stops the capture process
+                triggerCaptureOff();
             }
         }
+
+    }
+
+    private void triggerCaptureOff() {
+
+    }
+
+    private void triggerCaptureOn() {
 
     }
 

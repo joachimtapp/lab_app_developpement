@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,6 +41,10 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.SimpleShowcaseEventListener;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -118,6 +123,7 @@ public class GoProParametersActivity extends AppCompatActivity {
 
     GoProInterface goProInterface;
     private String MODE;
+    private Boolean firstTime=true;
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
@@ -280,7 +286,49 @@ public class GoProParametersActivity extends AppCompatActivity {
         setupEV();
 
         new SetBackgroundImage().execute("http://10.5.5.9:8080/gp/gpMediaList");
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        firstTime = sharedPref.getBoolean("parametersFirst", true);
+        if(firstTime)
+            GuidedTour();
+    }
 
+    private void GuidedTour() {
+        new ShowcaseView.Builder(this)
+                .setTarget(new ViewTarget(findViewById(R.id.modeSelectLayout)))
+                .setContentTitle("Mode selection")
+                .setContentText("The different capture modes can be set here")
+                .setStyle(R.style.CustomShowcaseTheme)
+                .setShowcaseEventListener(new SimpleShowcaseEventListener() {
+
+                    @Override
+                    public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
+                        new ShowcaseView.Builder(GoProParametersActivity.this)
+                                .setTarget(new ViewTarget(findViewById(R.id.menuDeployer)))
+                                .setContentTitle("Parameters")
+                                .setContentText("Every parameter can be tune here")
+                                .setStyle(R.style.CustomShowcaseTheme)
+                                .setShowcaseEventListener(new SimpleShowcaseEventListener() {
+
+                                    @Override
+                                    public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
+                                        new ShowcaseView.Builder(GoProParametersActivity.this)
+                                                .setTarget(new ViewTarget(findViewById(R.id.shutterButton)))
+                                                .setContentTitle("Shutter")
+                                                .setContentText("A simple press will take a picture/ start a recording.\n" +
+                                                        "A preview can be obtain by maintaining the shutter button.  ")
+                                                .setStyle(R.style.CustomShowcaseTheme)
+                                                .build();
+                                    }
+                                })
+                                .build();
+                    }
+                })
+                .build()
+                .show();
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("parametersFirst", false);
+        editor.commit();
     }
 
     @Override

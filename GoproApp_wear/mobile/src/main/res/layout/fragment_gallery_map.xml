@@ -14,7 +14,8 @@
         mapbox:mapbox_cameraTargetLat="40.73581"
         mapbox:mapbox_cameraTargetLng="-73.99155"
         mapbox:mapbox_cameraZoom="11"
-        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v11" >
+        mapbox:mapbox_styleUrl="mapbox://styles/goproapp/cjqy3p9d81f0o2rk7f50kfqrc"
+        >
 
     </com.mapbox.mapboxsdk.maps.MapView>
 

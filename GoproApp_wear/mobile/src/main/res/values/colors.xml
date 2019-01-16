@@ -2,14 +2,14 @@
 <resources>
     <color name="colorPrimary">#252525</color>
     <color name="colorPrimaryDark">#252525</color>
-    <color name="colorPrimaryLight">#3c4248</color>
+    <color name="colorPrimaryLight">#3C4248</color>
 
-    <color name="colorAccent">#0b6ac6</color>
+    <color name="colorAccent">#0B6AC6</color>
 
-    <color name="black_overlay">#66000000</color>
+    <color name="black_overlay">#66212121</color>
 
     <color name="drawerBackground">#3c4248</color>
-    <color name="drawerTextColor">#ffffff</color>
+    <color name="drawerTextColor">#FFFFFF</color>
 
     <color name="unselected">#00000000</color>
     <color name="selected">#0b6ac6</color>

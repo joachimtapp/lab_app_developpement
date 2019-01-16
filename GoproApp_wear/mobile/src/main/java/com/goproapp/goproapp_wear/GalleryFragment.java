@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -45,7 +46,6 @@ import com.github.amlcurran.showcaseview.SimpleShowcaseEventListener;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -84,8 +84,6 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class GalleryFragment extends Fragment {
 
-    //declaration of view elements
-    private OnFragmentInteractionListener mListener;
     private View fragmentView;
     private ImageAdapter adapter;
     private GridView gridView;
@@ -95,24 +93,23 @@ public class GalleryFragment extends Fragment {
     private MapView mapView;
     private Marker marker;
     private SwipeRefreshLayout mSwipeRefresh;
-    private List<String> localData = new ArrayList<>();
-
-    private List<String> goProData = new ArrayList<>();
-    private List<String> firebaseData = new ArrayList<>();
-    private String goProDir;
-    public static MapboxMap mMapboxMap;
-    private int nPrevSelGridItem = -1; //used highlight selected picture
-    private View viewPrev;
-    private MyFirebaseDataListener mFirebaseDataListListener;
-    private DatabaseReference databaseRef;
-    private List<Integer> imgDataToUpload = new ArrayList<>();
-    private FirebaseStorage storage;
-    private StorageReference storageReference;
     private View uploadProgressBar;
     private FloatingActionButton uploadBtn;
-    private LatLng latLngActual;
+
+    public static MapboxMap mMapboxMap;
+
+    private MyFirebaseDataListener mFirebaseDataListListener;
+    private DatabaseReference databaseRef;
+    private FirebaseStorage storage;
+    private StorageReference storageReference;
+
+    private List<String> localData = new ArrayList<>();
+    private List<String> goProData = new ArrayList<>();
+    private List<Integer> imgDataToUpload = new ArrayList<>();
+    private String goProDir;
+    private LatLng lastLatLng;
     private View lastSelectedView;
-    private Boolean firstTime=true;
+    private Boolean firstTime;
 
     public GalleryFragment() {
         // Required empty public constructor
@@ -171,26 +168,32 @@ public class GalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(getContext(), getString(R.string.accessToken));
     }
+
+    //launch the guided tour if first time
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated( savedInstanceState);
-        if(firstTime)
+        super.onActivityCreated(savedInstanceState);
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        firstTime = sharedPref.getBoolean("galleryFirst", true);
+        if (firstTime)
             GuidedTour();
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        getGPSPosition();
+        getGPSPosition(); //launch position listener
         fragmentView = inflater.inflate(R.layout.fragment_gallery, container, false);
         gridView = fragmentView.findViewById(R.id.galleryThumbnails);
         dateView = fragmentView.findViewById(R.id.galleryDateValue);
         swipeHint = fragmentView.findViewById(R.id.swipeHint);
-        mapView = (MapView) fragmentView.findViewById(R.id.gallery_map);
+        mapView = fragmentView.findViewById(R.id.gallery_map);
         linearLayoutInfo = fragmentView.findViewById(R.id.linearLayoutInfo);
         uploadProgressBar = fragmentView.findViewById(R.id.uploadProgressBar);
-        uploadProgressBar.setElevation(7f);
+        uploadBtn = fragmentView.findViewById(R.id.uploadBtn);
+        mSwipeRefresh = fragmentView.findViewById(R.id.swiperefresh);
+
+        //check the saved data
         localData.clear();
         for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
             localData.add(GalleryActivity.imgData.get(i).name);
@@ -201,7 +204,7 @@ public class GalleryFragment extends Fragment {
             adapter = new ImageAdapter(getContext());
             gridView.setAdapter(adapter);
         }
-        uploadBtn = fragmentView.findViewById(R.id.uploadBtn);
+        //upload data to cloud if possible
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -218,7 +221,7 @@ public class GalleryFragment extends Fragment {
                     Toast.makeText(getContext(), "Log in for dataBase synchronization", Toast.LENGTH_LONG).show();
             }
         });
-        mSwipeRefresh = fragmentView.findViewById(R.id.swiperefresh);
+
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -230,8 +233,7 @@ public class GalleryFragment extends Fragment {
                 }
             }
         });
-
-
+        //initialize map
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
@@ -249,7 +251,7 @@ public class GalleryFragment extends Fragment {
                 }
             }
         });
-
+        //handle image suppression
         gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -266,7 +268,6 @@ public class GalleryFragment extends Fragment {
                                 GalleryActivity.imgData.remove(position);
                                 adapter = new ImageAdapter(getContext());
                                 gridView.setAdapter(adapter);
-                                nPrevSelGridItem = 0;
                             }
 
                         })
@@ -277,18 +278,17 @@ public class GalleryFragment extends Fragment {
         });
 
         //handle image click
-
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-//highlight selected picture
+                //highlight selected picture
                 if (lastSelectedView != null)
                     lastSelectedView.setBackgroundColor(getResources().getColor(R.color.colorPrimaryLight));
                 v.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                 lastSelectedView = v;
-//set picture info
+                //set picture info
                 dateView.setText(GalleryActivity.imgData.get(position).date);
-                linearLayoutInfo.setVisibility(viewPrev.VISIBLE);
+                linearLayoutInfo.setVisibility(View.VISIBLE);
 
                 if (mMapboxMap != null) {
                     //move marker and create it if necessary
@@ -308,7 +308,6 @@ public class GalleryFragment extends Fragment {
                     } else {
                         if (GalleryActivity.imgData.get(position).latLng != null) {
                             marker.setPosition(GalleryActivity.imgData.get(position).latLng);
-
                             // move camera
                             CameraPosition camPos = new CameraPosition.Builder()
                                     .target(GalleryActivity.imgData.get(position).latLng)// Sets the new camera position
@@ -323,18 +322,15 @@ public class GalleryFragment extends Fragment {
                 }
             }
         });
-
         return fragmentView;
     }
 
     private void getGPSPosition() {
         LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-// Define a listener that responds to location updates
-
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
-                latLngActual = new LatLng(location.getLatitude(), location.getLongitude());
+                lastLatLng = new LatLng(location.getLatitude(), location.getLongitude());
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -350,18 +346,15 @@ public class GalleryFragment extends Fragment {
                 != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-                requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION", "android"
-                        + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
-
+            requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION", "android"
+                    + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
+
+    //Shows and animate progressbar
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
@@ -393,7 +386,6 @@ public class GalleryFragment extends Fragment {
     }
 
     public void UploadImage() {
-
         //initialize list to upload
         if (imgDataToUpload.isEmpty()) {
             for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
@@ -415,35 +407,36 @@ public class GalleryFragment extends Fragment {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         getBitmapFromString(imgString).compress(Bitmap.CompressFormat.PNG, 0, bos);
-
-        String name;
-        name = GalleryActivity.imgData.get(id).name.replace(".", "_");
+        //remove the point not allowed on firebase
+        String name = GalleryActivity.imgData.get(id).name.replace(".", "_");
         databaseRef = FirebaseDatabase.getInstance().getReference().child("users").child(LoginActivity.userID).child("Data").child(name);
-
+        //send image bytes to firebase
         ref.putBytes(bos.toByteArray()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Task<Uri> downloadUrl = taskSnapshot.getMetadata().getReference()
+                taskSnapshot.getMetadata().getReference()
                         .getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(final Uri uri) {
-                                GalleryActivity.imgData.get(id).imgUrl = uri.toString();
-                                databaseRef.child("picture").setValue(GalleryActivity.imgData.get(id).imgUrl);
-                                Log.v("Myinfo", "img uploaded: " + id);
-                                imgDataToUpload.remove(0);
-                                GalleryActivity.imgData.get(id).online = true;
-                                swipeHint.setAlpha(0.0f);
-                                adapter = new ImageAdapter(getContext());
-                                gridView.setAdapter(adapter);
-                                if (!imgDataToUpload.isEmpty()) {
-                                    UploadImage();
-                                } else {
-                                    showProgress(false);
-                                    uploadBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cloud_done_black_24dp, null));
-                                    uploadBtn.show();
-                                }
-                            }
-                        });
+                    //wait to get the uploaded image URL
+                    @Override
+                    public void onSuccess(final Uri uri) {
+                        GalleryActivity.imgData.get(id).imgUrl = uri.toString();
+                        databaseRef.child("picture").setValue(GalleryActivity.imgData.get(id).imgUrl);
+                        Log.v("Myinfo", "img uploaded: " + id);
+                        imgDataToUpload.remove(0);
+                        GalleryActivity.imgData.get(id).online = true;
+                        swipeHint.setAlpha(0.0f);
+                        adapter = new ImageAdapter(getContext());
+                        gridView.setAdapter(adapter);
+                        //upload next image if any in the list
+                        if (!imgDataToUpload.isEmpty()) {
+                            UploadImage();
+                        } else {
+                            showProgress(false);
+                            uploadBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cloud_done_black_24dp, null));
+                            uploadBtn.show();
+                        }
+                    }
+                });
             }
         })
                 .addOnFailureListener(new OnFailureListener() {
@@ -460,27 +453,26 @@ public class GalleryFragment extends Fragment {
 
     private void GetGoProMediaList() {
         new SendPostRequest().execute("http://10.5.5.9:8080/gp/gpMediaList", "noname");
-
     }
 
-    private class DownloadTask extends AsyncTask<String, Void, Wrapper> {
-        // Before the tasks execution
-        protected void onPreExecute() {
-            // Display the progress dialog on async task start
-        }
+    private class Wrapper {//use to transmit more information to the post execute of async tasks
+        Bitmap imgBmp;
+        String text;
+        String imgName;
+    }
 
+    //Download image from GoPro
+    private class DownloadTask extends AsyncTask<String, Void, Wrapper> {
         // Do the task in background/non UI thread
         protected Wrapper doInBackground(String... params) {
             Wrapper wrap = new Wrapper();
             URL url = null;
             try {
-                url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p="+goProDir+"/" + params[0]);
-//                url = new URL("http://10.5.5.9:8080/videos/DCIM/100GOPRO/"+params[0]);
+                url = new URL("http://10.5.5.9/gp/gpMediaMetadata?p=" + goProDir + "/" + params[0]);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
             HttpURLConnection connection = null;
-
             try {
                 // Initialize a new http url connection
                 connection = (HttpURLConnection) url.openConnection();
@@ -503,81 +495,65 @@ public class GalleryFragment extends Fragment {
             return null;
         }
 
-        // When all async task done
         protected void onPostExecute(Wrapper result) {
-            // Hide the progress dialog
-
             if (result != null) {
                 // Display the downloaded image into ImageView
                 ImgData newImg = new ImgData();
                 newImg.imgString = getStringFromBitmap(result.imgBmp);
-//                newImg.imgBmp = result.imgBmp;
                 newImg.name = result.imgName;
                 newImg.online = false;
 
-
                 if (result.imgName.toLowerCase().contains("jpg")) {
                     GalleryActivity.imgData.add(newImg);
-                    //get date metadata for image
+                    //get date and GPS metadata for image
                     new SendPostRequest().execute("http://10.5.5.9/gp/gpMediaMetadata?p=/" + goProDir + "/" + result.imgName + "&t=exif", result.imgName);
                 } else {
-                    //set upload time for others since no timestamp available
-                    newImg.latLng = latLngActual;
-                    Calendar now=Calendar.getInstance();
-                    newImg.date = String.valueOf(now.get(Calendar.YEAR))+":"+String.format("%02d",now.get(Calendar.MONTH)+1)+":"+String.valueOf(now.get(Calendar.DATE));
+                    //set download time and position for others since no timestamp available
+                    newImg.latLng = lastLatLng;
+                    Calendar now = Calendar.getInstance();
+                    newImg.date = String.valueOf(now.get(Calendar.YEAR)) + ":" + String.format("%02d", now.get(Calendar.MONTH) + 1) + ":" + String.valueOf(now.get(Calendar.DATE));
                     GalleryActivity.imgData.add(newImg);
                     swipeHint.setAlpha(0.0f);
                     adapter = new ImageAdapter(getContext());
                     gridView.setAdapter(adapter);
                 }
-
                 localData.add(newImg.name);
             } else {
                 // Notify user that an error occurred while downloading image
-                Toast.makeText(getContext(), "dow err", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Download from GoPro failed", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
+    //get gopro data list or image metadata
     private class SendPostRequest extends AsyncTask<String, Void, Wrapper> {
-
-        protected void onPreExecute() {
-        }
 
         protected Wrapper doInBackground(String... arg0) {
             Wrapper imgAndInfo = new Wrapper();
             imgAndInfo.imgName = arg0[1];
-
             try {
-
                 URL url = new URL(arg0[0]); // here is your URL path
-
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(15000 /* milliseconds */);
                 conn.setConnectTimeout(15000 /* milliseconds */);
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
-
                 int responseCode = conn.getResponseCode();
 
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
-
                     BufferedReader in = new BufferedReader(
                             new InputStreamReader(
                                     conn.getInputStream()));
                     StringBuffer sb = new StringBuffer("");
                     String line = "";
-
                     while ((line = in.readLine()) != null) {
-
                         sb.append(line);
                         break;
                     }
                     in.close();
                     imgAndInfo.text = sb.toString();
                     return imgAndInfo;
-
                 } else {
                     return imgAndInfo;
                 }
@@ -590,63 +566,60 @@ public class GalleryFragment extends Fragment {
         protected void onPostExecute(Wrapper result) {
 
             Log.v("debug", "result: " + result.text);
-            //recover data names
+            //try to use result as data list and recover data names
             try {
                 JSONObject obj = new JSONObject(result.text);
                 JSONArray array = obj.getJSONArray("media").getJSONObject(0).getJSONArray("fs");
                 goProDir = obj.getJSONArray("media").getJSONObject(0).getString("d");
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject media = array.getJSONObject(i);
-                    Log.v("d1ebug", "dir= " + goProDir + " name= " + media.getString("n"));
+                    Log.v("debug", "dir= " + goProDir + " name= " + media.getString("n"));
                     goProData.add(media.getString("n"));
                 }
+                //get image if any was found
                 DownloadGoProData();
 
-            } catch (Throwable tx) {//recover pic info
-                Log.v("debug", "isn't the list JSON: \"" + result.text + "\"");
-
-                try {
+            } catch (Throwable tx) {
+                Log.v("debug", "isn't the data list ");
+                try {//try to use result as a picture metadata
                     JSONObject obj = new JSONObject(result.text);
                     String date = obj.getJSONObject("exif").getString("DateTimeOriginal");
-
                     String[] dateSplit = date.split("\\s+"); //only keep the day
 
+                    //add this info to the already downloaded image
                     for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
                         if (GalleryActivity.imgData.get(i).name == result.imgName) {
                             GalleryActivity.imgData.get(i).date = dateSplit[0];
                         }
                     }
-
                     swipeHint.setAlpha(0.0f);
                     adapter = new ImageAdapter(getContext());
                     gridView.setAdapter(adapter);
-                    mSwipeRefresh.setRefreshing(false);
                 } catch (Throwable tx2) {
-                    Log.v("debug", "isn't the EXIF: \"" + result.text + "\"");
-                    mSwipeRefresh.setRefreshing(false);
+                    Log.v("debug", "isn't the metadata of a picture");
                 }
-                try {
+
+                try {//try to recover GPS coordinate if any available
                     JSONObject obj = new JSONObject(result.text);
                     String[] latitude = obj.getJSONObject("exif").getString("GPSLatitude").split(", ");
                     String[] longitude = obj.getJSONObject("exif").getString("GPSLongitude").split(", ");
 
-                    double lat=Double.parseDouble(latitude[0])+ Double.parseDouble(latitude[1]) /60 + Double.parseDouble(latitude[2])/(60*60);
-                    double lng=Double.parseDouble(longitude[0])+ Double.parseDouble(longitude[1]) /60 + Double.parseDouble(longitude[2])/(60*60);
+                    double lat = Double.parseDouble(latitude[0]) + Double.parseDouble(latitude[1]) / 60 + Double.parseDouble(latitude[2]) / (60 * 60);
+                    double lng = Double.parseDouble(longitude[0]) + Double.parseDouble(longitude[1]) / 60 + Double.parseDouble(longitude[2]) / (60 * 60);
 
-                    LatLng latLng=new LatLng(lat,lng);
+                    LatLng latLng = new LatLng(lat, lng);
 
                     for (int i = 0; i < GalleryActivity.imgData.size(); i++) {
                         if (GalleryActivity.imgData.get(i).name == result.imgName) {
-                            GalleryActivity.imgData.get(i).latLng=latLng;
+                            GalleryActivity.imgData.get(i).latLng = latLng;
                         }
                     }
-                    Log.e("debug","pos: "+latLng.toString());
-
-                }catch (Throwable tx3){
+                    Log.e("debug", "pos: " + latLng.toString());
+                } catch (Throwable tx3) {
                     Log.v("debug", "no gps coords: \"" + result.text + "\"");
-                    mSwipeRefresh.setRefreshing(false);
                 }
             }
+            mSwipeRefresh.setRefreshing(false);
         }
     }
 
@@ -658,16 +631,10 @@ public class GalleryFragment extends Fragment {
         mSwipeRefresh.setRefreshing(false);
     }
 
-    private class Wrapper {
-        Bitmap imgBmp;
-        String text;
-        String imgName;
-    }
 
     private void DownloadGoProData() {
         List<String> toGet = new ArrayList(goProData);
         toGet.removeAll(localData);
-
         for (String item : toGet) {
             Log.v("Myinfo", "item: " + item);
             new DownloadTask().execute(item);
@@ -679,7 +646,6 @@ public class GalleryFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -689,19 +655,20 @@ public class GalleryFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
     public interface OnFragmentInteractionListener {
         void onFragmentInteraction(Uri uri);
     }
 
-    static class RecordHolder {
+    //class used to create the views of the gridview
+    static class ImageHolder {
         ImageView image;
         ImageView logo;
         ImageView latLng;
     }
 
+    //adapter for the gridView
     private class ImageAdapter extends BaseAdapter {
         private Context mContext;
 
@@ -721,15 +688,14 @@ public class GalleryFragment extends Fragment {
             return 0;
         }
 
-        //Download the images and create a new ImageView for each
+        //return the view of each element of the gridview
         public View getView(int position, View convertView, ViewGroup parent) {
             View row = convertView;
-            RecordHolder holder = null;
-            ImageView imageView;
+            ImageHolder holder;
             if (convertView == null) {
                 LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
                 row = inflater.inflate(R.layout.gallery_image, parent, false);
-                holder = new RecordHolder();
+                holder = new ImageHolder();
                 holder.image = row.findViewById(R.id.imageView);
                 holder.logo = (ImageView) row.findViewById(R.id.locationView);
                 holder.latLng = (ImageView) row.findViewById(R.id.gpsView);
@@ -738,9 +704,10 @@ public class GalleryFragment extends Fragment {
                 holder.image.setPadding(8, 8, 8, 8);
                 row.setTag(holder);
             } else {
-                holder = (RecordHolder) row.getTag();
+                holder = (ImageHolder) row.getTag();
             }
 
+//           assemble the View
             holder.image.setImageBitmap(getBitmapFromString(GalleryActivity.imgData.get(position).imgString));
             if (GalleryActivity.imgData.get(position).latLng == null)
                 holder.latLng.setAlpha(0.0f);
@@ -752,6 +719,7 @@ public class GalleryFragment extends Fragment {
         }
     }
 
+    //    Download firebase data
     private class MyFirebaseDataListener implements ValueEventListener {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -818,12 +786,14 @@ public class GalleryFragment extends Fragment {
         encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
         return encodedImage;
     }
+
+    //presentation of the activity
     private void GuidedTour() {
 
         new ShowcaseView.Builder(getActivity())
                 .setTarget(new ViewTarget(R.id.swipeHint, getActivity()))
-                .setContentTitle("Refresh")
-                .setContentText("Swipe down to download images from either the GoPro or the cloud")
+                .setContentTitle(R.string.refresh_title)
+                .setContentText(R.string.refresh_text)
                 .setStyle(R.style.CustomShowcaseTheme)
                 .setShowcaseEventListener(new SimpleShowcaseEventListener() {
 
@@ -831,8 +801,8 @@ public class GalleryFragment extends Fragment {
                     public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
                         new ShowcaseView.Builder(getActivity())
                                 .setTarget(new ViewTarget(R.id.galleryThumbnails, getActivity()))
-                                .setContentTitle("Delete")
-                                .setContentText("Maintain an image press to delete it")
+                                .setContentTitle(R.string.delete_title)
+                                .setContentText(R.string.delete_text)
                                 .setStyle(R.style.CustomShowcaseTheme)
                                 .setShowcaseEventListener(new SimpleShowcaseEventListener() {
 
@@ -840,8 +810,8 @@ public class GalleryFragment extends Fragment {
                                     public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
                                         new ShowcaseView.Builder(getActivity())
                                                 .setTarget(new ViewTarget(R.id.uploadBtn, getActivity()))
-                                                .setContentTitle("Upload")
-                                                .setContentText("When you are logged in and connected to internet you can save your pictures online")
+                                                .setContentTitle(R.string.upload_title)
+                                                .setContentText(R.string.upload_text)
                                                 .setStyle(R.style.CustomShowcaseTheme)
                                                 .build();
                                     }
@@ -851,8 +821,9 @@ public class GalleryFragment extends Fragment {
                 })
                 .build()
                 .show();
-
-
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("galleryFirst", false);
+        editor.commit();
     }
-
 }

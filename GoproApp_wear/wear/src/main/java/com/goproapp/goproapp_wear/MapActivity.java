@@ -3,31 +3,42 @@ package com.goproapp.goproapp_wear;
 import android.annotation.SuppressLint;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.wearable.activity.WearableActivity;
+import android.widget.Toast;
 
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineListener;
 import com.mapbox.android.core.location.LocationEngineProvider;
+import com.mapbox.android.core.permissions.PermissionsListener;
+import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.location.LocationComponent;
+import com.mapbox.mapboxsdk.location.LocationComponentOptions;
+import com.mapbox.mapboxsdk.location.modes.CameraMode;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Lock the camera centered above the user location.
  */
-public class MapActivity extends WearableActivity {
+public class MapActivity extends WearableActivity implements OnMapReadyCallback, PermissionsListener {
 
-    private final String TAG = this.getClass().getSimpleName();
     private MapView mapView;
     private MapboxMap map;
     private LocationEngine locationEngine;
     private LocationEngineListener locationEngineListener;
-    public Location lausanneLoc = new Location("");//
-
-
+    private PermissionsManager permissionsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,17 +51,11 @@ public class MapActivity extends WearableActivity {
         // This contains the MapView in XML and needs to be called after the account manager
         setContentView(R.layout.activity_map);
 
-
-
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
 
         LocationEngineProvider locationEngineProvider = new LocationEngineProvider(this);
         locationEngine = locationEngineProvider.obtainBestLocationEngineAvailable();
-        //Location : Lausanne
-        lausanneLoc.setLatitude( 46.5196535d);
-        lausanneLoc.setLongitude(6.6322734d);
-
 
         locationEngineListener = new LocationEngineListener() {
             @SuppressLint("MissingPermission")
@@ -66,31 +71,96 @@ public class MapActivity extends WearableActivity {
                 }
             }
         };
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
+        mapView.getMapAsync(this) ;
+    }
 
-                // Customize map with markers, polylines, etc.
-                map = mapboxMap;
-                @SuppressLint("MissingPermission")
-                Location lastLocation = new LocationEngineProvider(MapActivity.this)
-                        .obtainBestLocationEngineAvailable().getLastLocation();
-//                Toast.makeText(MapActivity.this, lastLocation.toString(), Toast.LENGTH_SHORT).show();
-                if (lastLocation != null) {
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), 16));
-                }
-                else {
-
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lausanneLoc), 16));
-                    // distance : your location to Lausanne
-                    float distanceInMeters =  lausanneLoc.distanceTo(lastLocation);
-                }
+    /**
+     * Called when the map is ready to be used.
+     *
+     * @param mapboxMap An instance of MapboxMap associated with the {@link MapFragment} or
+     *                  {@link MapView} that defines the callback.
+     */
+    @Override
+    public void onMapReady(MapboxMap mapboxMap) {
+        MapActivity.this.map = mapboxMap;
+        // Customize map with markers, polylines, etc.
+        map = mapboxMap;
+        // marker on the map -> Gopro location : handle by DistanceSetActivity
+        if(DistanceSet.goproLocation!=null){
+            mapboxMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(DistanceSet.goproLocation.getLatitude(),DistanceSet.goproLocation.getLongitude()))
+                    .title("GoPro")
+                    .snippet("Current location")
+            );
+            if(DistanceSet.triggerDistance >0){
+                mapboxMap.addPolygon(generatePerimeter(
+                        new LatLng(DistanceSet.goproLocation.getLatitude(), DistanceSet.goproLocation.getLongitude()),
+                        DistanceSet.triggerDistance,
+                        64));
             }
-        });
-        locationEngine.addLocationEngineListener(locationEngineListener);
-        setAmbientEnabled();
+        }
+
+
+
+        @SuppressLint("MissingPermission")
+        Location lastLocation = new LocationEngineProvider(MapActivity.this)
+                .obtainBestLocationEngineAvailable().getLastLocation();
+        if (lastLocation != null) {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), 16));
+        }
+        enableLocationComponent();
 
     }
+
+    @SuppressWarnings( {"MissingPermission"})
+    private void enableLocationComponent() {
+// Check if permissions are enabled and if not request
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
+
+            LocationComponentOptions options = LocationComponentOptions.builder(this)
+                    .trackingGesturesManagement(true)
+                    .accuracyColor(ContextCompat.getColor(this, R.color.black_overlay))
+                    .build();
+
+// Get an instance of the component
+            LocationComponent locationComponent = map.getLocationComponent();
+
+// Activate with options
+            locationComponent.activateLocationComponent(this, options);
+
+// Enable to make component visible
+            locationComponent.setLocationComponentEnabled(true);
+
+// Set the component's camera mode
+            locationComponent.setCameraMode(CameraMode.TRACKING);
+            locationComponent.setRenderMode(RenderMode.COMPASS);
+        } else {
+            permissionsManager = new PermissionsManager(this);
+            permissionsManager.requestLocationPermissions(this);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        Toast.makeText(this, "The app need to access the device location", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted) {
+            enableLocationComponent();
+        } else {
+            Toast.makeText(this, "permission not granted", Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+
 
     @Override
     public void onResume() {
@@ -111,6 +181,7 @@ public class MapActivity extends WearableActivity {
     }
 
     @Override
+    @SuppressWarnings( {"MissingPermission"})
     protected void onStart() {
         super.onStart();
         mapView.onStart();
@@ -136,4 +207,32 @@ public class MapActivity extends WearableActivity {
         super.onSaveInstanceState(outState);
         mapView.onSaveInstanceState(outState);
     }
+
+    private PolygonOptions generatePerimeter(LatLng centerCoordinates, double radiusInMeters, int numberOfSides) {
+        List<LatLng> positions = new ArrayList<>();
+        double distanceX = radiusInMeters / (1000*111.319 * Math.cos(centerCoordinates.getLatitude() * Math.PI / 180));
+        double distanceY = radiusInMeters/ (1000*110.574);
+
+        double slice = (2 * Math.PI) / numberOfSides;
+
+        double theta;
+        double x;
+        double y;
+        LatLng position;
+        for (int i = 0; i < numberOfSides; ++i) {
+            theta = i * slice;
+            x = distanceX * Math.cos(theta);
+            y = distanceY * Math.sin(theta);
+
+            position = new LatLng(centerCoordinates.getLatitude() + y,
+                    centerCoordinates.getLongitude() + x);
+            positions.add(position);
+        }
+        return new PolygonOptions()
+                .addAll(positions)
+                .fillColor(R.color.blue)
+                .alpha(0.4f);
+    }
+
+
 }

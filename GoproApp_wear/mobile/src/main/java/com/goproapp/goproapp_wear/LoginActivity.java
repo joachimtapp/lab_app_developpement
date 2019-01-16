@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.wifi.WifiInfo;
@@ -80,7 +81,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     public static User active_user;
     public static String InternetSSID;
     private DatabaseReference mDatabase;
-    private boolean firstTime=true;
+    private String userMail;
+    private String userPwd;
 
     @Override
     public void onStart() {
@@ -96,7 +98,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo();
         String ssid = info.getSSID();
-        if (ssid.equals(MainActivity.gopro_ssid)){
+        if (ssid.equals(MainActivity.gopro_ssid)) {
             new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle("GoPro connection detected")
@@ -150,7 +152,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
         //firebase auth
         mAuth = FirebaseAuth.getInstance();
-//        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        userMail = sharedPref.getString("userMail", "");
+        userPwd = sharedPref.getString("userPwd", "");
+
+        mEmailView.setText(userMail);
+        mPasswordView.setText(userPwd);
+
     }
 
     private void attemptLogin() {
@@ -170,8 +179,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        }
-        else if(!isEmailValid(email)){
+        } else if (!isEmailValid(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
@@ -202,7 +210,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private void updateUI(FirebaseUser user) {
-        if(userID!=null && !userID.equals(user.getUid())) {//clear previous user data
+        if (userID != null && !userID.equals(user.getUid())) {//clear previous user data
             FileOutputStream outputStream;
             try {
                 outputStream = openFileOutput("imgDataFile", this.MODE_PRIVATE);
@@ -211,11 +219,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
             }
         }
-        WifiManager wifiManager = (WifiManager) this.getSystemService (Context.WIFI_SERVICE);
-        WifiInfo info = wifiManager.getConnectionInfo ();
-        InternetSSID  = info.getSSID();
-            userID = user.getUid();
-            readUserProfile(userID);
+        WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = wifiManager.getConnectionInfo();
+        InternetSSID = info.getSSID();
+        userID = user.getUid();
+        readUserProfile(userID);
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("userMail", mEmailView.getText().toString());
+        editor.putString("userPwd", mPasswordView.getText().toString());
+        editor.commit();
 
     }
 
@@ -328,6 +341,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
         mEmailView.setAdapter(adapter);
+    }
+
+    public void SetFoo(View view) {
+        mPasswordView.setText("123456");
+        mEmailView.setText("foo@gmail.com");
     }
 
 

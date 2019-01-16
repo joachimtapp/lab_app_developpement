@@ -43,16 +43,15 @@ public class MainActivity extends AppCompatActivity
     ArrayList<Integer> myImageList = new ArrayList<>();
     int z=0;
     int nImageDelaySeconds=3;
-    private Boolean firstTime=true;
+    private Boolean firstTime;
     private NavigationView navigationView;
     private  DrawerLayout drawer;
-    private Group activityGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (checkSelfPermission("android" + ""
@@ -65,7 +64,7 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
@@ -82,7 +81,7 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView =  findViewById(R.id.nav_view);
 
 
         navigationView.setNavigationItemSelectedListener(this);
@@ -91,10 +90,10 @@ public class MainActivity extends AppCompatActivity
         String defaultValue = "none";
         gopro_ssid = sharedPref.getString("goProSSID", defaultValue);
 
+        firstTime = sharedPref.getBoolean("mainFirst", true);
+
         //launch the diaporama
         setMainImageandWelcome();
-
-        activityGroup=findViewById(R.id.activityGroup);
 
     }
 
@@ -106,7 +105,6 @@ public class MainActivity extends AppCompatActivity
                 .setContentText("You can see the connected user Here")
                 .setStyle(R.style.CustomShowcaseTheme)
                 .setShowcaseEventListener(new SimpleShowcaseEventListener(){
-
                     @Override
                     public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
                         new ShowcaseView.Builder(MainActivity.this)
@@ -121,6 +119,11 @@ public class MainActivity extends AppCompatActivity
                 })
                 .build()
                 .show();
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("mainFirst", false);
+        editor.commit();
     }
 
     private void setMainImageandWelcome() {

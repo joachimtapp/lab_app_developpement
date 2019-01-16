@@ -36,7 +36,8 @@
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/drawerTextColor">
 
                 <AutoCompleteTextView
                     android:id="@+id/email"
@@ -45,27 +46,34 @@
                     android:hint="@string/prompt_email"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"
+                    android:shadowColor="@color/colorAccent"
                     android:singleLine="true"
-                    android:text="foo@gmail.com" />
+                    android:textColor="@color/drawerTextColor"
+                    android:textColorHint="@color/drawerTextColor" />
 
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_password"
+                android:textColorHint="@color/common_google_signin_btn_text_dark_default"
+                app:counterEnabled="false"
+                app:hintAnimationEnabled="true"
+                app:passwordToggleEnabled="true">
 
                 <EditText
                     android:id="@+id/password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_password"
                     android:imeActionId="6"
                     android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="123456" />
+                    android:textColor="@color/drawerTextColor"
+                    android:textColorHint="@color/drawerTextColor" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -80,14 +88,32 @@
                     android:layout_width="0dp"
                     android:layout_height="51dp"
                     android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
+                    android:backgroundTint="@color/colorPrimary"
                     android:text="@string/action_sign_in_short"
+                    android:textColor="@color/drawerTextColor"
+                    android:theme="@style/Base.Theme.AppCompat.Light.DarkActionBar"
                     app:layout_constraintEnd_toStartOf="@+id/guideline"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/sampleBtn"
+                    style="@style/Widget.AppCompat.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="100dp"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="@color/black_overlay"
+                    android:onClick="SetFoo"
+                    android:text="sample user"
+                    android:textColor="@color/drawerTextColor"
+                    android:theme="@style/Base.Theme.AppCompat.Light.DarkActionBar"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/register_button" />
 
                 <Button
                     android:id="@+id/register_button"
@@ -95,11 +121,11 @@
                     android:layout_width="0dp"
                     android:layout_height="51dp"
                     android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
+                    android:backgroundTint="@color/colorPrimary"
                     android:text="@string/action_register"
+                    android:textColor="@color/drawerTextColor"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="@+id/guideline"
                     app:layout_constraintTop_toTopOf="parent" />
