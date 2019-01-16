@@ -16,6 +16,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -157,7 +158,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         String ssid = wifiInfo.getSSID();
-        if(!ssid.contains("GP")){
+        /*if(!ssid.contains("GP")){
             new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle("GoPro Connection")
@@ -165,13 +166,12 @@ public class GoProParametersActivity extends AppCompatActivity {
                     .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-
-
+                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                         }
                     })
                     .setNegativeButton("Later", null)
                     .show();
-        }
+        }*/
 
         timerHandler.postDelayed(timerRunnable, 0);
 
@@ -328,7 +328,7 @@ public class GoProParametersActivity extends AppCompatActivity {
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("parametersFirst", false);
-        editor.commit();
+        editor.apply();
     }
 
     @Override
