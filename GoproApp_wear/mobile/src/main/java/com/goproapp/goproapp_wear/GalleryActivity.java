@@ -154,17 +154,11 @@ public class GalleryActivity extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
-//        databaseRef = FirebaseDatabase.getInstance().getReference();
-//        mFirebaseRecordingListener = new MyFirebaseRecordingListener();
-//        databaseRef.child("users").child(LoginActivity.userID).child("Data").addValueEventListener
-//                (mFirebaseRecordingListener);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        databaseRef.child("users").child(LoginActivity.userID).child("Data").removeEventListener
-//                (mFirebaseRecordingListener);
     }
 
     //return the fragment for each section
