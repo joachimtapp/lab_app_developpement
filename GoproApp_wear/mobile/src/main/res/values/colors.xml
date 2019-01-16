@@ -15,7 +15,7 @@
     <color name="selected">#0b6ac6</color>
     <color name="mode_bg">#80585858</color>
 
-    <color name="spinner_background">#000000</color>
+    <color name="spinner_background">#252525</color>
     <color name="spinner_text">#000000</color>
     <color name="spinner_text_dropdown">#FFFFFF</color>
 </resources>

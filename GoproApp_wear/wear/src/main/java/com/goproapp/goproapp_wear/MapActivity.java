@@ -43,7 +43,7 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setAmbientEnabled();
         // Mapbox access token is configured here. This needs to be called either in your application
         // object or in the same activity which contains the mapview.
         Mapbox.getInstance(this, getString(R.string.accessToken));
@@ -72,6 +72,15 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
             }
         };
         mapView.getMapAsync(this) ;
+    }
+    @Override
+    public void onEnterAmbient(Bundle ambientDetails) {
+        super.onEnterAmbient(ambientDetails);
+    }
+
+    @Override
+    public void onExitAmbient() {
+        super.onExitAmbient();
     }
 
     /**
