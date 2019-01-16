@@ -715,7 +715,9 @@ public class GalleryFragment extends Fragment {
 
 //           assemble the View
             holder.image.setImageBitmap(getBitmapFromString(GalleryActivity.imgData.get(position).imgString));
-            if (GalleryActivity.imgData.get(position).latLng == null)
+            if (GalleryActivity.imgData.get(position).latLng != null)
+                holder.latLng.setAlpha(1.0f);
+            else
                 holder.latLng.setAlpha(0.0f);
             if (GalleryActivity.imgData.get(position).online)
                 holder.logo.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cloud_queue_black_24dp, null));

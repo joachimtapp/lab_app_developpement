@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/dark_grey"
     tools:context=".TriggerActivity">
 
     <android.support.constraint.ConstraintLayout
@@ -14,18 +15,16 @@
 
         <ImageButton
             android:id="@+id/trigger_button"
-            android:layout_width="72dp"
-            android:layout_height="70dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:background="@drawable/accept_deny_dialog_negative_bg"
+            android:backgroundTint="@color/circular_button_pressed"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_camera_black_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_cc_settings_button_e"
-            tools:srcCompat="@drawable/common_google_signin_btn_icon_dark_normal_background" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/textView2"
@@ -34,7 +33,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:text="click to capture"
+            android:text="Press to capture"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
