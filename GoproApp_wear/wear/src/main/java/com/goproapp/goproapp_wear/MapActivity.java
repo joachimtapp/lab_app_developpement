@@ -77,14 +77,14 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
     /**
      * Called when the map is ready to be used.
      *
-     * @param mapboxMap An instance of MapboxMap associated with the {@link MapFragment} or
-     *                  {@link MapView} that defines the callback.
      */
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
         MapActivity.this.map = mapboxMap;
         // Customize map with markers, polylines, etc.
         map = mapboxMap;
+        map.getUiSettings().setAttributionEnabled(false);
+        map.getUiSettings().setLogoEnabled(false);
         // marker on the map -> Gopro location : handle by DistanceSetActivity
         if(DistanceSet.goproLocation!=null){
             mapboxMap.addMarker(new MarkerOptions()
@@ -93,10 +93,18 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
                     .snippet("Current location")
             );
             if(DistanceSet.triggerDistance >0){
-                mapboxMap.addPolygon(generatePerimeter(
-                        new LatLng(DistanceSet.goproLocation.getLatitude(), DistanceSet.goproLocation.getLongitude()),
-                        DistanceSet.triggerDistance,
-                        64));
+                if (DistanceSet.distanceInMeters<=DistanceSet.triggerDistance) {
+                    mapboxMap.addPolygon(generatePerimeter(
+                            new LatLng(DistanceSet.goproLocation.getLatitude(), DistanceSet.goproLocation.getLongitude()),
+                            DistanceSet.triggerDistance,
+                            64,R.color.red));
+                }
+                else {
+                    mapboxMap.addPolygon(generatePerimeter(
+                            new LatLng(DistanceSet.goproLocation.getLatitude(), DistanceSet.goproLocation.getLongitude()),
+                            DistanceSet.triggerDistance,
+                            64,R.color.violet));
+                }
             }
         }
 
@@ -119,7 +127,7 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
 
             LocationComponentOptions options = LocationComponentOptions.builder(this)
                     .trackingGesturesManagement(true)
-                    .accuracyColor(ContextCompat.getColor(this, R.color.black_overlay))
+                    .accuracyColor(ContextCompat.getColor(this, R.color.blue))
                     .build();
 
 // Get an instance of the component
@@ -208,7 +216,7 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
         mapView.onSaveInstanceState(outState);
     }
 
-    private PolygonOptions generatePerimeter(LatLng centerCoordinates, double radiusInMeters, int numberOfSides) {
+    private PolygonOptions generatePerimeter(LatLng centerCoordinates, double radiusInMeters, int numberOfSides, int color) {
         List<LatLng> positions = new ArrayList<>();
         double distanceX = radiusInMeters / (1000*111.319 * Math.cos(centerCoordinates.getLatitude() * Math.PI / 180));
         double distanceY = radiusInMeters/ (1000*110.574);
@@ -230,7 +238,7 @@ public class MapActivity extends WearableActivity implements OnMapReadyCallback,
         }
         return new PolygonOptions()
                 .addAll(positions)
-                .fillColor(R.color.blue)
+                .fillColor(color)
                 .alpha(0.4f);
     }
 

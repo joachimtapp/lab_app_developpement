@@ -1,13 +1,9 @@
 package com.goproapp.goproapp_wear;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
+import android.annotation.SuppressLint;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,8 +14,11 @@ import android.widget.Toast;
 
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineListener;
+import com.mapbox.android.core.location.LocationEnginePriority;
+import com.mapbox.android.core.location.LocationEngineProvider;
 
-public class DistanceSet extends WearableActivity implements LocationListener {
+public class DistanceSet extends WearableActivity {
+
     private LocationManager locationManager;
     private final static int DISTANCE_UPDATES = 1;
     private final static int TIME_UPDATES = 5;
@@ -29,12 +28,11 @@ public class DistanceSet extends WearableActivity implements LocationListener {
     public static int triggerDistance;
     public static Location goproLocation;
     public Location lastLocation;
-    public float distanceInMeters;
+    public static float distanceInMeters;
     // variable that decide wether the gopro should be shooting or not
     // variable to send via an intent to the tablet
     public boolean triggerCapt;
     //
-
 
 
     @Override
@@ -44,33 +42,60 @@ public class DistanceSet extends WearableActivity implements LocationListener {
         setContentView(R.layout.activity_distance_set);
 
         // Location manager
-        LocationManager locationManager = (LocationManager)
-                getSystemService(Context.LOCATION_SERVICE);
-        if (locationManager != null) {
-            try {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return;
-                }
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
-                        this);
-                Log.w(TAG, "request location updates");
-            } catch (Exception e) {
-                Log.w(TAG, "Could not request location updates");
-            }
-        }
-
-
-
 
         // setDist button : set distance trigger and location of the Gopro
         Button setDist = findViewById(R.id.setdist_button);
+
+
+        locationEngineListener = new LocationEngineListener() {
+            @SuppressLint("MissingPermission")
+            @Override
+            public void onConnected() {
+                locationEngine.requestLocationUpdates();
+            }
+
+            @Override
+            public void onLocationChanged(Location location) {
+                lastLocation = location;
+                double lastLat = location.getLatitude();
+                Log.v(TAG, "lat :" + lastLat);
+                // trigger distance
+                EditText dist_trig = (EditText) findViewById(R.id.disttrig_edit);
+                if (dist_trig.getText().length() > 0) {
+                    triggerDistance = Integer.valueOf(dist_trig.getText().toString());
+                    Toast.makeText(DistanceSet.this,
+                            "Trigger distance set to : "+triggerDistance, Toast.LENGTH_SHORT).show();
+                }
+                if (goproLocation != null) {
+                    // distance to the Gorpro (distanceInMeters)
+                    distanceInMeters = goproLocation.distanceTo(location);
+                    // current dist : contain the current distance to the Gopro
+                    TextView currentDist = findViewById(R.id.current_dist);
+                    currentDist.setText(Float.toString(distanceInMeters));
+                    // check on the distance to gopro to decide if the gopro shoots or not
+                    if (distanceInMeters <= triggerDistance) {
+                        // call the method that launch the capture process
+                        triggerCaptureOn();
+                    } else if (distanceInMeters > triggerDistance) {
+                        // call the method that stops the capture process
+                        triggerCaptureOff();
+                    }
+                }
+
+            }
+        };
+
+
+
+        LocationEngineProvider locationEngineProvider = new LocationEngineProvider(this);
+        locationEngine = locationEngineProvider.obtainBestLocationEngineAvailable();
+        locationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
+        locationEngine.setFastestInterval(1000);
+        locationEngine.addLocationEngineListener(locationEngineListener);
+        locationEngine.activate();
+
+
+
 
 
         setDist.setOnClickListener(new View.OnClickListener() {
@@ -78,82 +103,34 @@ public class DistanceSet extends WearableActivity implements LocationListener {
             public void onClick(View view) {
                 // create an object location with the location
                 triggerCapt = false;
-                if (lastLocation != null && goproLocation==null) {
+                if (lastLocation != null && goproLocation == null) {
                     goproLocation = lastLocation;
                     Toast.makeText(DistanceSet.this,
-                            "Gopro Location set to : Lat "+goproLocation.getLatitude()+" Lon :"+goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                            "Gopro Location set to : Lat " + goproLocation.getLatitude() + " Lon :" + goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
 
-                }
-                else if(lastLocation != null && goproLocation!=null)
-                {
+                } else if (lastLocation != null && goproLocation != null) {
                     goproLocation = lastLocation;
                     Toast.makeText(DistanceSet.this,
-                            "Gopro Location changed to : Lat "+goproLocation.getLatitude()+" Lon :"+goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                            "Gopro Location changed to : Lat " + goproLocation.getLatitude() + " Lon :" + goproLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                } else if (lastLocation==null) {
+                    Toast.makeText(DistanceSet.this,
+                            "Gopro Location not found ", Toast.LENGTH_SHORT).show();
                 }
-
 
             }
         });
 
 
-
-
-
-
     }
 
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        lastLocation = location;
-        double lastLat = location.getLatitude();
-        Log.v(TAG, "lat :"+lastLat);
-        // trigger distance
-        EditText dist_trig = (EditText) findViewById(R.id.disttrig_edit);
-        if(dist_trig.getText().length()>0) {
-            triggerDistance = Integer.valueOf(dist_trig.getText().toString());
-
-        }
-        if (goproLocation!=null) {
-            // distance to the Gorpro (distanceInMeters)
-            distanceInMeters = goproLocation.distanceTo(location);
-            // current dist : contain the current distance to the Gopro
-            TextView currentDist = findViewById(R.id.current_dist);
-            currentDist.setText(Float.toString(distanceInMeters));
-            // check on the distance to gopro to decide if the gopro shoots or not
-            if(distanceInMeters<=triggerDistance){
-                // call the method that launch the capture process
-                triggerCaptureOn();
-            }
-            else if(distanceInMeters>triggerDistance){
-                // call the method that stops the capture process
-                triggerCaptureOff();
-            }
-        }
-
-    }
-
+    // method stop capture
     private void triggerCaptureOff() {
 
     }
-
+    // method start capture
     private void triggerCaptureOn() {
 
     }
 
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
 
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-
-    }
 }
