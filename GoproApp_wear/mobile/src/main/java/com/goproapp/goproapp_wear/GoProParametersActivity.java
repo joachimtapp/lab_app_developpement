@@ -229,6 +229,32 @@ public class GoProParametersActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 Integer distVal = intent.getIntExtra(TRIG_DIST_VAL, 0);
                 distText.setText(distVal.toString());
+
+                // Setup position mode (Same as video mode)
+
+                MODE = GoProInterface.MODE_VIDEO;
+                goProInterface.setMode(MODE);
+                changeMenu(MENU_POSITION);
+                goProInterface.setResVideo(spinner_res_video.getSelectedItem().toString());
+                goProInterface.setFPSVideo(spinner_FPS_video.getSelectedItem().toString());
+                goProInterface.setFOVVideo(spinner_FOV_video.getSelectedItem().toString());
+                goProInterface.setProTune(switchProTune_video.isChecked(), MODE);
+                if (switchProTune_video.isChecked()) {
+                    if (switchWB_video.isChecked()) {
+                        goProInterface.setWBAuto(MODE);
+                    } else {
+                        goProInterface.setWB(seekBarWB_video.getProgress(), MODE);
+                    }
+
+                    if (switchISO_video.isChecked()) {
+                        goProInterface.setISO(seekBarISO_video.getMax());
+                        goProInterface.setISOMode(GoProInterface.ISO_MODE_MAX);
+                    } else {
+                        goProInterface.setISO(seekBarISO_video.getProgress());
+                        goProInterface.setISOMode(GoProInterface.ISO_MODE_LOCK);
+                    }
+                }
+
             }
         }, new IntentFilter(TRIG_DIST_INT));
 
@@ -236,6 +262,31 @@ public class GoProParametersActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String shutter = intent.getStringExtra(SHUTTER_TYPE);
+
+                Animation animation_out = new AlphaAnimation(0.5F, 0.0F);
+                animation_out.setDuration(200);
+                animation_out.setInterpolator(new AccelerateDecelerateInterpolator());
+                animation_out.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        whiteView.setAlpha(0.0F);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                whiteView = findViewById(R.id.whiteBack);
+                whiteView.setAlpha(0.5F);
+                whiteView.startAnimation(animation_out);
+
                 switch (shutter){
                     case SHUTTER_ON:
                         goProInterface.shutter();
@@ -266,31 +317,27 @@ public class GoProParametersActivity extends AppCompatActivity {
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         firstTime = sharedPref.getBoolean("parametersFirst", true);
         if (firstTime) {
-        GuidedTour();
-
-
+            GuidedTour();
         } else {
-        // Check if you are connected to GoPro
-        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        String ssid = wifiInfo.getSSID();
-        if (!ssid.contains("GP")) {
-            new AlertDialog.Builder(this)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setTitle("GoPro Connection")
-                    .setMessage("Make sure you are connected to your GoPro")
-                    .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                        }
-                    })
-                    .setNegativeButton("Later", null)
-                    .show();
+            // Check if you are connected to GoPro
+            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            String ssid = wifiInfo.getSSID();
+            if (!ssid.contains("GP")) {
+                new AlertDialog.Builder(this)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle("GoPro Connection")
+                        .setMessage("Make sure you are connected to your GoPro")
+                        .setPositiveButton("Connect now", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                            }
+                        })
+                        .setNegativeButton("Later", null)
+                        .show();
+            }
         }
-    }
-
-
     }
 
     private void shutterCallback(){
