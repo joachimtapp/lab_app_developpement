@@ -45,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:popupBackground="@color/spinner_background"
+                android:popupBackground="@drawable/spinne_bg"
                 android:textAlignment="viewEnd" />
         </RelativeLayout>
 
@@ -83,7 +83,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:popupBackground="@color/spinner_background"
+                android:popupBackground="@drawable/spinne_bg"
                 android:textAlignment="viewEnd" />
         </RelativeLayout>
 
@@ -276,6 +276,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Min"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <android.support.constraint.ConstraintLayout
@@ -295,7 +296,8 @@
                     android:text="100"
                     android:textAlignment="center"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/tv1"
@@ -306,7 +308,8 @@
                     android:text="200"
                     android:textAlignment="center"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/tv2"
@@ -317,7 +320,8 @@
                     android:text="400"
                     android:textAlignment="center"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/tv3"
@@ -328,7 +332,8 @@
                     android:text="800"
                     android:textAlignment="center"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/textView8"
@@ -337,7 +342,8 @@
                     android:layout_marginEnd="6dp"
                     android:text="1600"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </android.support.constraint.ConstraintLayout>
 
@@ -357,6 +363,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Max"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/seekBarISO_min_burst" />
 
             <android.support.constraint.ConstraintLayout
@@ -376,7 +383,8 @@
                     android:text="100"
                     android:textAlignment="center"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/s"
@@ -387,7 +395,8 @@
                     android:text="200"
                     android:textAlignment="center"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/d"
@@ -398,7 +407,8 @@
                     android:text="400"
                     android:textAlignment="center"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/f"
@@ -409,7 +419,8 @@
                     android:text="800"
                     android:textAlignment="center"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/g"
@@ -418,7 +429,8 @@
                     android:layout_marginEnd="6dp"
                     android:text="1600"
                     android:textSize="8sp"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </android.support.constraint.ConstraintLayout>
 
